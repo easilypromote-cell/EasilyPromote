@@ -1,4 +1,13 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Container } from '@/components/ui';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger);
+}
 
 const rows = [
   {
@@ -39,14 +48,36 @@ const rows = [
 ];
 
 export default function ComparisonTable() {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const subtextRef = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const ctx = gsap.context(() => {
+      gsap.from([headingRef.current, subtextRef.current], {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+      });
+    }, sectionRef);
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <section className="py-16 tablet:py-20 desktop:py-24 bg-white">
+    <section ref={sectionRef} className="py-16 tablet:py-20 desktop:py-24 bg-white">
       <Container>
         <div className="text-center max-w-[680px] mx-auto">
-          <h2 className="text-[36px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">
+          <h2 ref={headingRef} className="text-[36px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">
             The incentives finally align.
           </h2>
-          <p className="text-[17px] leading-[180%] tracking-[-0.01em] text-[#737373] mt-4">
+          <p ref={subtextRef} className="text-[17px] leading-[180%] tracking-[-0.01em] text-[#737373] mt-4">
             Most creator campaigns pay for content regardless of performance. EasilyPromote connects creator earnings directly to campaign outcomes.
           </p>
         </div>

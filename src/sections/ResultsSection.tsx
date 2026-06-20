@@ -172,6 +172,44 @@ export default function ResultsSection() {
                 Most creator platforms help brands buy content. EasilyPromote helps brands launch performance-driven campaigns where creators earn when outcomes happen.
               </p>
             </div>
+
+            <div ref={imagePinRef} className="relative mt-auto" style={{ height: '120px' }}>
+              <div
+                ref={clipRef}
+                className="absolute overflow-hidden rounded-xl bg-white"
+                style={{ width: '230px', height: '120px', left: 0, top: 0 }}
+              >
+                <div ref={innerRef} className="absolute" style={{ width: '100vw', height: '100vh', left: 0, top: 0 }}>
+                  <div ref={centerRef} className="absolute w-[380px] h-[550px] rounded-xl overflow-hidden z-10" style={{ left: 'calc(50% - 190px)', top: 'calc(50% - 275px)', willChange: 'transform, filter, opacity' }}>
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/60 z-10" />
+                    <img src="/images/3.jpg" alt="" className="w-full h-full object-cover" />
+                  </div>
+
+                  <div ref={text1Ref} className="absolute top-8 left-8 max-w-[340px] text-left opacity-0">
+                    <h3 className="text-[25px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">Reach more audiences.</h3>
+                    <p className="text-[15px] font-medium leading-[180%] text-[#737373] mt-2">Launch one campaign and let multiple creators produce content simultaneously.</p>
+                  </div>
+
+                  <div ref={text2Ref} className="absolute top-8 left-8 max-w-[340px] text-left opacity-0">
+                    <h3 className="text-[25px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">Placeholder #2</h3>
+                    <p className="text-[15px] font-medium leading-[180%] text-[#737373] mt-2">Placeholder text for stage two.</p>
+                  </div>
+
+                  <div ref={text3Ref} className="absolute top-8 left-8 max-w-[340px] text-left opacity-0">
+                    <h3 className="text-[25px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">Placeholder #3</h3>
+                    <p className="text-[15px] font-medium leading-[180%] text-[#737373] mt-2">Placeholder text for stage three.</p>
+                  </div>
+
+                  <div ref={stack2Ref} className="absolute w-[160px] h-[128px] rounded-xl overflow-hidden z-20 opacity-0" style={{ left: 'calc(100% - 231px)', top: '46px' }}>
+                    <img src="/images/3.jpg" alt="" className="w-full h-full object-cover" />
+                  </div>
+
+                  <div ref={stack1Ref} className="absolute w-[160px] h-[128px] rounded-xl overflow-hidden opacity-0" style={{ left: 'calc(100% - 192px)', top: '32px' }}>
+                    <img src="/images/3.jpg" alt="" className="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div ref={statRef} className="flex flex-col gap-16">
@@ -186,44 +224,6 @@ export default function ResultsSection() {
           </div>
         </div>
       </Container>
-
-      <div ref={imagePinRef} className="relative w-full" style={{ height: '120px' }}>
-        <div
-          ref={clipRef}
-          className="absolute overflow-hidden rounded-xl bg-white"
-          style={{ width: '230px', height: '120px', left: '32px', top: 0 }}
-        >
-          <div ref={innerRef} className="absolute" style={{ width: '100vw', height: '100vh', left: '-32px', top: 0 }}>
-            <div ref={centerRef} className="absolute w-[380px] h-[550px] rounded-xl overflow-hidden z-10" style={{ left: 'calc(50% - 190px)', top: 'calc(50% - 275px)', willChange: 'transform, filter, opacity' }}>
-              <div className="absolute inset-0 bg-gradient-to-b from-black/0 to-black/60 z-10" />
-              <img src="/images/3.jpg" alt="" className="w-full h-full object-cover" />
-            </div>
-
-            <div ref={text1Ref} className="absolute top-8 left-8 max-w-[340px] text-left opacity-0" style={{ willChange: 'transform, filter, opacity' }}>
-              <h3 className="text-[25px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">Reach more audiences.</h3>
-              <p className="text-[15px] font-medium leading-[180%] text-[#737373] mt-2">Launch one campaign and let multiple creators produce content simultaneously.</p>
-            </div>
-
-            <div ref={text2Ref} className="absolute top-8 left-8 max-w-[340px] text-left opacity-0" style={{ willChange: 'transform, filter, opacity' }}>
-              <h3 className="text-[25px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">Placeholder #2</h3>
-              <p className="text-[15px] font-medium leading-[180%] text-[#737373] mt-2">Placeholder text for stage two.</p>
-            </div>
-
-            <div ref={text3Ref} className="absolute top-8 left-8 max-w-[340px] text-left opacity-0" style={{ willChange: 'transform, filter, opacity' }}>
-              <h3 className="text-[25px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">Placeholder #3</h3>
-              <p className="text-[15px] font-medium leading-[180%] text-[#737373] mt-2">Placeholder text for stage three.</p>
-            </div>
-
-            <div ref={stack2Ref} className="absolute w-[160px] h-[128px] rounded-xl overflow-hidden z-20 opacity-0" style={{ left: 'calc(100% - 231px)', top: '46px', willChange: 'transform, filter, opacity, box-shadow' }}>
-              <img src="/images/3.jpg" alt="" className="w-full h-full object-cover" />
-            </div>
-
-            <div ref={stack1Ref} className="absolute w-[160px] h-[128px] rounded-xl overflow-hidden opacity-0" style={{ left: 'calc(100% - 192px)', top: '32px', willChange: 'transform, filter, opacity, box-shadow' }}>
-              <img src="/images/3.jpg" alt="" className="w-full h-full object-cover" />
-            </div>
-          </div>
-        </div>
-      </div>
     </section>
   );
 }

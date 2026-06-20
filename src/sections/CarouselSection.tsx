@@ -32,6 +32,9 @@ export default function CarouselSection() {
   const autoRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const posRef = useRef(MID);
   const draggingRef = useRef(false);
+  const offsetRef = useRef(0);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const subtextRef = useRef<HTMLParagraphElement>(null);
 
   const updateScales = useCallback(() => {
     const track = trackRef.current;
@@ -46,8 +49,8 @@ export default function CarouselSection() {
       const cardCenter = cardLeft + CARD_W / 2;
       const dist = Math.abs(cardCenter - center);
       const norm = Math.min(dist / (STEP * 2), 1);
-      const scale = 1 - 0.35 * norm;
-      const opacity = 1 - 0.7 * norm;
+      const scale = 1 - 0.5 * norm;
+      const opacity = 1 - 0.8 * norm;
       (cards[i] as HTMLElement).style.transform = `scale(${scale})`;
       (cards[i] as HTMLElement).style.opacity = String(opacity);
     }
@@ -70,8 +73,12 @@ export default function CarouselSection() {
 
     const trackW = FULL * STEP;
     const containerW = container.clientWidth;
-    const minX = -(trackW - containerW);
-    const maxX = 0;
+    const offset = containerW / 2 - CARD_W / 2;
+    offsetRef.current = offset;
+    const minX = -(trackW - containerW) + offset;
+    const maxX = offset;
+
+    gsap.set(track, { x: -(MID * STEP) + offset });
 
     const instances = Draggable.create(track, {
       type: 'x',
@@ -81,18 +88,36 @@ export default function CarouselSection() {
         draggingRef.current = true;
         if (autoRef.current) clearInterval(autoRef.current);
       },
-      onDragEnd: function () {
+      onDragEnd: () => {
         draggingRef.current = false;
         const currentX = gsap.getProperty(track, 'x') as number;
-        const snapped = Math.round(-currentX / STEP);
+        const snapped = Math.round((offset - currentX) / STEP);
         const clamped = Math.max(TOTAL, Math.min(TOTAL * (CLONES - 1) - 1, snapped));
         posRef.current = clamped;
-        gsap.to(track, { x: -(clamped * STEP), duration: 0.5, ease: 'power3.out' });
+        gsap.to(track, { x: -(clamped * STEP) + offset, duration: 0.5, ease: 'power3.out' });
         startAuto();
       },
     });
     const drag = instances[0];
     return () => { void drag?.kill(); };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const ctx = gsap.context(() => {
+      gsap.from([headingRef.current, subtextRef.current], {
+        opacity: 0,
+        y: 20,
+        duration: 0.6,
+        stagger: 0.1,
+        scrollTrigger: {
+          trigger: headingRef.current,
+          start: 'top 85%',
+          once: true,
+        },
+      });
+    }, headingRef);
+    return () => ctx.revert();
   }, []);
 
   const startAuto = useCallback(() => {
@@ -105,10 +130,10 @@ export default function CarouselSection() {
       if (next >= TOTAL * (CLONES - 1)) {
         next -= TOTAL;
         posRef.current = next;
-        gsap.set(track, { x: -(next * STEP) });
+        gsap.set(track, { x: -(next * STEP) + offsetRef.current });
       }
       posRef.current = next;
-      gsap.to(track, { x: -(next * STEP), duration: 0.6, ease: 'power3.out' });
+      gsap.to(track, { x: -(next * STEP) + offsetRef.current, duration: 0.6, ease: 'power3.out' });
     }, 4000);
   }, []);
 
@@ -125,10 +150,10 @@ export default function CarouselSection() {
     if (next >= TOTAL * (CLONES - 1)) {
       next -= TOTAL;
       posRef.current = next;
-      gsap.set(track, { x: -(next * STEP) });
+      gsap.set(track, { x: -(next * STEP) + offsetRef.current });
     }
     posRef.current = next;
-    gsap.to(track, { x: -(next * STEP), duration: 0.6, ease: 'power3.out' });
+    gsap.to(track, { x: -(next * STEP) + offsetRef.current, duration: 0.6, ease: 'power3.out' });
     setTimeout(startAuto, 6000);
   }, [startAuto]);
 
@@ -140,10 +165,10 @@ export default function CarouselSection() {
     if (next < TOTAL) {
       next += TOTAL;
       posRef.current = next;
-      gsap.set(track, { x: -(next * STEP) });
+      gsap.set(track, { x: -(next * STEP) + offsetRef.current });
     }
     posRef.current = next;
-    gsap.to(track, { x: -(next * STEP), duration: 0.6, ease: 'power3.out' });
+    gsap.to(track, { x: -(next * STEP) + offsetRef.current, duration: 0.6, ease: 'power3.out' });
     setTimeout(startAuto, 6000);
   }, [startAuto]);
 
@@ -151,10 +176,10 @@ export default function CarouselSection() {
     <section className="py-16 tablet:py-20 desktop:py-24 bg-white">
       <Container>
         <div className="text-center max-w-[680px] mx-auto">
-          <h2 className="text-[36px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">
+          <h2 ref={headingRef} className="text-[36px] leading-[110%] tracking-[-0.05em] font-semibold text-[#171717]">
             One campaign can inspire dozens of<br />unique creator perspectives.
           </h2>
-          <p className="text-[17px] leading-[180%] tracking-[-0.01em] text-[#737373] mt-4">
+          <p ref={subtextRef} className="text-[17px] leading-[180%] tracking-[-0.01em] text-[#737373] mt-4">
             Creators approach briefs differently — helping campaigns reach<br />audiences through multiple styles, formats, and storytelling approaches.
           </p>
         </div>

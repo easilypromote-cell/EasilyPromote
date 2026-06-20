@@ -4,7 +4,6 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 import { motion } from 'motion/react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Image from 'next/image';
 import { Container } from '@/components/ui';
 import MouseTrailLayer from '@/components/MouseTrailLayer';
 import { TextEffect } from '@/components/motion-primitives/text-effect';
@@ -18,9 +17,7 @@ if (typeof window !== 'undefined') {
 const lines = heroContent.headline.split('\n');
 
 const navLinks = [
-  { label: 'Features', href: '#benefits' },
   { label: 'How It Works', href: '#how-it-works' },
-  { label: 'Testimonials', href: '#testimonials' },
   { label: 'FAQ', href: '#faq' },
 ];
 
@@ -44,7 +41,6 @@ const secondaryCtaIdleStyle = { backgroundColor: 'rgba(0,0,0,0.35)' };
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
   const bgRef = useRef<HTMLImageElement>(null);
-  const logoRef = useRef<HTMLSpanElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const headerBtnRef = useRef<HTMLButtonElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
@@ -70,7 +66,6 @@ export default function Hero() {
         const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
         tl.from(bgRef.current, { opacity: 0, duration: 1.2 });
-        tl.from(logoRef.current, { opacity: 0, y: -8, duration: 0.6 }, 0.2);
         tl.from(headerBtnRef.current, { opacity: 0, y: -8, duration: 0.5 }, 0.4);
         tl.from(subtitleRef.current, { opacity: 0, y: 20, duration: 0.8 }, 0.9);
         tl.from(ctaRef.current, { opacity: 0, y: 16, duration: 0.7 }, 1.3);
@@ -119,9 +114,7 @@ export default function Hero() {
           <Container>
             <nav className="flex items-center">
               <a href="#">
-                <span ref={logoRef}>
-                  <Image src="/images/Logo.svg" alt="EasilyPromote" width={40} height={40} priority style={{ filter: 'brightness(0) invert(1)' }} />
-                </span>
+                <img src="/images/Logo.svg" alt="EasilyPromote" width={40} height={40} style={{ filter: 'brightness(0) invert(1)' }} />
               </a>
 
               <ul className="hidden desktop:flex items-center gap-8 ml-auto mr-4">

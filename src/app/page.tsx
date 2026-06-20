@@ -1,6 +1,6 @@
 import Hero from '@/sections/Hero';
 import ResultsSection from '@/sections/ResultsSection';
-import About from '@/sections/About';
+import HowItWorks from '@/sections/HowItWorks';
 import Benefits from '@/sections/Benefits';
 import CarouselSection from '@/sections/CarouselSection';
 import ComparisonTable from '@/sections/ComparisonTable';
@@ -13,7 +13,7 @@ export default function Home() {
     <main className="min-h-screen">
       <Hero />
       <ResultsSection />
-      <About />
+      <HowItWorks />
       <Benefits />
       <CarouselSection />
       <ComparisonTable />
