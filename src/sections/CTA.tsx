@@ -1,22 +1,19 @@
-import { Container, Button } from '@/components/ui';
-
 export default function CTA() {
   return (
-    <section className="py-16 tablet:py-20 desktop:py-24 bg-darkSurface text-white">
-      <Container className="text-center">
-        <h2 className="text-display-lg mb-6">Ready to get started?</h2>
-        <p className="text-body-lg text-gray-300 max-w-reading mx-auto mb-8">
-          Join thousands of creators and brands already using EasilyPromote.
+    <section className="relative w-full h-screen overflow-hidden">
+      <img
+        src="/images/6.png"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover"
+      />
+      <div className="relative z-10 flex flex-col items-center justify-center h-full text-center text-white px-4">
+        <p className="text-[17px] leading-[180%] opacity-60">
+          Stop paying for influencer posts.
         </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <Button variant="primary" size="lg" eventName="signup_clicked">
-            Sign Up Now
-          </Button>
-          <Button variant="outline" size="lg" className="border-white text-white hover:border-primary hover:text-primary">
-            Contact Sales
-          </Button>
-        </div>
-      </Container>
+        <h2 className="text-[36px] leading-[110%] tracking-[-0.05em] font-semibold mt-2">
+          Start paying for<br />performance.
+        </h2>
+      </div>
     </section>
   );
 }

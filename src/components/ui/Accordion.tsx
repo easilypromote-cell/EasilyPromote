@@ -20,15 +20,15 @@ export default function Accordion({ items, className = '' }: AccordionProps) {
   }, []);
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-1 ${className}`}>
       {items.map((item) => (
-        <div key={item.id} className="border border-border rounded-lg overflow-hidden">
+        <div key={item.id} className="border border-border rounded-[40px] overflow-hidden">
           <button
             onClick={() => toggle(item.id)}
-            className="w-full flex items-center justify-between p-6 text-left hover:bg-surface transition-colors"
+            className="w-full flex items-center justify-between p-4 text-left hover:bg-surface transition-colors"
             aria-expanded={openId === item.id}
           >
-            <span className="text-body-lg font-medium">{item.question}</span>
+            <span className="text-[17px] font-medium">{item.question}</span>
             <span
               style={{ transform: openId === item.id ? 'rotate(45deg)' : 'rotate(0deg)' }}
               className="text-2xl text-text-secondary transition-transform duration-200"
@@ -42,7 +42,7 @@ export default function Accordion({ items, className = '' }: AccordionProps) {
             }`}
           >
             <div className="overflow-hidden">
-              <div className="px-6 pb-6 text-text-secondary">
+              <div className="px-4 pb-4 text-text-secondary text-[17px]">
                 {item.answer}
               </div>
             </div>
