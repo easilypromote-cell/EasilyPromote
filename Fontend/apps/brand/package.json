@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ep/ui": "workspace:*",
+    "@ep/ui": "^0.0.1",
     "@radix-ui/react-dialog": "^1.1.20",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
