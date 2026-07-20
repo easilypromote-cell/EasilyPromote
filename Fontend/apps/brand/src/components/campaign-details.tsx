@@ -1,0 +1,662 @@
+"use client";
+
+import * as React from "react";
+import { useState } from "react";
+import Image from "next/image";
+import {
+  FolderOpen,
+  TrendingUp,
+  CreditCard,
+  Layout,
+  MoreHorizontal,
+  ArrowRight,
+  Sparkles,
+  Check,
+  X,
+  MessageSquare,
+  Play,
+  Share2
+} from "lucide-react";
+import { cn } from "@ep/ui/lib/utils";
+
+// Import illustrations
+import illustration1 from "@ep/ui/assets/illustrations/illustration1.svg"; // Yellow Mailbox
+import illustration3 from "@ep/ui/assets/illustrations/illustration3.svg"; // Mag glass observer
+import illustration4 from "@ep/ui/assets/illustrations/illustration4.svg"; // Creator at desk
+
+interface CampaignDetailsProps {
+  onClose: () => void;
+}
+
+type TabType = "Overview" | "Submission" | "Payouts";
+type SubTabType = "new" | "awaiting" | "posted" | "rejected";
+type StatusType = "under_review" | "completed" | "cancelled";
+type SubmissionsStateType = "has_items" | "empty";
+type SocialPlatformType = "Tiktok" | "Instagram" | "X (Twitter)";
+
+// Clean Selfie video component mockup
+function VideoThumbnail() {
+  return (
+    <div className="w-24 h-32 rounded-xl bg-gradient-to-br from-purple-100 to-indigo-100 border border-stone-200 flex-shrink-0 relative overflow-hidden flex items-center justify-center shadow-sm">
+      <div className="absolute inset-0 bg-stone-900/5" />
+      {/* Simulating selfie outline */}
+      <div className="w-16 h-16 rounded-full bg-white/40 backdrop-blur-[1px] absolute bottom-[-10px] left-1/2 -translate-x-1/2" />
+      <div className="w-5 h-5 rounded-full bg-white/50 absolute top-4 left-4" />
+      
+      {/* Center Play Button Overlay */}
+      <div className="w-8 h-8 rounded-full bg-white/95 shadow-md flex items-center justify-center z-10 transition-transform hover:scale-105 cursor-pointer">
+        <Play className="w-3.5 h-3.5 text-stone-900 fill-stone-900 translate-x-[1px]" />
+      </div>
+    </div>
+  );
+}
+
+// Avatar helper
+function CreatorAvatar({ seed }: { seed: string }) {
+  return (
+    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-200 to-[#FEB604] border border-white flex items-center justify-center text-[10px] font-bold text-stone-950 shadow-sm flex-shrink-0">
+      {seed.substring(0, 2).toUpperCase()}
+    </div>
+  );
+}
+
+export function CampaignDetails({ onClose }: CampaignDetailsProps) {
+  const [activeTab, setActiveTab] = useState<TabType>("Overview");
+  
+  // Submissions Sub-tabs state
+  const [activeSubTab, setActiveSubTab] = useState<SubTabType>("new");
+  
+  // Interactive prototype preview controls (left sidebar)
+  const [currentStatus, setCurrentStatus] = useState<StatusType>("under_review");
+  const [submissionsState, setSubmissionsState] = useState<SubmissionsStateType>("has_items");
+  
+  // Platform statistics segmented controls state
+  const [selectedPlatform1, setSelectedPlatform1] = useState<SocialPlatformType>("Tiktok");
+  const [selectedPlatform2, setSelectedPlatform2] = useState<SocialPlatformType>("Tiktok");
+
+  return (
+    <div className="flex w-full h-full overflow-hidden bg-white">
+      {/* Left Menu Sidebar */}
+      <div className="w-80 border-r border-stone-100 bg-[#FBFBFA] p-8 flex flex-col justify-between h-full">
+        <div>
+          {/* Header Close Trigger */}
+          <button
+            onClick={onClose}
+            className="text-stone-500 hover:text-stone-800 text-xs font-semibold font-rethink mb-10 flex items-center gap-1 transition-colors"
+          >
+            Save and Close
+          </button>
+
+          {/* Menu Items */}
+          <div className="space-y-3">
+            {[
+              { id: "Overview", icon: Layout, label: "Overview" },
+              { id: "Submission", icon: FolderOpen, label: "Submission" },
+              { id: "Payouts", icon: CreditCard, label: "Payouts" }
+            ].map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as TabType)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold font-rethink transition-all",
+                    isActive
+                      ? "bg-white border border-stone-200/80 shadow-sm text-stone-900"
+                      : "text-stone-500 hover:text-stone-800 hover:bg-stone-50"
+                  )}
+                >
+                  <Icon className={cn("w-4 h-4", isActive ? "text-stone-900" : "text-stone-400")} />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Prototype Switcher Controls (For Reviewer Demo) */}
+        <div className="bg-stone-50 border border-stone-200/60 rounded-2xl p-4 space-y-4 shadow-sm">
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-stone-400 tracking-wider uppercase">
+            <Sparkles className="w-3 h-3 text-[#FEB604]" /> Prototype Options
+          </div>
+          
+          {/* Overview status box control */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-stone-500">Overview Status Alert</label>
+            <div className="grid grid-cols-3 gap-1">
+              {(["under_review", "completed", "cancelled"] as StatusType[]).map((st) => (
+                <button
+                  key={st}
+                  onClick={() => setCurrentStatus(st)}
+                  className={cn(
+                    "text-[8px] py-1 border font-semibold rounded-md transition-colors capitalize",
+                    currentStatus === st
+                      ? "bg-stone-900 border-stone-900 text-white"
+                      : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
+                  )}
+                >
+                  {st.replace("_", " ")}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Submission list empty toggle */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-stone-500">New Submissions State</label>
+            <div className="grid grid-cols-2 gap-1">
+              {(["has_items", "empty"] as SubmissionsStateType[]).map((sb) => (
+                <button
+                  key={sb}
+                  onClick={() => setSubmissionsState(sb)}
+                  className={cn(
+                    "text-[9px] py-1 border font-semibold rounded-md transition-colors capitalize",
+                    submissionsState === sb
+                      ? "bg-stone-900 border-stone-900 text-white"
+                      : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
+                  )}
+                >
+                  {sb === "has_items" ? "Show List" : "Nothing Waiting"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Dashboard Area */}
+      <div className="flex-1 bg-white p-12 overflow-y-auto h-full">
+        {/* ================= TAB 1: OVERVIEW ================= */}
+        {activeTab === "Overview" && (
+          <div className="max-w-2xl mx-auto w-full space-y-8 pb-10">
+            {/* Header Section */}
+            <div className="flex items-start gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200 shadow-sm flex-shrink-0">
+                <svg className="w-9 h-9 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                </svg>
+              </div>
+              <div className="space-y-1.5">
+                <h2 className="font-rethink font-bold text-2xl text-stone-900 leading-tight">
+                  Launch my new Afrobeats single
+                </h2>
+                <div className="flex gap-2">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#EBF3FF] text-[#3B82F6] text-[11px] font-semibold font-inter">
+                    Music
+                  </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 text-[11px] font-semibold font-inter">
+                    7 Days Delivery
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Campaign Details Key-Value List */}
+            <div className="space-y-4 pt-6 border-t border-stone-100">
+              <div className="flex justify-between items-center font-rethink text-sm font-semibold">
+                <span className="text-[#78716C]">Target Views</span>
+                <span className="text-[#1C1917] font-bold">100,000,000 views</span>
+              </div>
+              <div className="flex justify-between items-center font-rethink text-sm font-semibold">
+                <span className="text-[#78716C]">Budget</span>
+                <span className="text-[#1C1917] font-bold">20,000,000</span>
+              </div>
+              <div className="flex justify-between items-center font-rethink text-sm font-semibold">
+                <span className="text-[#78716C]">Duration</span>
+                <span className="text-[#1C1917] font-bold">Duration</span>
+              </div>
+            </div>
+
+            {/* Action Buttons Row */}
+            <div className="flex items-center gap-3 pt-2">
+              <button className="flex-1 py-3 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 font-semibold text-sm rounded-full shadow-sm transition-colors">
+                Top up budget
+              </button>
+              <button className="flex-1 py-3 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 font-semibold text-sm rounded-full shadow-sm transition-colors">
+                Extend deadline
+              </button>
+              <button className="px-3.5 py-3 bg-white border border-stone-200 hover:bg-stone-50 text-stone-600 rounded-full shadow-sm transition-colors">
+                <MoreHorizontal className="w-5 h-5 text-stone-700" />
+              </button>
+            </div>
+
+            {/* Status Alert Box */}
+            <div className="flex items-start gap-4 bg-[#FFFDF0] border border-dashed border-[#FEB604]/60 rounded-2xl p-5 relative overflow-hidden">
+              <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center">
+                <Image src={illustration3} alt="Status Alert" width={48} height={48} />
+              </div>
+              <div className="space-y-1 mt-0.5">
+                {currentStatus === "under_review" && (
+                  <>
+                    <h4 className="font-rethink font-bold text-sm text-[#6E330C]">Under review</h4>
+                    <p className="font-rethink text-xs text-stone-600 leading-normal">
+                      We're reviewing your campaign. It'll go live within 2 hours.
+                    </p>
+                  </>
+                )}
+                {currentStatus === "completed" && (
+                  <>
+                    <h4 className="font-rethink font-bold text-sm text-[#6E330C]">Completed</h4>
+                    <p className="font-rethink text-xs text-stone-600 leading-normal">
+                      Target reached — nice work. Here's how it went.
+                    </p>
+                  </>
+                )}
+                {currentStatus === "cancelled" && (
+                  <>
+                    <h4 className="font-rethink font-bold text-sm text-[#6E330C]">Cancelled</h4>
+                    <p className="font-rethink text-xs text-stone-600 leading-normal">
+                      This campaign was cancelled. Unspent budget of ₦6,850,000 was refunded to your wallet.
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Campaign Progress Card */}
+            <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 space-y-4">
+              <span className="text-xs font-bold text-stone-500 block">Campaign progress</span>
+              <div className="flex items-center justify-between">
+                <span className="text-2xl font-bold text-stone-900 font-rethink">
+                  {submissionsState === "has_items" ? "170,000 / 250,000" : "0 / 250,000"}
+                </span>
+                
+                <div className="flex items-center gap-2">
+                  <div className="relative w-7 h-7">
+                    <svg className="w-full h-full transform -rotate-90">
+                      <circle
+                        cx="14"
+                        cy="14"
+                        r="11"
+                        className="stroke-stone-200"
+                        strokeWidth="3.5"
+                        fill="transparent"
+                      />
+                      <circle
+                        cx="14"
+                        cy="14"
+                        r="11"
+                        className="stroke-[#FEB604]"
+                        strokeWidth="3.5"
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 11}
+                        strokeDashoffset={2 * Math.PI * 11 * (1 - (submissionsState === "has_items" ? 0.68 : 0))}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                  </div>
+                  <span className="text-xs font-bold text-stone-700">
+                    {submissionsState === "has_items" ? "68%" : "0%"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Submissions Box */}
+            {submissionsState === "has_items" ? (
+              <div className="bg-stone-50 border border-stone-200/80 rounded-2xl p-6 space-y-6">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Submissions</span>
+                    <span className="text-lg font-bold text-stone-900 mt-1 block">24 received</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Approved</span>
+                    <span className="text-lg font-bold text-stone-900 mt-1 block">16</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Views delivered</span>
+                    <span className="text-lg font-bold text-stone-900 mt-1 block">170k (68)</span>
+                  </div>
+                </div>
+
+                <div className="bg-white border border-stone-200/60 rounded-xl p-4 flex items-center justify-between shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center text-stone-500">
+                      <FolderOpen className="w-5 h-5 text-stone-600" />
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-bold text-stone-900 font-rethink">
+                        12 submissions are waiting for your review
+                      </h5>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setActiveTab("Submission");
+                      setActiveSubTab("new");
+                    }}
+                    className="text-xs font-bold text-stone-900 flex items-center gap-1 hover:text-stone-700 font-rethink"
+                  >
+                    Review now <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-stone-200/80 rounded-2xl p-10 text-center space-y-4 flex flex-col items-center justify-center">
+                <div className="w-32 h-32 flex items-center justify-center bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden relative shadow-sm">
+                  <Image src={illustration4} alt="No submissions" width={96} height={96} />
+                </div>
+                <div className="space-y-1.5 max-w-sm mx-auto">
+                  <h4 className="font-rethink font-bold text-base text-stone-900">No submissions yet</h4>
+                  <p className="font-rethink text-xs text-stone-500 leading-relaxed">
+                    Your campaign just went live — creators are claiming slots. We'll notify you the moment content starts coming in.
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================= TAB 2: SUBMISSION ================= */}
+        {activeTab === "Submission" && (
+          <div className="max-w-2xl mx-auto w-full space-y-8 pb-10">
+            {/* Header Title */}
+            <div className="text-center mb-6">
+              <h2 className="font-rethink font-bold text-xl text-stone-900">Launch my new Afrobeats single</h2>
+            </div>
+
+            {/* Sub-navigation Pills Row */}
+            <div className="flex justify-center border-b border-stone-100 pb-4">
+              <div className="flex bg-stone-50 p-1 rounded-full border border-stone-200/50">
+                {[
+                  { id: "new", label: "New submissions (2)" },
+                  { id: "awaiting", label: "Awaiting Post (2)" },
+                  { id: "posted", label: "Posted (14)" },
+                  { id: "rejected", label: "Rejected" }
+                ].map((pill) => {
+                  const isActive = activeSubTab === pill.id;
+                  return (
+                    <button
+                      key={pill.id}
+                      onClick={() => setActiveSubTab(pill.id as SubTabType)}
+                      className={cn(
+                        "px-4 py-2 rounded-full text-xs font-semibold font-rethink transition-all duration-200",
+                        isActive
+                          ? "bg-white border border-stone-200 shadow-sm text-stone-900 font-bold"
+                          : "text-stone-400 hover:text-stone-600 px-4 py-2"
+                      )}
+                    >
+                      {pill.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SUB-TAB 1: NEW SUBMISSIONS */}
+            {activeSubTab === "new" && (
+              submissionsState === "has_items" ? (
+                /* Card List State */
+                <div className="space-y-6">
+                  {[1, 2].map((id) => (
+                    <div
+                      key={id}
+                      className="bg-white border border-stone-200 rounded-2xl p-6 flex gap-6 shadow-sm relative hover:border-stone-300 transition-colors"
+                    >
+                      <VideoThumbnail />
+                      <div className="flex-1 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="font-rethink font-bold text-sm text-stone-900">@thesheke_</span>
+                            <CreatorAvatar seed={`thesheke_${id}`} />
+                          </div>
+                          <p className="font-rethink text-xs text-stone-500 leading-relaxed pr-8">
+                            New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between pt-4">
+                          <span className="text-[11px] font-semibold text-stone-400">
+                            00:34sec <span className="mx-1.5">•</span> Uploaded 1h ago
+                          </span>
+                          <div className="flex gap-2">
+                            <button className="px-5 py-2.5 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 text-xs font-bold rounded-full shadow-sm transition-colors">
+                              Approve
+                            </button>
+                            <button className="px-5 py-2.5 bg-white border border-stone-200 hover:bg-stone-50 text-stone-950 text-xs font-bold rounded-full shadow-sm transition-colors">
+                              Feedback & Reject
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                /* Empty Mailbox State */
+                <div className="text-center py-16 space-y-6 flex flex-col items-center justify-center">
+                  <div className="w-48 h-48 flex items-center justify-center">
+                    <Image src={illustration1} alt="Nothing waiting" width={160} height={160} />
+                  </div>
+                  <div className="space-y-2 max-w-sm mx-auto">
+                    <h3 className="font-rethink font-bold text-lg text-stone-900">Nothing waiting on you</h3>
+                    <p className="font-rethink text-xs text-stone-500 leading-relaxed">
+                      New content will show up here as creators upload for review.
+                    </p>
+                  </div>
+                </div>
+              )
+            )}
+
+            {/* SUB-TAB 2: AWAITING POST */}
+            {activeSubTab === "awaiting" && (
+              <div className="space-y-6">
+                {[
+                  { username: "@iam_kaycee", id: 1 },
+                  { username: "@thesheke_", id: 2 }
+                ].map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white border border-stone-200 rounded-2xl p-6 flex gap-6 shadow-sm hover:border-stone-300 transition-colors"
+                  >
+                    <VideoThumbnail />
+                    <div className="flex-1 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-rethink font-bold text-sm text-stone-900">{item.username}</span>
+                          <CreatorAvatar seed={item.username} />
+                        </div>
+                        <p className="font-rethink text-xs text-stone-500 leading-relaxed pr-8">
+                          New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between pt-4">
+                        <span className="text-[11px] font-semibold text-stone-400">
+                          00:34sec <span className="mx-1.5">•</span> Uploaded 1h ago
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* SUB-TAB 3: POSTED */}
+            {activeSubTab === "posted" && (
+              <div className="space-y-6">
+                {/* Creator Card 1 */}
+                <div className="bg-white border border-stone-200 rounded-2xl p-6 flex gap-6 shadow-sm hover:border-stone-300 transition-colors">
+                  <VideoThumbnail />
+                  <div className="flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-rethink font-bold text-sm text-stone-900">@thesheke_</span>
+                        <CreatorAvatar seed="thesheke" />
+                      </div>
+                      <p className="font-rethink text-xs text-stone-500 leading-relaxed pr-8">
+                        New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral
+                      </p>
+                      <span className="text-[11px] font-semibold text-stone-400 block pt-1">
+                        00:34sec
+                      </span>
+                    </div>
+
+                    {/* Segmented control for social platforms */}
+                    <div className="pt-2">
+                      <div className="flex border-b border-stone-100 pb-2">
+                        {(["Tiktok", "Instagram", "X (Twitter)"] as SocialPlatformType[]).map((platform) => (
+                          <button
+                            key={platform}
+                            onClick={() => setSelectedPlatform1(platform)}
+                            className={cn(
+                              "text-xs font-semibold font-rethink mr-6 pb-2 border-b-2 transition-all",
+                              selectedPlatform1 === platform
+                                ? "border-stone-900 text-stone-900 font-bold"
+                                : "border-transparent text-stone-400 hover:text-stone-600"
+                            )}
+                          >
+                            {platform}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Statistics Row for Platform 1 */}
+                      <div className="flex items-center justify-between pt-3">
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Views</span>
+                            <span className="text-xs font-bold text-stone-800 mt-0.5 block">18.4K</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Likes</span>
+                            <span className="text-xs font-bold text-stone-800 mt-0.5 block">2.1K</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Comments</span>
+                            <span className="text-xs font-bold text-stone-800 mt-0.5 block">198</span>
+                          </div>
+                        </div>
+                        <button className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                          View post <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Creator Card 2 */}
+                <div className="bg-white border border-stone-200 rounded-2xl p-6 flex gap-6 shadow-sm hover:border-stone-300 transition-colors">
+                  <VideoThumbnail />
+                  <div className="flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-rethink font-bold text-sm text-stone-900">@thesheke_</span>
+                        <CreatorAvatar seed="sheke2" />
+                      </div>
+                      <p className="font-rethink text-xs text-stone-500 leading-relaxed pr-8">
+                        New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral
+                      </p>
+                      <span className="text-[11px] font-semibold text-stone-400 block pt-1">
+                        00:34sec
+                      </span>
+                    </div>
+
+                    {/* Segmented control for social platforms */}
+                    <div className="pt-2">
+                      <div className="flex border-b border-stone-100 pb-2">
+                        {(["Tiktok", "Instagram"] as SocialPlatformType[]).map((platform) => (
+                          <button
+                            key={platform}
+                            onClick={() => setSelectedPlatform2(platform)}
+                            className={cn(
+                              "text-xs font-semibold font-rethink mr-6 pb-2 border-b-2 transition-all",
+                              selectedPlatform2 === platform
+                                ? "border-stone-900 text-stone-900 font-bold"
+                                : "border-transparent text-stone-400 hover:text-stone-600"
+                            )}
+                          >
+                            {platform}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Statistics Row for Platform 2 */}
+                      <div className="flex items-center justify-between pt-3">
+                        <div className="flex items-center gap-6">
+                          <div>
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Views</span>
+                            <span className="text-xs font-bold text-stone-800 mt-0.5 block">18.4K</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Likes</span>
+                            <span className="text-xs font-bold text-stone-800 mt-0.5 block">2.1K</span>
+                          </div>
+                          <div>
+                            <span className="text-[10px] font-bold text-stone-400 block uppercase tracking-wider">Comments</span>
+                            <span className="text-xs font-bold text-stone-800 mt-0.5 block">198</span>
+                          </div>
+                        </div>
+                        <button className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                          View post <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SUB-TAB 4: REJECTED */}
+            {activeSubTab === "rejected" && (
+              <div className="space-y-6">
+                {[
+                  {
+                    username: "@iam_kaycee",
+                    id: 1,
+                    feedback: "Missed the CTA — please mention the streaming link"
+                  },
+                  {
+                    username: "@iam_kaycee",
+                    id: 2,
+                    feedback: "Did not follow the brief"
+                  }
+                ].map((item) => (
+                  <div
+                    key={item.id}
+                    className="bg-white border border-stone-200 rounded-2xl p-6 flex gap-6 shadow-sm hover:border-stone-300 transition-colors"
+                  >
+                    <VideoThumbnail />
+                    <div className="flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-rethink font-bold text-sm text-stone-900">{item.username}</span>
+                          <CreatorAvatar seed={item.username} />
+                        </div>
+                        <p className="font-rethink text-xs text-stone-500 leading-relaxed pr-8">
+                          New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral
+                        </p>
+                        <span className="text-[11px] font-semibold text-red-650 block pt-1">
+                          Rejected 2h ago
+                        </span>
+                      </div>
+
+                      {/* Feedback Comment box */}
+                      <div className="bg-stone-50 border border-stone-100 rounded-xl p-3.5 flex items-start gap-2.5">
+                        <MessageSquare className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs font-medium text-stone-650 italic leading-relaxed">
+                          "{item.feedback}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ================= TAB 3: PAYOUTS ================= */}
+        {activeTab === "Payouts" && (
+          <div className="max-w-xl mx-auto w-full space-y-6 pb-10">
+            <h3 className="font-rethink font-bold text-xl text-stone-900">Payouts Summary</h3>
+            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-12 text-center text-stone-500">
+              <CreditCard className="w-10 h-10 mx-auto text-stone-400 mb-3" />
+              <p className="text-sm font-semibold">Escrow balance and payments logs will record here.</p>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

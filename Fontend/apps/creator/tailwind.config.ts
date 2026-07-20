@@ -25,6 +25,12 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        rethink: ["var(--font-rethink)", "sans-serif"],
+        inter: ["var(--font-inter)", "sans-serif"],
+        raleway: ["var(--font-raleway)", "sans-serif"],
+        motterdam: ["var(--font-motterdam)", "cursive"],
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],

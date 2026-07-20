@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 interface User {
   id: string;
@@ -25,7 +26,7 @@ export default function AdminDashboard() {
             <h1 className="text-xl font-bold text-gray-900">EasilyPromote Admin</h1>
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">{user?.name || "Admin"}</span>
-              <a href="/login" className="text-sm text-blue-600 hover:underline">Login</a>
+              <Link href="/login" className="text-sm text-blue-600 hover:underline">Login</Link>
             </div>
           </div>
         </div>

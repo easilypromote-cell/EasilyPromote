@@ -1,56 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { NavBar } from "@ep/ui/components/nav-bar";
+import { EmptyState } from "../components/empty-state";
+import { ActiveDashboard } from "../components/active-dashboard";
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+function BrandDashboardContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const stateParam = searchParams.get("state");
+
+  const [activeTab, setActiveTab] = useState<"home" | "wallet">("home");
+  const [dashboardState, setDashboardState] = useState<"empty" | "active">("empty");
+  const [showAlert, setShowAlert] = useState(true);
+
+  // Sync dashboard state with query parameters
+  useEffect(() => {
+    if (stateParam === "active") {
+      setDashboardState("active");
+    }
+  }, [stateParam]);
+
+  const handleCreateCampaign = () => {
+    router.push("/create-campaign");
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
+      {/* Floating State Switcher for review */}
+      <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold border border-stone-800">
+        <span>State: {dashboardState === "empty" ? "Empty State" : "Active Dashboard"}</span>
+        <button
+          onClick={() => setDashboardState(prev => (prev === "empty" ? "active" : "empty"))}
+          className="bg-[#FEB604] text-stone-900 px-3 py-1 rounded-full hover:bg-[#FEB604]/90 transition-colors"
+        >
+          Toggle Screen
+        </button>
+      </div>
+
+      {/* Navigation Bar */}
+      <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName="Acme Inc." />
+
+      {activeTab === "home" ? (
+        dashboardState === "empty" ? (
+          <EmptyState onCreateCampaign={handleCreateCampaign} />
+        ) : (
+          <ActiveDashboard
+            onCreateCampaign={handleCreateCampaign}
+            showAlert={showAlert}
+            onCloseAlert={() => setShowAlert(false)}
+          />
+        )
+      ) : (
+        /* Wallet Tab Placeholder View */
+        <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto px-6 py-12">
+          <div className="text-center max-w-md bg-white border border-stone-200 rounded-2xl p-8 shadow-sm">
+            <h2 className="text-2xl font-bold mb-3">Wallet & Billing</h2>
+            <p className="text-stone-500 mb-6">Manage your escrow transactions, campaign budgets, and wallet status.</p>
+            <div className="text-3xl font-bold text-stone-900 mb-2">₦0.00</div>
+            <span className="text-xs font-semibold px-2.5 py-1 bg-stone-100 rounded-full text-stone-600">Balance Locked</span>
+          </div>
+        </main>
+      )}
+    </div>
+  );
 }
 
 export default function BrandDashboard() {
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("user");
-    if (stored) setUser(JSON.parse(stored));
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
-            <h1 className="text-xl font-bold text-gray-900">EasilyPromote</h1>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-600">{user?.name || "Brand User"}</span>
-              <a href="/login" className="text-sm text-blue-600 hover:underline">Login</a>
-            </div>
-          </div>
-        </div>
-      </nav>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-bold mb-6">Brand Dashboard</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <p className="text-sm text-gray-500">Active Campaigns</p>
-            <p className="text-3xl font-bold mt-1">0</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <p className="text-sm text-gray-500">Total Spent</p>
-            <p className="text-3xl font-bold mt-1">₦0</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border p-6">
-            <p className="text-sm text-gray-500">Total Views</p>
-            <p className="text-3xl font-bold mt-1">0</p>
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h3 className="text-lg font-semibold mb-4">Recent Campaigns</h3>
-          <p className="text-gray-500">No campaigns yet. Create your first campaign to get started.</p>
-        </div>
-      </main>
-    </div>
+    <Suspense fallback={<div className="min-h-screen bg-[#F5F5F4] flex items-center justify-center font-rethink text-stone-500">Loading Dashboard...</div>}>
+      <BrandDashboardContent />
+    </Suspense>
   );
 }

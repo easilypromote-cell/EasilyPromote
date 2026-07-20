@@ -10,6 +10,10 @@ const creatorRoutes = require("./routes/creators");
 const campaignRoutes = require("./routes/campaigns");
 const slotRoutes = require("./routes/slots");
 const uploadRoutes = require("./routes/upload");
+const submissionRoutes = require("./routes/submissions");
+const payoutRoutes = require("./routes/payouts");
+const notificationRoutes = require("./routes/notifications");
+const webhookRoutes = require("./routes/webhooks");
 
 const app = express();
 
@@ -29,6 +33,10 @@ app.use("/api/creators", creatorRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/slots", slotRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/submissions", submissionRoutes);
+app.use("/api/payouts", payoutRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/webhooks", webhookRoutes);
 
 app.use(errorHandler);
 

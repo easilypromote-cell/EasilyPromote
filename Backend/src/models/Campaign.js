@@ -7,36 +7,64 @@ const campaignSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
-    title: {
+    coverImageUrl: {
       type: String,
-      required: [true, "Campaign title is required"],
+      default: null,
+    },
+    name: {
+      type: String,
+      required: [true, "Campaign name is required"],
       trim: true,
-    },
-    description: {
-      type: String,
-      maxlength: 1000,
-    },
-    brief: {
-      type: String,
-      maxlength: 2000,
+      maxlength: 200,
     },
     category: {
       type: String,
       trim: true,
     },
-    cover: {
+    contentBrief: {
       type: String,
-      default: null,
+      maxlength: 2000,
+    },
+    keyMessageCta: {
+      type: String,
+      maxlength: 500,
+    },
+    whatToAvoid: {
+      type: String,
+      maxlength: 500,
+    },
+    platforms: {
+      type: [String],
+      default: [],
+    },
+    contentStyle: {
+      type: [String],
+      default: [],
+    },
+    startDate: {
+      type: Date,
+    },
+    endDate: {
+      type: Date,
     },
     targetViews: {
       type: Number,
       required: [true, "Target views is required"],
       min: 1,
     },
+    costPerView: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     budget: {
       type: Number,
-      required: [true, "Budget is required"],
+      required: true,
       min: 0,
+    },
+    platformFeePercent: {
+      type: Number,
+      default: 30,
     },
     platformFee: {
       type: Number,
@@ -46,38 +74,36 @@ const campaignSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    creatorRankRequired: {
-      type: String,
-      enum: ["rank1", "rank2", "rank3", "rank4", "rank5", "elite", null],
-      default: null,
-    },
-    startDate: {
-      type: Date,
-    },
-    endDate: {
-      type: Date,
-    },
     status: {
       type: String,
       enum: [
         "draft",
-        "pending_funding",
-        "funded",
-        "published",
+        "pending_payment",
+        "under_review",
         "live",
+        "paused",
         "completed",
-        "closed",
-        "archived",
+        "cancelled",
       ],
       default: "draft",
     },
-    escrowStatus: {
-      type: String,
-      enum: ["none", "deposited", "locked", "released", "refunded"],
-      default: "none",
+    viewsDelivered: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
 );
+
+campaignSchema.pre("save", function (next) {
+  if (this.isModified("targetViews") || this.isModified("costPerView")) {
+    this.budget = this.targetViews * this.costPerView;
+  }
+  if (this.isModified("budget") || this.isModified("platformFeePercent")) {
+    this.platformFee = this.budget * (this.platformFeePercent / 100);
+    this.creatorPool = this.budget - this.platformFee;
+  }
+  next();
+});
 
 module.exports = mongoose.model("Campaign", campaignSchema);

@@ -2,114 +2,143 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LeftPanel } from "../../components/auth/left-panel";
+import { RoleSelectStep } from "../../components/auth/role-select-step";
+import { RegisterStep } from "../../components/auth/register-step";
+import { OtpStep } from "../../components/auth/otp-step";
+import { LoginStep } from "../../components/auth/login-step";
+import { ForgotStep } from "../../components/auth/forgot-step";
+import { ResetPasswordStep } from "../../components/auth/reset-password-step";
+import type { OnboardingStep, UserRole, AuthFormState } from "../../components/auth/types";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isSignup, setIsSignup] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<OnboardingStep>("role-select");
+  const [role, setRole] = useState<UserRole>("business");
+  const [postOtpTarget, setPostOtpTarget] = useState<"dashboard" | "reset-password">("dashboard");
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const [form, setForm] = useState<AuthFormState>({
+    businessName: "",
+    industry: "Technology",
+    email: "",
+    phone: "",
+    password: "",
+    showPassword: false,
+    agreed: true,
+    otpValues: ["1", "2", "2", "2", "5", ""],
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-    try {
-      const endpoint = isSignup ? "/auth/register" : "/auth/login";
-      const body = isSignup
-        ? { name, email, password, role: "business" }
-        : { email, password };
+  const setField = <K extends keyof AuthFormState>(key: K, value: AuthFormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
-      const res = await fetch(`${API_URL}${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+  const handleOtpChange = (index: number, value: string) => {
+    const numericVal = value.replace(/\D/g, "").slice(-1);
+    const newOtp = [...form.otpValues];
+    newOtp[index] = numericVal;
+    setField("otpValues", newOtp);
+  };
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
-
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      router.push("/");
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setLoading(false);
+  const handleRoleContinue = () => {
+    if (role === "business") {
+      setStep("register");
+    } else {
+      alert("Creator flows are currently in beta. Redirecting to Business Registration...");
+      setStep("register");
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-sm border p-8">
-        <h1 className="text-2xl font-bold text-center mb-2">EasilyPromote</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
-          {isSignup ? "Create your brand account" : "Sign in to your brand account"}
-        </p>
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.agreed) return;
+    setPostOtpTarget("dashboard");
+    setStep("otp");
+  };
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md p-3 mb-4">
-            {error}
-          </div>
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (postOtpTarget === "reset-password") {
+      setStep("reset-password");
+    } else {
+      localStorage.setItem("user_authenticated", "true");
+      localStorage.setItem("user_business_name", form.businessName || "Acme Inc.");
+      router.push("/?state=active");
+    }
+  };
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    localStorage.setItem("user_authenticated", "true");
+    localStorage.setItem("user_business_name", "Acme Inc.");
+    router.push("/?state=active");
+  };
+
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert(`Reset code sent successfully to ${form.email}`);
+    setPostOtpTarget("reset-password");
+    setStep("otp");
+  };
+
+  const handleResetPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) return;
+    alert("Password reset successful!");
+    setStep("login");
+  };
+
+  const actions = { setField, goToStep: setStep };
+
+  return (
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-12 overflow-hidden bg-white">
+      <LeftPanel />
+
+      <div className="col-span-1 md:col-span-7 flex items-center justify-center p-8 md:p-16 overflow-y-auto h-screen bg-white">
+        {step === "role-select" && (
+          <RoleSelectStep role={role} onSelectRole={setRole} onContinue={handleRoleContinue} />
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignup && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
-          >
-            {loading ? "Loading..." : isSignup ? "Sign Up" : "Sign In"}
-          </button>
-        </form>
+        {step === "register" && (
+          <RegisterStep form={form} actions={actions} onSubmit={handleRegister} />
+        )}
 
-        <p className="text-sm text-center text-gray-500 mt-4">
-          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button
-            onClick={() => { setIsSignup(!isSignup); setError(""); }}
-            className="text-blue-600 hover:underline"
-          >
-            {isSignup ? "Sign In" : "Sign Up"}
-          </button>
-        </p>
+        {step === "otp" && (
+          <OtpStep
+            email={form.email}
+            otpValues={form.otpValues}
+            onOtpChange={handleOtpChange}
+            onSubmit={handleVerifyOtp}
+          />
+        )}
+
+        {step === "login" && (
+          <LoginStep form={form} actions={actions} onSubmit={handleLogin} />
+        )}
+
+        {step === "forgot" && (
+          <ForgotStep
+            email={form.email}
+            setEmail={(v) => setField("email", v)}
+            onSubmit={handleForgotPassword}
+            actions={actions}
+          />
+        )}
+
+        {step === "reset-password" && (
+          <ResetPasswordStep
+            newPassword={newPassword}
+            confirmPassword={confirmPassword}
+            showPassword={form.showPassword}
+            setNewPassword={setNewPassword}
+            setConfirmPassword={setConfirmPassword}
+            setShowPassword={(v) => setField("showPassword", v)}
+            onSubmit={handleResetPassword}
+            actions={actions}
+          />
+        )}
       </div>
     </div>
   );

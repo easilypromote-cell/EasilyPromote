@@ -4,6 +4,7 @@ const User = require("../models/User");
 const BusinessProfile = require("../models/BusinessProfile");
 const CreatorProfile = require("../models/CreatorProfile");
 const { generateToken, generateRefreshToken, verifyToken } = require("../utils/jwt");
+const { protect } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -114,6 +115,23 @@ router.post("/refresh", async (req, res, next) => {
     res.json({ token, refreshToken: newRefreshToken });
   } catch (error) {
     return res.status(401).json({ error: "Invalid refresh token" });
+  }
+});
+
+router.get("/me", protect, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      walletBalance: user.walletBalance,
+    });
+  } catch (error) {
+    next(error);
   }
 });
 
