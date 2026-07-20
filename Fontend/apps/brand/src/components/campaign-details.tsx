@@ -23,6 +23,7 @@ import { cn } from "@ep/ui/lib/utils";
 import illustration1 from "@ep/ui/assets/illustrations/illustration1.svg"; // Yellow Mailbox
 import illustration3 from "@ep/ui/assets/illustrations/illustration3.svg"; // Mag glass observer
 import illustration4 from "@ep/ui/assets/illustrations/illustration4.svg"; // Creator at desk
+import illustration7 from "@ep/ui/assets/illustrations/illustration7.svg"; // Nothing to show yet
 
 interface CampaignDetailsProps {
   onClose: () => void;
@@ -32,6 +33,7 @@ type TabType = "Overview" | "Submission" | "Payouts";
 type SubTabType = "new" | "awaiting" | "posted" | "rejected";
 type StatusType = "under_review" | "completed" | "cancelled";
 type SubmissionsStateType = "has_items" | "empty";
+type PayoutsStateType = "populated" | "empty";
 type SocialPlatformType = "Tiktok" | "Instagram" | "X (Twitter)";
 
 // Clean Selfie video component mockup
@@ -69,6 +71,7 @@ export function CampaignDetails({ onClose }: CampaignDetailsProps) {
   // Interactive prototype preview controls (left sidebar)
   const [currentStatus, setCurrentStatus] = useState<StatusType>("under_review");
   const [submissionsState, setSubmissionsState] = useState<SubmissionsStateType>("has_items");
+  const [payoutsState, setPayoutsState] = useState<PayoutsStateType>("populated");
   
   // Platform statistics segmented controls state
   const [selectedPlatform1, setSelectedPlatform1] = useState<SocialPlatformType>("Tiktok");
@@ -158,6 +161,27 @@ export function CampaignDetails({ onClose }: CampaignDetailsProps) {
                   )}
                 >
                   {sb === "has_items" ? "Show List" : "Nothing Waiting"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Payouts list empty toggle */}
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-stone-500">Payouts State</label>
+            <div className="grid grid-cols-2 gap-1">
+              {(["populated", "empty"] as PayoutsStateType[]).map((ps) => (
+                <button
+                  key={ps}
+                  onClick={() => setPayoutsState(ps)}
+                  className={cn(
+                    "text-[9px] py-1 border font-semibold rounded-md transition-colors capitalize",
+                    payoutsState === ps
+                      ? "bg-stone-900 border-stone-900 text-white"
+                      : "bg-white border-stone-200 text-stone-600 hover:bg-stone-50"
+                  )}
+                >
+                  {ps === "populated" ? "Populated" : "Empty"}
                 </button>
               ))}
             </div>
@@ -648,12 +672,100 @@ export function CampaignDetails({ onClose }: CampaignDetailsProps) {
 
         {/* ================= TAB 3: PAYOUTS ================= */}
         {activeTab === "Payouts" && (
-          <div className="max-w-xl mx-auto w-full space-y-6 pb-10">
-            <h3 className="font-rethink font-bold text-xl text-stone-900">Payouts Summary</h3>
-            <div className="bg-stone-50 border border-stone-200 rounded-2xl p-12 text-center text-stone-500">
-              <CreditCard className="w-10 h-10 mx-auto text-stone-400 mb-3" />
-              <p className="text-sm font-semibold">Escrow balance and payments logs will record here.</p>
+          <div className="max-w-4xl mx-auto w-full space-y-10 pb-10">
+            {/* Header Title */}
+            <div className="text-center">
+              <h2 className="font-rethink font-bold text-xl text-stone-900">Launch my new Afrobeats single</h2>
             </div>
+
+            {/* Stats Cards Row */}
+            <div className="grid grid-cols-5 gap-4">
+              <div className="bg-white border border-stone-100 shadow-sm rounded-xl p-5 space-y-3">
+                <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Total escrowed</span>
+                <span className="font-rethink font-bold text-xl text-stone-900 block">{payoutsState === "populated" ? "₦385,000" : "₦0"}</span>
+              </div>
+              <div className="bg-white border border-stone-100 shadow-sm rounded-xl p-5 space-y-3">
+                <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Creator pool</span>
+                <span className="font-rethink font-bold text-xl text-stone-900 block">{payoutsState === "populated" ? "₦269,500" : "₦0"}</span>
+              </div>
+              <div className="bg-white border border-stone-100 shadow-sm rounded-xl p-5 space-y-3">
+                <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Released</span>
+                <span className="font-rethink font-bold text-xl text-stone-900 block">{payoutsState === "populated" ? "₦122,400" : "₦0"}</span>
+              </div>
+              <div className="bg-white border border-stone-100 shadow-sm rounded-xl p-5 space-y-3">
+                <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Pending in escrow</span>
+                <span className="font-rethink font-bold text-xl text-stone-900 block">{payoutsState === "populated" ? "₦140,600" : "₦0"}</span>
+              </div>
+              <div className="bg-white border border-stone-100 shadow-sm rounded-xl p-5 space-y-3">
+                <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">Refundable</span>
+                <span className="font-rethink font-bold text-xl text-stone-900 block">₦0</span>
+              </div>
+            </div>
+
+            {payoutsState === "populated" ? (
+              <div className="space-y-6">
+                <p className="text-xs text-stone-500">
+                  Platform fee 30% of funded budget (₦115,500), already deducted from your total.
+                </p>
+
+                {/* Ledger Header */}
+                <div className="flex items-center justify-between pt-6 border-t border-stone-100">
+                  <h3 className="font-rethink font-bold text-lg text-stone-900">Transaction ledger</h3>
+                  <button className="flex items-center gap-2 px-4 py-2 bg-white border border-stone-200 rounded-lg text-xs font-semibold text-stone-700 hover:bg-stone-50 shadow-sm transition-colors">
+                    <FolderOpen className="w-4 h-4 text-stone-500" />
+                    Download statement
+                  </button>
+                </div>
+
+                {/* Ledger Table */}
+                <div className="w-full text-left">
+                  <div className="grid grid-cols-5 py-3 border-b border-stone-100 text-[11px] font-bold text-stone-400 uppercase tracking-wider">
+                    <div>Date</div>
+                    <div>Creator</div>
+                    <div>Views</div>
+                    <div>Amount</div>
+                    <div>Status</div>
+                  </div>
+                  <div className="divide-y divide-stone-100">
+                    <div className="grid grid-cols-5 py-4 text-sm items-center">
+                      <div className="text-stone-600">Jul 15</div>
+                      <div className="text-stone-900 font-medium">@thesheke_</div>
+                      <div className="text-stone-600">100,000</div>
+                      <div className="text-stone-900 font-bold">₦6,800</div>
+                      <div>
+                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-[#D1FAE5] text-[#059669]">Released</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-5 py-4 text-sm items-center">
+                      <div className="text-stone-600">Jul 15</div>
+                      <div className="text-stone-900 font-medium">@iam_kaycee</div>
+                      <div className="text-stone-600">100,000</div>
+                      <div className="text-stone-900 font-bold">₦6,800</div>
+                      <div>
+                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-[#D1FAE5] text-[#059669]">Released</span>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-5 py-4 text-sm items-center">
+                      <div className="text-stone-600">Jul 15</div>
+                      <div className="text-stone-400 font-medium">-</div>
+                      <div className="text-stone-400">-</div>
+                      <div className="text-stone-900 font-bold">₦385,000</div>
+                      <div>
+                        <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-bold bg-stone-100 text-stone-500">Escrow Deposit</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="pt-16 pb-12 text-center flex flex-col items-center justify-center">
+                <Image src={illustration7} alt="Empty payouts" className="w-32 h-auto mb-6" />
+                <h3 className="font-rethink font-bold text-xl text-stone-900 mb-2">Nothing to show yet</h3>
+                <p className="text-sm text-stone-500 max-w-sm mx-auto">
+                  Your first transaction will appear here once slots start delivering.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
