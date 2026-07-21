@@ -2,38 +2,115 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LeftPanel } from "@ep/ui/components/auth/left-panel";
+import { RoleSelectStep } from "@ep/ui/components/auth/role-select-step";
+import { RegisterStep } from "@ep/ui/components/auth/register-step";
+import { OtpStep } from "@ep/ui/components/auth/otp-step";
+import { LoginStep } from "@ep/ui/components/auth/login-step";
+import { ForgotStep } from "@ep/ui/components/auth/forgot-step";
+import { ResetPasswordStep } from "@ep/ui/components/auth/reset-password-step";
+import type { OnboardingStep, UserRole, AuthFormState } from "@ep/ui/components/auth/types";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [isSignup, setIsSignup] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
+  const [step, setStep] = useState<OnboardingStep>("role-select");
+  const [role, setRole] = useState<UserRole>("creator");
+  const [postOtpTarget, setPostOtpTarget] = useState<"dashboard" | "reset-password">("dashboard");
+
+  const [form, setForm] = useState<AuthFormState>({
+    businessName: "",
+    industry: "Technology",
+    email: "",
+    phone: "",
+    password: "",
+    showPassword: false,
+    agreed: true,
+    otpValues: ["", "", "", "", "", ""],
+  });
+
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const setField = <K extends keyof AuthFormState>(key: K, value: AuthFormState[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleOtpChange = (index: number, value: string) => {
+    const numericVal = value.replace(/\D/g, "").slice(-1);
+    const newOtp = [...form.otpValues];
+    newOtp[index] = numericVal;
+    setField("otpValues", newOtp);
+  };
+
+  const handleRoleContinue = () => {
+    if (role === "creator") {
+      setStep("register");
+    } else {
+      alert("Brand flows are on the brand dashboard. Redirecting...");
+      window.location.href = "http://localhost:3002/login";
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.agreed) return;
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.businessName || form.email.split("@")[0],
+          email: form.email,
+          password: form.password,
+          role: "creator",
+          username: form.email.split("@")[0],
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Registration failed");
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setPostOtpTarget("dashboard");
+      setStep("otp");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (postOtpTarget === "reset-password") {
+      setStep("reset-password");
+    } else {
+      router.push("/");
+    }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
-      const endpoint = isSignup ? "/auth/register" : "/auth/login";
-      const body = isSignup
-        ? { name, email, password, role: "creator", username }
-        : { email, password };
-
-      const res = await fetch(`${API_URL}${endpoint}`, {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ email: form.email, password: form.password }),
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong");
+      if (!res.ok) throw new Error(data.error || "Login failed");
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
@@ -45,84 +122,84 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-sm border p-8">
-        <h1 className="text-2xl font-bold text-center mb-2">EasilyPromote</h1>
-        <p className="text-sm text-gray-500 text-center mb-6">
-          {isSignup ? "Join as a creator" : "Sign in to your creator account"}
-        </p>
+  const handleForgotPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    alert(`Reset code sent successfully to ${form.email}`);
+    setPostOtpTarget("reset-password");
+    setStep("otp");
+  };
 
+  const handleResetPassword = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) return;
+    alert("Password reset successful!");
+    setStep("login");
+  };
+
+  const actions = { setField, goToStep: setStep };
+
+  return (
+    <div className="min-h-screen grid grid-cols-1 md:grid-cols-12 overflow-hidden bg-white">
+      <LeftPanel
+        title="Claim campaign slots and earn from real views"
+        description="EasilyPromote connects creators with brands. Claim slots, deliver content, and get paid for verified views."
+      />
+
+      <div className="col-span-1 md:col-span-7 flex items-center justify-center p-8 md:p-16 overflow-y-auto h-screen bg-white">
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md p-3 mb-4">
+          <div className="fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md p-3 z-50">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {isSignup && (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                <input
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </>
-          )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              className="w-full px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-gray-900 text-white py-2 rounded-md text-sm font-medium hover:bg-gray-800 disabled:opacity-50"
-          >
-            {loading ? "Loading..." : isSignup ? "Sign Up" : "Sign In"}
-          </button>
-        </form>
+        {step === "role-select" && (
+          <RoleSelectStep role={role} onSelectRole={setRole} onContinue={handleRoleContinue} />
+        )}
 
-        <p className="text-sm text-center text-gray-500 mt-4">
-          {isSignup ? "Already have an account?" : "Don't have an account?"}{" "}
-          <button
-            onClick={() => { setIsSignup(!isSignup); setError(""); }}
-            className="text-blue-600 hover:underline"
-          >
-            {isSignup ? "Sign In" : "Sign Up"}
-          </button>
-        </p>
+        {step === "register" && (
+          <RegisterStep form={form} actions={actions} onSubmit={handleRegister} />
+        )}
+
+        {step === "otp" && (
+          <OtpStep
+            email={form.email}
+            otpValues={form.otpValues}
+            onOtpChange={handleOtpChange}
+            onSubmit={handleVerifyOtp}
+          />
+        )}
+
+        {step === "login" && (
+          <LoginStep form={form} actions={actions} onSubmit={handleLogin} />
+        )}
+
+        {step === "forgot" && (
+          <ForgotStep
+            email={form.email}
+            setEmail={(v) => setField("email", v)}
+            onSubmit={handleForgotPassword}
+            actions={actions}
+          />
+        )}
+
+        {step === "reset-password" && (
+          <ResetPasswordStep
+            newPassword={newPassword}
+            confirmPassword={confirmPassword}
+            showPassword={form.showPassword}
+            setNewPassword={setNewPassword}
+            setConfirmPassword={setConfirmPassword}
+            setShowPassword={(v) => setField("showPassword", v)}
+            onSubmit={handleResetPassword}
+            actions={actions}
+          />
+        )}
+
+        {loading && (
+          <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <span className="text-sm font-semibold text-stone-500">Loading...</span>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ router.get("/campaign/:campaignId", async (req, res, next) => {
 router.get("/my", protect, async (req, res, next) => {
   try {
     const slots = await Slot.find({ creatorId: req.user._id })
-      .populate("campaignId", "title status")
+      .populate("campaignId", "name status")
       .sort({ createdAt: -1 });
     res.json(slots);
   } catch (error) {
