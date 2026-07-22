@@ -24,10 +24,19 @@
 }
 
 @layer base {
+  html {
+    font-size: 13px;
+  }
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
   }
+}
+
+[data-reveal],
+[data-reveal-left] {
+  opacity: 0;
+  transform: translateY(12px);
 }

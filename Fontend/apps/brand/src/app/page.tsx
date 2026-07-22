@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { NavBar } from "@ep/ui/components/nav-bar";
 import { EmptyState } from "../components/empty-state";
 import { ActiveDashboard } from "../components/active-dashboard";
+import { getUser, clearAuth } from "../lib/auth";
 
 function BrandDashboardContent() {
   const router = useRouter();
@@ -14,6 +15,12 @@ function BrandDashboardContent() {
   const [activeTab, setActiveTab] = useState<"home" | "wallet">("home");
   const [dashboardState, setDashboardState] = useState<"empty" | "active">("empty");
   const [showAlert, setShowAlert] = useState(true);
+  const [userName, setUserName] = useState("User");
+
+  useEffect(() => {
+    const user = getUser();
+    if (user?.name) setUserName(user.name);
+  }, []);
 
   // Sync dashboard state with query parameters
   useEffect(() => {
@@ -24,6 +31,11 @@ function BrandDashboardContent() {
 
   const handleCreateCampaign = () => {
     router.push("/create-campaign");
+  };
+
+  const handleLogout = () => {
+    clearAuth();
+    router.push("/login");
   };
 
   return (
@@ -40,7 +52,7 @@ function BrandDashboardContent() {
       </div>
 
       {/* Navigation Bar */}
-      <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName="Acme Inc." />
+      <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName={userName} onLogout={handleLogout} />
 
       {activeTab === "home" ? (
         dashboardState === "empty" ? (

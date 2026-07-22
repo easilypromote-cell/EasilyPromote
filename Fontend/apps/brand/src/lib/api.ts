@@ -26,13 +26,5 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
   return res.json();
 }
 
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
-}
-
-export function getUser(): { id: string; name: string; email: string; role: string } | null {
-  if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem("user");
-  return stored ? JSON.parse(stored) : null;
-}
+export { getToken, getUser, isAuthenticated, clearAuth } from "./auth";
+export type { User } from "./auth";

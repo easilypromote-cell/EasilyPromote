@@ -2,7 +2,7 @@ import * as React from "react";
 import Image from "next/image";
 import { TYPOGRAPHY } from "@ep/ui/lib/constants";
 import emptyHomeImg from "@ep/ui/assets/empty_home.png";
-import footerImg from "@ep/ui/assets/footer.png";
+import footerImg from "@ep/ui/assets/Fotter compressed.webp";
 
 interface EmptyStateProps {
   onCreateCampaign: () => void;

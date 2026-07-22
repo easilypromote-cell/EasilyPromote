@@ -6,6 +6,17 @@ const config: Config = {
     "../../packages/ui/src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
+    fontSize: {
+      xs: ["0.846rem", { lineHeight: "1.15rem" }],
+      sm: ["0.923rem", { lineHeight: "1.25rem" }],
+      base: ["1rem", { lineHeight: "1.5rem" }],
+      md: ["1.077rem", { lineHeight: "1.5rem" }],
+      lg: ["1.231rem", { lineHeight: "1.75rem" }],
+      xl: ["1.462rem", { lineHeight: "2rem" }],
+      "2xl": ["1.846rem", { lineHeight: "2.25rem" }],
+      "3xl": ["2.154rem", { lineHeight: "2.5rem" }],
+      "4xl": ["2.462rem", { lineHeight: "2.75rem" }],
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",

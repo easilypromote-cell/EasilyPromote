@@ -7,7 +7,8 @@
     "./globals.css": "./src/styles/globals.css",
     "./components/*": "./src/components/*.tsx",
     "./components/auth/*": "./src/components/auth/*",
-    "./lib/*": "./src/lib/*.ts"
+    "./lib/*": "./src/lib/*.ts",
+    "./assets/*": "./src/assets/*"
   },
   "scripts": {
     "lint": "eslint src/"
