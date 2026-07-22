@@ -39,7 +39,7 @@ function BrandDashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
+    <div className="h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
       {/* Floating State Switcher for review */}
       <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold border border-stone-800">
         <span>State: {dashboardState === "empty" ? "Empty State" : "Active Dashboard"}</span>
@@ -67,7 +67,7 @@ function BrandDashboardContent() {
       ) : (
         /* Wallet Tab Placeholder View */
         <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto px-6 py-12">
-          <div className="text-center max-w-md bg-white border border-stone-200 rounded-2xl p-8 shadow-sm">
+          <div className="text-center max-w-md bg-white border border-stone-200 rounded-2xl p-8">
             <h2 className="text-2xl font-bold mb-3">Wallet & Billing</h2>
             <p className="text-stone-500 mb-6">Manage your escrow transactions, campaign budgets, and wallet status.</p>
             <div className="text-3xl font-bold text-stone-900 mb-2">₦0.00</div>

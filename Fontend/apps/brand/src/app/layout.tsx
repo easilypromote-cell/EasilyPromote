@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Rethink_Sans, Inter, Raleway, Alex_Brush } from "next/font/google";
+import { Rethink_Sans, Inter, Raleway } from "next/font/google";
+import localFont from "next/font/local";
 import { LenisProvider } from "../components/lenis-provider";
 import "./globals.css";
 
@@ -21,9 +22,8 @@ const raleway = Raleway({
   variable: "--font-raleway",
 });
 
-const motterdam = Alex_Brush({
-  subsets: ["latin"],
-  weight: ["400"],
+const motterdam = localFont({
+  src: "../../public/font/Motterdam-K74zp.ttf",
   variable: "--font-motterdam",
 });
 

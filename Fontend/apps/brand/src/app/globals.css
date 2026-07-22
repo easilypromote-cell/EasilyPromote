@@ -40,3 +40,7 @@
   opacity: 0;
   transform: translateY(12px);
 }
+
+[data-write-reveal] {
+  opacity: 0;
+}
