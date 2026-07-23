@@ -5,7 +5,9 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { NavBar } from "@ep/ui/components/nav-bar";
 import { EmptyState } from "../components/empty-state";
 import { ActiveDashboard } from "../components/active-dashboard";
+import { DraftAlertBanner } from "../components/draft-alert-banner";
 import { getUser, clearAuth } from "../lib/auth";
+import { useReveal } from "../hooks/use-reveal";
 
 function BrandDashboardContent() {
   const router = useRouter();
@@ -41,7 +43,7 @@ function BrandDashboardContent() {
   return (
     <div className="h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
       {/* Floating State Switcher for review */}
-      <div className="fixed bottom-6 right-6 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold border border-stone-800">
+      <div className="fixed bottom-6 left-6 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold border border-stone-800">
         <span>State: {dashboardState === "empty" ? "Empty State" : "Active Dashboard"}</span>
         <button
           onClick={() => setDashboardState(prev => (prev === "empty" ? "active" : "empty"))}
@@ -54,14 +56,19 @@ function BrandDashboardContent() {
       {/* Navigation Bar */}
       <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName={userName} onLogout={handleLogout} />
 
+      {/* Draft Alert Banner - Fixed bottom right */}
+      {showAlert && activeTab === "home" && dashboardState === "active" && (
+        <div className="fixed bottom-6 right-6 z-50">
+          <DraftAlertBanner onClose={() => setShowAlert(false)} />
+        </div>
+      )}
+
       {activeTab === "home" ? (
         dashboardState === "empty" ? (
           <EmptyState onCreateCampaign={handleCreateCampaign} />
         ) : (
           <ActiveDashboard
             onCreateCampaign={handleCreateCampaign}
-            showAlert={showAlert}
-            onCloseAlert={() => setShowAlert(false)}
           />
         )
       ) : (

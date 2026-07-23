@@ -41,7 +41,7 @@ export function EmptyState({ onCreateCampaign }: EmptyStateProps) {
         <button
           data-reveal
           onClick={onCreateCampaign}
-          className="w-[300px] py-4 bg-[#FEB604] text-stone-900 font-rethink font-bold text-sm rounded-full"
+          className="w-[300px] py-4 bg-[#FEB604] text-stone-900 font-rethink font-bold text-sm rounded-full border border-stone-100"
         >
           Create Campaign
         </button>

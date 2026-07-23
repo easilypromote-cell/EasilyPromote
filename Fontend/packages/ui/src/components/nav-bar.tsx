@@ -35,16 +35,15 @@ export function NavBar({
   }, []);
 
   return (
-    <header className={cn("sticky top-0 z-40 w-full bg-stone-100", className)}>
+    <header className={cn("w-full bg-stone-100 z-40", className)}>
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Brand Logo */}
         <div className="flex items-center gap-2.5">
           <Image src={logoPrimary} alt="EasilyPromote" width={32} height={32} priority />
-          <span className={TYPOGRAPHY.brandLogo}>EasilyPromote</span>
         </div>
 
         {/* Center Pill Navigation */}
-        <nav className="bg-stone-50 p-1.5 rounded-full">
+        <nav className="bg-stone-50 p-1.5 rounded-full border border-stone-100">
           <div className="bg-stone-50 rounded-full p-1 flex items-center gap-1">
             <button
               onClick={() => onTabChange?.("home")}

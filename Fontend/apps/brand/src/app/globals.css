@@ -39,6 +39,7 @@
 [data-reveal-left] {
   opacity: 0;
   transform: translateY(12px);
+  will-change: opacity, transform;
 }
 
 [data-write-reveal] {
