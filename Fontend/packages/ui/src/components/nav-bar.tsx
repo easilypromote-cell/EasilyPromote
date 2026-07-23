@@ -7,6 +7,7 @@ export interface NavBarProps {
   activeTab: "home" | "wallet";
   onTabChange?: (tab: "home" | "wallet") => void;
   userName?: string;
+  onLogout?: () => void;
   className?: string;
 }
 
@@ -14,6 +15,7 @@ export function NavBar({
   activeTab,
   onTabChange,
   userName = "Acme Inc.",
+  onLogout,
   className,
 }: NavBarProps) {
   return (
@@ -58,7 +60,10 @@ export function NavBar({
         </nav>
 
         {/* User Profile */}
-        <div className="flex items-center gap-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-full pl-2 pr-4 py-1.5 cursor-pointer transition-colors">
+        <div
+          onClick={onLogout}
+          className="flex items-center gap-3 bg-stone-50 hover:bg-stone-100 border border-stone-200 rounded-full pl-2 pr-4 py-1.5 cursor-pointer transition-colors"
+        >
           <div className="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center overflow-hidden border border-stone-300">
             {/* Generic placeholder avatar or user initial */}
             <span className="text-xs font-semibold text-stone-600">A</span>

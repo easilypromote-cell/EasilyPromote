@@ -5,9 +5,17 @@ interface LoginStepProps {
   form: Pick<AuthFormState, "email" | "password" | "showPassword">;
   actions: AuthFormActions;
   onSubmit: (e: React.FormEvent) => void;
+  onForgotPassword?: () => void;
+  onCreateAccount?: () => void;
 }
 
-export function LoginStep({ form, actions, onSubmit }: LoginStepProps) {
+export function LoginStep({
+  form,
+  actions,
+  onSubmit,
+  onForgotPassword,
+  onCreateAccount,
+}: LoginStepProps) {
   return (
     <div className="w-full max-w-[480px] space-y-8">
       <div className="space-y-2 text-center">
@@ -59,7 +67,7 @@ export function LoginStep({ form, actions, onSubmit }: LoginStepProps) {
           </div>
           <button
             type="button"
-            onClick={() => actions.goToStep("forgot")}
+            onClick={onForgotPassword ?? (() => actions.goToStep("forgot"))}
             className="text-xs font-bold text-stone-900 hover:underline block pt-1 font-rethink"
           >
             Forgot password?
@@ -78,7 +86,8 @@ export function LoginStep({ form, actions, onSubmit }: LoginStepProps) {
         <span className="text-xs font-semibold text-stone-400 font-rethink">
           New to EasilyPromote?{" "}
           <button
-            onClick={() => actions.goToStep("role-select")}
+            type="button"
+            onClick={onCreateAccount ?? (() => actions.goToStep("role-select"))}
             className="text-stone-900 hover:underline font-bold"
           >
             Create an account
