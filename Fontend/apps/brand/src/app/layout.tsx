@@ -35,7 +35,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${rethinkSans.variable} ${inter.variable} ${raleway.variable} ${motterdam.variable} min-h-screen antialiased bg-stone-50 text-stone-900`}>
+      <body className={`${rethinkSans.variable} ${inter.variable} ${raleway.variable} ${motterdam.variable} min-h-screen antialiased bg-stone-50 text-stone-900 font-rethink`}>
         <LenisProvider>{children}</LenisProvider>
       </body>
     </html>

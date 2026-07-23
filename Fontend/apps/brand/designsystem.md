@@ -11,15 +11,15 @@
 | Token | Hex | Usage |
 |-------|-----|-------|
 | stone-50 | `#FAFAF9` | Background |
-| stone-100 | `#F5F5F4` | Right panel bg, disabled button bg |
-| stone-200 | `#E7E5E4` | Input borders |
+| stone-100 | `#F5F5F4` | Right panel bg, disabled button bg, wizard details container, wizard info box bg, wizard left sidebar bg (as `#FBFBFA`) |
+| stone-200 | `#E7E5E4` | Input borders, upload image container bg |
 | stone-300 | `#D6D3D1` | Unchecked checkbox border, placeholder text |
-| stone-400 | `#A8A29E` | Subtitles, helper text, icons |
+| stone-400 | `#A8A29E` | Subtitles, helper text, icons, inactive step labels |
 | stone-500 | `#78716C` | Labels, descriptions |
-| stone-600 | `#57534E` | (reserved) |
+| stone-600 | `#57534E` | Pill unselected text, category tag text, upload button text |
 | stone-700 | `#44403C` | (reserved) |
-| stone-800 | `#292524` | Select element text |
-| stone-900 | `#1C1917` | Headings, body text, links |
+| stone-800 | `#292524` | Select element text, detail row values |
+| stone-900 | `#1C1917` | Headings, body text, links, active elements, selected pills |
 | stone-950 | `#0C0A09` | Checked checkbox bg |
 
 ### Brand Colors
@@ -32,8 +32,10 @@
 
 | Token | Usage |
 |-------|-------|
-| `bg-stone-100` | Right content panel background |
-| `bg-[#FBFBFA]` | OTP input background |
+| `bg-stone-100` | Right content panel background, details container, info box |
+| `bg-[#FBFBFA]` | OTP input background, wizard left sidebar |
+| `bg-[#EBF3FF]` | Warning info box background |
+| `bg-green-600` | Completed step indicator |
 | `disabled:bg-stone-100` | Disabled submit button background |
 | `disabled:text-stone-300` | Disabled submit button text |
 
@@ -43,6 +45,7 @@
 
 - Base size: 13px (1rem) — set via `html { font-size: 13px }`
 - Font family: Rethink Sans (weights: 500, 600, 700)
+- Default body font: `font-rethink` (set on `<body>` tag)
 
 ### Type Scale (REM-based, 13px base)
 
@@ -53,25 +56,26 @@
 | base | 1rem | 13px | Body text |
 | md | 1.077rem | 14px | Emphasized body |
 | lg | 1.231rem | 16px | Role card titles, OTP digits |
-| xl | 1.462rem | 19px | Section headers |
+| xl | 1.462rem | 19px | Section headers, "What happens next" heading |
 | 2xl | 1.846rem | 24px | Page titles (h1) |
 | 3xl | 2.154rem | 28px | Hero text |
 | 4xl | 2.462rem | 32px | Left panel heading |
+| `[23px]` | — | 23px | Campaign budget display |
 
 ### Font Weights
 
 | Weight | Tailwind | Usage |
 |--------|----------|-------|
-| Medium (500) | `font-medium` | Labels, inputs, subtitles, body text, role card descriptions |
-| Semibold (600) | `font-semibold` | Right-section headings (h2), role card titles |
-| Bold (700) | `font-bold` | Submit buttons, links |
+| Medium (500) | `font-medium` | Labels, inputs, subtitles, body text, role card descriptions, campaign budget, "What happens next" heading |
+| Semibold (600) | `font-semibold` | Right-section headings (h2), role card titles, wizard heading |
+| Bold (700) | `font-bold` | Submit buttons, links, step indicators |
 
 ### Letter Spacing
 
 | Pattern | Tailwind | Usage |
 |---------|----------|-------|
 | -5% | `tracking-tighter` | H2 headings |
-| -2% | `tracking-tight` | Subtitles, role card text |
+| -2% | `tracking-tight` | Subtitles, role card text, wizard text |
 | Title case | (none) | Labels (NO uppercase) |
 
 ## Buttons
@@ -85,7 +89,7 @@
 | Background | `bg-[#FEB604]` |
 | Text | `text-stone-900`, `text-sm`, `font-bold` |
 | Border radius | `rounded-full` |
-| Shadow | `shadow-sm` |
+| Border | `border border-stone-100` |
 | Font | `font-rethink` |
 | Hover | NONE |
 
@@ -97,6 +101,28 @@
 | Text | `disabled:text-stone-300` |
 | Cursor | `disabled:cursor-not-allowed` |
 
+### Secondary (Back — Step 2)
+
+| Property | Value |
+|----------|-------|
+| Width | `flex-1` |
+| Padding | `py-4` |
+| Background | `bg-white` |
+| Border | `border border-stone-200` |
+| Text | `text-stone-900`, `text-sm`, `font-semibold` |
+| Border radius | `rounded-full` |
+
+### Secondary (Back — Step 3)
+
+| Property | Value |
+|----------|-------|
+| Width | `flex-1` |
+| Padding | `py-4` |
+| Background | `bg-white` |
+| Border | `border border-stone-100` |
+| Text | `text-stone-900`, `text-sm`, `font-bold` |
+| Border radius | `rounded-full` |
+
 ### Text Link
 
 | Property | Value |
@@ -105,6 +131,16 @@
 | Weight | `font-bold` |
 | Color | `text-stone-900` |
 | Font | `font-rethink` |
+
+### Upload Image Button
+
+| Property | Value |
+|----------|-------|
+| Padding | `px-4 py-1.5` |
+| Background | `bg-white` |
+| Border | NONE |
+| Text | `text-xs font-medium text-stone-600` |
+| Border radius | `rounded-full` |
 
 ## Inputs
 
@@ -120,6 +156,19 @@
 | Placeholder | `placeholder-stone-300` |
 | Focus | `focus:outline-none focus:border-stone-400 focus:ring-0` |
 | Transition | `transition-colors` |
+| Font | `font-rethink` |
+
+### Textarea
+
+| Property | Value |
+|----------|-------|
+| Width | `w-full` |
+| Padding | `px-4 py-3` |
+| Border | `border border-stone-200` |
+| Radius | `rounded-xl` (not rounded-full) |
+| Text | `text-sm`, `font-medium` |
+| Placeholder | `placeholder-stone-300` |
+| Focus | `focus:outline-none focus:border-stone-400 focus:ring-0` |
 | Font | `font-rethink` |
 
 ### OTP Input
@@ -157,10 +206,11 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 | Pattern | Value | Usage |
 |---------|-------|-------|
 | `space-y-10` | 40px | Register-step root |
-| `space-y-8` | 32px | Login/Forgot/OTP/Reset/Role root |
-| `space-y-6` | 24px | All forms |
+| `space-y-8` | 32px | Login/Forgot/OTP/Reset/Role root, wizard step 1 fields, wizard info box items |
+| `space-y-6` | 24px | All forms, wizard step 2 fields, wizard step 3 root, wizard details container |
 | `space-y-4` | 16px | Button groups, left panel text |
-| `space-y-2` | 8px | Header groups |
+| `space-y-3` | 12px | Pill selection groups |
+| `space-y-2` | 8px | Header groups, field label-to-input |
 | `space-y-1.5` | 6px | Field groups, header to subtitle |
 
 ### Input Spacing
@@ -186,11 +236,53 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 | Left panel | `md:col-span-5`, `bg-[#FEB604]`, `p-10`, `h-screen` |
 | Right panel | `md:col-span-7`, `flex items-center justify-center`, `p-10`, `h-screen overflow-y-auto`, `bg-stone-100` |
 
+### Campaign Wizard Shell
+
+| Property | Value |
+|----------|-------|
+| Root | `flex w-full h-full overflow-hidden` |
+| Left sidebar | `w-80`, `bg-[#FBFBFA]`, `border-r border-stone-100`, `p-8`, `flex flex-col justify-between h-full` |
+| Right content | `flex-1`, `p-12`, `flex flex-col justify-between overflow-y-auto h-full` |
+| Header | `text-center mb-8 relative`, `font-semibold tracking-tight text-xl` |
+| Close button | `absolute right-0 top-1/2 -translate-y-1/2`, `text-stone-400` |
+| Form content | `w-[350px] mx-auto` |
+
+### Campaign Details Shell
+
+| Property | Value |
+|----------|-------|
+| Root | `flex w-full h-full overflow-hidden bg-stone-50` |
+| Left sidebar | `w-80`, `bg-stone-50`, `border-r border-stone-100`, `p-8`, `flex flex-col justify-between h-full` |
+| Right content | `w-[350px]`, `bg-stone-50`, `p-12`, `overflow-y-auto h-full`, `data-lenis-prevent` |
+| Tab buttons | `rounded-[40px]` (hug content) |
+| Tab active | `bg-white border border-stone-200/80 text-stone-900 font-semibold` |
+| Tab inactive | `text-stone-500 font-semibold` |
+| Tab icon active | `text-stone-900` |
+| Tab icon inactive | `text-stone-400` |
+
+### Campaign Details Badges
+
+| Property | Value |
+|----------|-------|
+| Padding | `px-2 py-0.5` |
+| Radius | `rounded-full` |
+| Background | `bg-stone-100` |
+| Text | `text-stone-600 font-medium tracking-tight text-[10px]` |
+| Font | `font-rethink` |
+
+### Campaign Details Progress
+
+| Property | Value |
+|----------|-------|
+| Progress numbers | `text-2xl font-semibold tracking-tight text-stone-900` |
+| Percentage | `text-xs font-semibold tracking-tight text-stone-700` |
+
 ### Content Widths
 
 | Component | Width |
 |-----------|-------|
 | All right-section steps | `w-[350px]` |
+| Campaign details right content | `w-[350px]` |
 | Role select continue button | `w-[300px] max-w-full` |
 | Left panel text area | `w-[430px]` |
 
@@ -216,6 +308,87 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 | Title | `font-semibold text-lg text-stone-900` |
 | Description | `text-base text-stone-500 font-medium` |
 
+### Multi-Select Pill
+
+| Property | Value |
+|----------|-------|
+| Padding | `px-4 py-2` |
+| Border | `border` |
+| Radius | `rounded-full` |
+| Text | `text-xs font-medium` |
+| Selected | `bg-stone-900 border-stone-900 text-white` |
+| Unselected | `bg-white border-stone-200 text-stone-600` |
+| Behavior | Toggle on/off (multi-select) |
+| "Other" option | Shows text input below when selected |
+
+## Wizard Step Indicators
+
+| State | Circle | Label |
+|-------|--------|-------|
+| Active | `border-stone-900 bg-stone-900 text-white` | `text-stone-900 font-medium` |
+| Completed | `border-green-600 bg-green-600 text-white` + Check icon | `text-stone-400 font-medium` |
+| Inactive | `border-stone-300 text-stone-400` | `text-stone-400 font-medium` |
+
+All indicators are clickable `<button>` elements — navigate back to that step. Cursor is `pointer` when reachable, `default` when not.
+
+## Campaign Cover (Step 1)
+
+| Property | Value |
+|----------|-------|
+| Layout | `flex items-center gap-4` (no bg/border/padding wrapper) |
+| Image container | `w-16 h-16 bg-stone-200 rounded-xl` |
+| Title | `text-xs font-bold text-stone-900` |
+
+## Campaign Budget Display (Step 1)
+
+| Property | Value |
+|----------|-------|
+| Font size | `text-[23px]` (23px) |
+| Weight | `font-medium` |
+| Color | `text-stone-900` |
+| Separator | `pt-4 border-t border-stone-100` |
+
+## Review & Launch (Step 3)
+
+| Property | Value |
+|----------|-------|
+| Image | `w-[70px] h-[70px] bg-purple-100 rounded-2xl border border-purple-200` |
+| Name | `font-semibold text-base text-stone-900` |
+| Category tag | `bg-stone-100 text-stone-600 rounded-full px-3 py-1 text-[11px] font-medium` |
+| Layout | Left-aligned (no centering) |
+| Views/Budget | `flex items-center gap-6`, `text-lg font-semibold` |
+| Details container | `bg-stone-100 rounded-[18px] p-4 space-y-6` |
+| Detail row | `flex justify-between items-center text-xs` |
+| Detail label | `font-medium text-stone-500` |
+| Detail value | `font-semibold text-stone-800` |
+
+## Confirmation Screen (Step 4)
+
+| Property | Value |
+|----------|-------|
+| Illustration | illustration3, 160x160 |
+| Heading | `font-semibold tracking-tight text-2xl` |
+| Subtitle | `text-sm text-stone-500 leading-relaxed max-w-md mx-auto` |
+| Button | `w-full py-4` (fills container), standard primary button |
+| Info box bg | `bg-stone-100` |
+| Info box radius | `rounded-[24px]` |
+| Info box padding | `p-4` |
+| Info box spacing | `space-y-8` (heading to items) |
+| "What happens next" heading | `text-[19px] font-medium tracking-tight` |
+| Info box item title | `text-xs font-medium tracking-tight text-stone-800` |
+| Info box item body | `text-xs text-stone-500 mt-1` |
+
+## Warning Info Box
+
+| Property | Value |
+|----------|-------|
+| Background | `bg-[#EBF3FF]` |
+| Border | `border border-dashed border-blue-200` |
+| Radius | `rounded-[20px]` |
+| Padding | `p-4` |
+| Layout | `flex items-center gap-4` |
+| Text | `text-xs text-stone-600 leading-normal` |
+
 ## Icons
 
 | Icon | Size | Color | Source |
@@ -223,12 +396,34 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 | Eye / EyeOff | `w-4 h-4` (16px) | `text-stone-400` | lucide-react |
 | ChevronDown | `w-4 h-4` / `w-3.5 h-3.5` | `text-stone-400` | lucide-react |
 | Check | `w-3 h-3` (12px) | `text-white` | lucide-react |
+| X (close) | `w-4 h-4` | `text-stone-400` | lucide-react |
 | Logo | 40x40 | — | next/image |
+
+## Components
+
+### ViewsSlider
+
+| Property | Value |
+|----------|-------|
+| Outer track height | `h-[30px]` |
+| Outer track bg | `bg-white` |
+| Outer track radius | `rounded-[30px]` (pill shape) |
+| Outer track border | `border border-stone-200` |
+| Inner fill bg | `bg-stone-900` |
+| Inner fill radius | `rounded-[30px]` |
+| Fill width | Grows from left to current step position |
+| Milestone dots | `rounded-full` |
+| Current dot | `w-2.5 h-2.5 bg-white` (on fill boundary) |
+| Active dot (before current) | `w-1.5 h-1.5 bg-white/80` |
+| Inactive dot | `w-1.5 h-1.5 bg-stone-300` |
+| Step labels | `text-[10px] font-medium font-rethink` below track |
+| Drawer compat | `data-vaul-no-drag` attribute to prevent drawer swipe |
+| Keyboard | Arrow keys to navigate steps |
+| Interaction | Click/drag on track, click step labels |
 
 ## Shadows
 
 | Token | Usage |
 |-------|-------|
-| `shadow-sm` | Submit buttons |
 | `shadow-xl` | Left panel photo card |
 | `shadow-inner` | Left panel decorative box |
