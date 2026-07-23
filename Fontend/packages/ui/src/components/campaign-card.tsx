@@ -89,8 +89,8 @@ export function CampaignCard({
     <div
       onClick={onClick}
       className={cn(
-        "bg-stone-50 rounded-2xl border border-stone-200 p-6 flex flex-col justify-between min-h-[300px] shadow-sm relative overflow-hidden transition-all hover:shadow-md",
-        onClick && "cursor-pointer hover:border-stone-300 hover:scale-[1.01]",
+        "bg-stone-50 rounded-2xl border border-stone-200 p-6 flex flex-col justify-between min-h-[300px] relative overflow-hidden",
+        onClick && "cursor-pointer",
         className
       )}
     >
@@ -127,7 +127,7 @@ export function CampaignCard({
             e.stopPropagation();
             if (onResume) onResume();
           }}
-          className="w-full mt-2 py-3 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 rounded-full font-rethink font-semibold text-sm transition-colors"
+          className="w-full mt-2 py-3 bg-white border border-stone-200 text-stone-900 rounded-full font-rethink font-semibold text-sm"
         >
           Resume
         </button>

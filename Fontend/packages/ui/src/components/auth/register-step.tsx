@@ -10,19 +10,19 @@ interface RegisterStepProps {
 
 export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
   return (
-    <div className="w-full max-w-[480px] space-y-6">
-      <div className="space-y-1.5 text-center">
-        <h1 className="text-2xl font-bold font-rethink text-stone-900">
+    <div className="w-[350px] space-y-10">
+      <div className="space-y-1.5">
+        <h1 data-reveal className="text-2xl font-bold font-rethink text-stone-900 tracking-tighter">
           Create your business account
         </h1>
-        <p className="text-xs text-stone-400 font-semibold font-rethink">
+        <p data-reveal className="text-xs text-stone-400 font-medium font-rethink tracking-tight">
           Fund campaigns, track delivery, and only pay for results.
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div data-reveal className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 block font-rethink">
             Business name
           </label>
           <input
@@ -31,19 +31,19 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
             placeholder="Enter Business name"
             value={form.businessName}
             onChange={(e) => actions.setField("businessName", e.target.value)}
-            className="w-full px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
+            className="w-full px-4 py-3 border border-stone-200 rounded-full text-sm font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+        <div data-reveal className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 block font-rethink">
             Industry
           </label>
           <div className="relative">
             <select
               value={form.industry}
               onChange={(e) => actions.setField("industry", e.target.value)}
-              className="w-full px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold text-stone-850 appearance-none focus:outline-none focus:border-stone-400 focus:ring-0 bg-white cursor-pointer font-rethink"
+              className="w-full px-4 py-3 border border-stone-200 rounded-full text-sm font-medium text-stone-800 appearance-none focus:outline-none focus:border-stone-400 focus:ring-0 bg-white cursor-pointer transition-colors font-rethink"
             >
               <option value="Technology">Technology</option>
               <option value="Music">Music</option>
@@ -55,8 +55,8 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+        <div data-reveal className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 block font-rethink">
             Email address
           </label>
           <input
@@ -65,17 +65,17 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
             placeholder="Enter Email address"
             value={form.email}
             onChange={(e) => actions.setField("email", e.target.value)}
-            className="w-full px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
+            className="w-full px-4 py-3 border border-stone-200 rounded-full text-sm font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
           />
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+        <div data-reveal className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 block font-rethink">
             Phone number
           </label>
           <div className="flex gap-2">
             <div className="relative flex-shrink-0">
-              <select className="px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold text-stone-850 appearance-none focus:outline-none focus:border-stone-400 focus:ring-0 bg-white cursor-pointer font-rethink">
+              <select className="px-4 py-3 border border-stone-200 rounded-full text-sm font-medium text-stone-800 appearance-none focus:outline-none focus:border-stone-400 focus:ring-0 bg-white cursor-pointer transition-colors font-rethink">
                 <option value="+234">+234</option>
                 <option value="+1">+1</option>
                 <option value="+44">+44</option>
@@ -88,13 +88,13 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
               placeholder="Enter Phone number"
               value={form.phone}
               onChange={(e) => actions.setField("phone", e.target.value)}
-              className="flex-1 px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
+              className="flex-1 px-4 py-3 border border-stone-200 rounded-full text-sm font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
             />
           </div>
         </div>
 
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+        <div data-reveal className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 block font-rethink">
             Password
           </label>
           <div className="relative">
@@ -104,59 +104,49 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
               placeholder="Enter password"
               value={form.password}
               onChange={(e) => actions.setField("password", e.target.value)}
-              className="w-full px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
+              className="w-full px-4 py-3 border border-stone-200 rounded-full text-sm font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
             />
             <button
               type="button"
               onClick={() => actions.setField("showPassword", !form.showPassword)}
-              className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 hover:text-stone-600 transition-colors"
+              className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2"
             >
               {form.showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
-          <span className="text-[10px] font-medium text-stone-400 block font-rethink">
+          <span className="text-xs font-medium text-stone-400 block font-rethink">
             Use at least 8 characters, with a number.
           </span>
         </div>
 
-        <div className="flex items-start gap-2.5 pt-1">
+        <div data-reveal className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <button
+              type="button"
+              onClick={() => actions.setField("agreed", !form.agreed)}
+              className={cn(
+                "w-4 h-4 rounded-md border flex items-center justify-center flex-shrink-0",
+                form.agreed
+                  ? "bg-stone-950 border-stone-950 text-white"
+                  : "border-stone-300 bg-white"
+              )}
+            >
+              {form.agreed && <Check className="w-3 h-3" />}
+            </button>
+            <span className="text-xs font-medium text-stone-500 font-rethink">
+              I agree to the Terms of Service and Privacy Policy
+            </span>
+          </div>
+
           <button
-            type="button"
-            onClick={() => actions.setField("agreed", !form.agreed)}
-            className={cn(
-              "w-4 h-4 rounded-md border flex items-center justify-center transition-colors flex-shrink-0 mt-0.5",
-              form.agreed
-                ? "bg-stone-950 border-stone-950 text-white"
-                : "border-stone-300 hover:border-stone-400 bg-white"
-            )}
+            type="submit"
+            disabled={!form.agreed}
+            className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 text-stone-900 disabled:text-stone-300 font-medium text-sm rounded-full shadow-sm disabled:cursor-not-allowed transition-colors font-rethink"
           >
-            {form.agreed && <Check className="w-3 h-3" />}
+            Continue
           </button>
-          <span className="text-[11px] font-semibold text-stone-500 font-rethink">
-            I agree to the Terms of Service and Privacy Policy
-          </span>
         </div>
-
-        <button
-          type="submit"
-          disabled={!form.agreed}
-          className={cn(
-            "w-full py-4 font-bold text-sm rounded-full shadow-sm transition-all font-rethink mt-2",
-            form.agreed
-              ? "bg-[#FEB604] hover:bg-[#EAA503] text-stone-900 cursor-pointer"
-              : "bg-stone-100 text-stone-300 cursor-not-allowed"
-          )}
-        >
-          Continue
-        </button>
       </form>
-
-      <button
-        onClick={() => actions.goToStep("login")}
-        className="w-full py-4 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 font-bold text-sm rounded-full shadow-sm transition-colors font-rethink"
-      >
-        Sign in
-      </button>
     </div>
   );
 }

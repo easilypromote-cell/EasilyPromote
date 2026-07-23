@@ -5,23 +5,28 @@ interface LoginStepProps {
   form: Pick<AuthFormState, "email" | "password" | "showPassword">;
   actions: AuthFormActions;
   onSubmit: (e: React.FormEvent) => void;
+  onForgotPassword?: () => void;
+  onCreateAccount?: () => void;
 }
 
-export function LoginStep({ form, actions, onSubmit }: LoginStepProps) {
+export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateAccount }: LoginStepProps) {
+  const handleForgot = onForgotPassword ?? (() => actions.goToStep("forgot"));
+  const handleCreate = onCreateAccount ?? (() => actions.goToStep("role-select"));
+
   return (
-    <div className="w-full max-w-[480px] space-y-8">
+    <div className="w-[350px] space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold font-rethink text-stone-900">
+        <h2 data-reveal className="text-2xl font-semibold font-rethink text-stone-900 tracking-tighter">
           Welcome back
-        </h1>
-        <p className="text-xs text-stone-400 font-semibold font-rethink">
+        </h2>
+        <p data-reveal className="text-xs text-stone-400 font-medium font-rethink tracking-tight">
           Sign in to manage your campaigns.
         </p>
       </div>
 
       <form onSubmit={onSubmit} className="space-y-6">
-        <div className="space-y-1.5">
-          <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+        <div data-reveal className="space-y-1.5">
+          <label className="text-xs font-medium text-stone-500 block font-rethink">
             Email address
           </label>
           <input
@@ -30,13 +35,13 @@ export function LoginStep({ form, actions, onSubmit }: LoginStepProps) {
             placeholder="Enter Email address"
             value={form.email}
             onChange={(e) => actions.setField("email", e.target.value)}
-            className="w-full px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
+            className="w-full px-4 py-3 border border-stone-200 rounded-full text-sm font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
           />
         </div>
 
-        <div className="space-y-1.5">
+        <div data-reveal className="space-y-1.5">
           <div className="flex justify-between items-center">
-            <label className="text-[11px] font-bold text-stone-500 uppercase tracking-wider block font-rethink">
+            <label className="text-xs font-medium text-stone-500 block font-rethink">
               Password
             </label>
           </div>
@@ -47,39 +52,40 @@ export function LoginStep({ form, actions, onSubmit }: LoginStepProps) {
               placeholder="Enter password"
               value={form.password}
               onChange={(e) => actions.setField("password", e.target.value)}
-              className="w-full px-4 py-3 border border-stone-200 rounded-full text-xs font-semibold placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
+              className="w-full px-4 py-3 border border-stone-200 rounded-full text-sm font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 transition-colors font-rethink"
             />
             <button
               type="button"
               onClick={() => actions.setField("showPassword", !form.showPassword)}
-              className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 hover:text-stone-600 transition-colors"
+              className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2"
             >
               {form.showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
           <button
             type="button"
-            onClick={() => actions.goToStep("forgot")}
-            className="text-xs font-bold text-stone-900 hover:underline block pt-1 font-rethink"
+            onClick={handleForgot}
+            className="text-sm font-bold text-stone-900 block pt-1 font-rethink"
           >
             Forgot password?
           </button>
         </div>
 
         <button
+          data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] hover:bg-[#EAA503] text-stone-900 font-bold text-sm rounded-full shadow-sm transition-colors font-rethink mt-2"
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-bold text-sm rounded-full shadow-sm font-rethink mt-2"
         >
           Sign in
         </button>
       </form>
 
-      <div className="text-center">
-        <span className="text-xs font-semibold text-stone-400 font-rethink">
+      <div data-reveal className="text-center">
+        <span className="text-sm font-semibold text-stone-400 font-rethink">
           New to EasilyPromote?{" "}
           <button
-            onClick={() => actions.goToStep("role-select")}
-            className="text-stone-900 hover:underline font-bold"
+            onClick={handleCreate}
+            className="text-stone-900 font-bold"
           >
             Create an account
           </button>

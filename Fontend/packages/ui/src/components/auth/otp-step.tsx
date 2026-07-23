@@ -26,18 +26,18 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit }: OtpStepProp
   };
 
   return (
-    <div className="w-full max-w-[480px] space-y-8">
+    <div className="w-[350px] space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-bold font-rethink text-stone-900">
+        <h2 data-reveal className="text-2xl font-semibold font-rethink text-stone-900 tracking-tighter">
           Check your inbox
-        </h1>
-        <p className="text-xs text-stone-400 font-semibold font-rethink">
+        </h2>
+        <p data-reveal className="text-xs text-stone-400 font-medium font-rethink tracking-tight">
           Enter the code we sent to {email || "name@business.com"}
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="space-y-8">
-        <div className="flex gap-2 justify-center">
+      <form onSubmit={onSubmit} className="space-y-6">
+        <div data-reveal className="flex gap-2 justify-center">
           {otpValues.map((val, index) => (
             <input
               key={index}
@@ -53,18 +53,19 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit }: OtpStepProp
           ))}
         </div>
 
-        <div className="text-center">
-          <span className="text-xs font-semibold text-stone-400 font-rethink">
+        <div data-reveal className="text-center">
+          <span className="text-sm font-semibold text-stone-400 font-rethink">
             Didn&apos;t get it?{" "}
-            <button type="button" className="text-stone-900 hover:underline">
+            <button type="button" className="text-stone-900">
               Resend code (0:45)
             </button>
           </span>
         </div>
 
         <button
+          data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] hover:bg-[#EAA503] text-stone-900 font-bold text-sm rounded-full shadow-sm transition-colors font-rethink"
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-bold text-sm rounded-full shadow-sm font-rethink"
         >
           Verify
         </button>
