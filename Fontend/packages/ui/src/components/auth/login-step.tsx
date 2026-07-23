@@ -84,6 +84,7 @@ export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateA
         <span className="text-sm font-semibold text-stone-400 font-rethink">
           New to EasilyPromote?{" "}
           <button
+            type="button"
             onClick={handleCreate}
             className="text-stone-900 font-bold"
           >
