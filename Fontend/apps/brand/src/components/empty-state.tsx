@@ -14,7 +14,7 @@ export function EmptyState({ onCreateCampaign, userName = "User" }: EmptyStatePr
   useReveal();
 
   return (
-    <main className="h-full flex flex-col justify-between items-center w-full px-[100px] pt-0 pb-0 relative overflow-hidden">
+    <main className="h-full flex flex-col justify-between items-center w-full px-6 md:px-[100px] pt-0 pb-0 relative overflow-hidden">
       {/* Center Content */}
       <div className="flex-1 flex flex-col items-center justify-center pb-16 text-center max-w-lg mx-auto z-10">
         {/* Polaroid Illustration */}
@@ -42,14 +42,14 @@ export function EmptyState({ onCreateCampaign, userName = "User" }: EmptyStatePr
         <button
           data-reveal
           onClick={onCreateCampaign}
-          className="w-[300px] py-4 bg-[#FEB604] text-stone-900 font-rethink font-bold text-sm rounded-full border border-stone-100"
+          className="w-full max-w-[300px] py-4 bg-[#FEB604] text-stone-900 font-rethink font-semibold text-sm rounded-full border border-stone-100"
         >
           Create Campaign
         </button>
       </div>
 
       {/* Bottom Polaroid Collage Image */}
-      <div data-reveal className="w-full mt-auto pb-0 flex justify-center -mx-[100px]">
+      <div data-reveal className="w-full mt-auto pb-0 flex justify-center -mx-6 md:-mx-[100px] hidden md:flex">
         <Image
           src={footerImg}
           alt="Creator Showcase"

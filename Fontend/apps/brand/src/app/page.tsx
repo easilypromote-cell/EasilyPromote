@@ -73,12 +73,7 @@ function BrandDashboardContent() {
     const reference = searchParams.get("reference") || searchParams.get("trxref");
     const payment = searchParams.get("payment");
     if (reference || payment === "success") {
-      let campaignId = searchParams.get("campaignId");
-      if (!campaignId && reference && reference.startsWith("ep_")) {
-        const parts = reference.split("_");
-        if (parts.length >= 2) campaignId = parts[1];
-      }
-      router.replace(`/create-campaign?payment=success${campaignId ? `&campaignId=${campaignId}` : ""}${reference ? `&reference=${reference}` : ""}`);
+      router.replace("/");
       return;
     }
 

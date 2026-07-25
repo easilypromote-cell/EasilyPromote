@@ -31,13 +31,14 @@ interface CampaignData {
 interface CampaignWizardProps {
   onClose: () => void;
   onSuccess: () => void;
+  isMobile?: boolean;
   draftId?: string;
   initialStep?: 1 | 2 | 3 | 4;
 }
 
 const PLATFORM_OPTIONS = ["TikTok", "Instagram", "X (Twitter)", "Facebook", "YouTube"];
 
-export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: CampaignWizardProps) {
+export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMobile }: CampaignWizardProps) {
   const [createStep, setCreateStep] = useState<1 | 2 | 3 | 4>(initialStep || 1);
   const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState("");
@@ -264,10 +265,56 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
     }
   };
 
+  const getStepClasses = (step: 1 | 2 | 3) => {
+    if (createStep === step) {
+      return "border-stone-900 bg-stone-900 text-white";
+    }
+    if (createStep > step) {
+      return "border-green-600 bg-green-600 text-white";
+    }
+    return "border-stone-300 text-stone-400";
+  };
+
+  const getStepLabelClasses = (step: 1 | 2 | 3) => {
+    return createStep === step ? "text-stone-900" : "text-stone-400";
+  };
+
   return (
-    <div className="flex w-full h-full overflow-hidden">
-        {/* Left Sidebar Progress Indicator */}
-        {createStep !== 4 && (
+    <div className={cn(
+      "w-full h-full overflow-hidden",
+      isMobile ? "flex flex-col" : "flex"
+    )}>
+        {/* Mobile Stepper Bar */}
+        {isMobile && createStep !== 4 && (
+          <div className="flex items-center justify-center gap-0 px-6 py-4 bg-[#FBFBFA] border-b border-stone-100 flex-shrink-0">
+            {/* Step 1 */}
+            <button
+              onClick={() => createStep >= 1 && setCreateStep(1)}
+              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold flex-shrink-0", getStepClasses(1))}
+            >
+              {createStep > 1 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "1"}
+            </button>
+            <div className={cn("flex-1 h-[1px] mx-2", createStep > 1 ? "bg-green-600" : "bg-stone-200")} />
+            {/* Step 2 */}
+            <button
+              onClick={() => createStep >= 2 && setCreateStep(2)}
+              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold flex-shrink-0", getStepClasses(2))}
+            >
+              {createStep > 2 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "2"}
+            </button>
+            <div className={cn("flex-1 h-[1px] mx-2", createStep > 2 ? "bg-green-600" : "bg-stone-200")} />
+            {/* Step 3 */}
+            <button
+              onClick={() => createStep >= 3 && setCreateStep(3)}
+              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold flex-shrink-0", getStepClasses(3))}
+            >
+              3
+            </button>
+          </div>
+        )}
+
+        {/* Desktop Left Sidebar Progress Indicator */}
+        {!isMobile && createStep !== 4 && (
           <div className="w-80 border-r border-stone-100 bg-[#FBFBFA] p-8 flex flex-col justify-between h-full">
             <div>
               <button
@@ -289,11 +336,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
                   <div
                     className={cn(
                       "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold",
-                      createStep === 1
-                        ? "border-stone-900 bg-stone-900 text-white"
-                        : createStep > 1
-                        ? "border-green-600 bg-green-600 text-white"
-                        : "border-stone-300 text-stone-400"
+                      getStepClasses(1)
                     )}
                   >
                     {createStep > 1 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "1"}
@@ -301,7 +344,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
                   <span
                     className={cn(
                       "text-sm font-medium font-rethink tracking-tight",
-                      createStep === 1 ? "text-stone-900" : "text-stone-400"
+                      getStepLabelClasses(1)
                     )}
                   >
                     Set up your campaign
@@ -319,11 +362,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
                   <div
                     className={cn(
                       "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold",
-                      createStep === 2
-                        ? "border-stone-900 bg-stone-900 text-white"
-                        : createStep > 2
-                        ? "border-green-600 bg-green-600 text-white"
-                        : "border-stone-300 text-stone-400"
+                      getStepClasses(2)
                     )}
                   >
                     {createStep > 2 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "2"}
@@ -331,7 +370,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
                   <span
                     className={cn(
                       "text-sm font-medium font-rethink tracking-tight",
-                      createStep === 2 ? "text-stone-900" : "text-stone-400"
+                      getStepLabelClasses(2)
                     )}
                   >
                     Campaign brief
@@ -349,7 +388,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
                   <div
                     className={cn(
                       "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold",
-                      createStep === 3 ? "border-stone-900 bg-stone-900 text-white" : "border-stone-300 text-stone-400"
+                      getStepClasses(3)
                     )}
                   >
                     3
@@ -357,7 +396,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
                   <span
                     className={cn(
                       "text-sm font-medium font-rethink tracking-tight",
-                      createStep === 3 ? "text-stone-900" : "text-stone-400"
+                      getStepLabelClasses(3)
                     )}
                   >
                     Review & launch
@@ -389,9 +428,12 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
         )}
 
         {/* Right Form Content */}
-        <div className="flex-1 p-12 flex flex-col justify-between overflow-y-auto h-full">
+        <div className={cn(
+          "flex-1 flex flex-col justify-between overflow-y-auto overflow-x-hidden h-full",
+          isMobile ? "p-4" : "p-12"
+        )}>
           {/* Header */}
-          {createStep !== 4 && (
+          {!isMobile && createStep !== 4 && (
               <div className="text-center mb-8 relative">
               <h3 className="font-rethink font-semibold tracking-tight text-xl text-stone-900">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
               <button onClick={onClose} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 p-1">
@@ -402,7 +444,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
 
           {/* Wizard Step 1: Set up campaign */}
           {createStep === 1 && (
-            <div data-reveal className="w-[350px] mx-auto space-y-8 flex-1">
+            <div data-reveal className={cn("space-y-8 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
               {/* Campaign Cover */}
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-stone-200 rounded-xl overflow-hidden flex items-center justify-center">
@@ -512,7 +554,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
 
           {/* Wizard Step 2: Campaign Brief */}
           {createStep === 2 && (
-            <div data-reveal className="w-[350px] mx-auto space-y-6 flex-1">
+            <div data-reveal className={cn("space-y-6 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
               {/* Platform Selection */}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-stone-500 block">Which platforms?</label>
@@ -699,7 +741,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
               <div className="flex gap-4 pt-6">
                 <button
                   onClick={handleBackStep}
-                  className="flex-1 py-4 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 font-semibold text-sm rounded-full transition-colors"
+                  className="flex-1 py-4 bg-white border border-stone-200 text-stone-900 font-semibold text-sm rounded-full"
                 >
                   Back
                 </button>
@@ -716,7 +758,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
 
           {/* Wizard Step 3: Review & Launch */}
           {createStep === 3 && (
-            <div data-reveal className="w-[350px] mx-auto space-y-6 flex-1">
+            <div data-reveal className={cn("space-y-6 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
               {/* Campaign Summary */}
               <div className="space-y-4">
                 {/* Image */}
@@ -805,7 +847,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep }: Cam
 
           {/* Wizard Step 4: Success / Confirmation Screen */}
           {createStep === 4 && (
-            <div data-reveal className="w-[350px] mx-auto text-center space-y-8 py-8 flex flex-col justify-center items-center">
+            <div data-reveal className={cn("text-center space-y-8 py-8 flex flex-col justify-center items-center", isMobile ? "w-full" : "w-[350px] mx-auto")}>
               {/* Folder Illustration */}
               <div>
                 <Image src={illustration3} alt="Success Folder" width={160} height={160} />

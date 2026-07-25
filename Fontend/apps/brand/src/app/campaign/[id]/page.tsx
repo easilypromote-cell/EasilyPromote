@@ -25,7 +25,10 @@ export default function CampaignDetailsPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
-      <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
+      {/* Background Page Layout (NavBar shown blurred underneath) */}
+      <NavBar activeTab="home" onTabChange={(tab) => router.push("/")} userName="Acme Inc." />
+
+      {/* Campaign Details Drawer Modal (Right-sliding, w-1221px, 24px border-radius) */}
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <DrawerContent className="overflow-hidden">
           <CampaignDetails campaignId={params.id as string} onClose={handleClose} />
