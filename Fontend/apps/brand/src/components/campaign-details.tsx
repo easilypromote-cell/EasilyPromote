@@ -6,10 +6,7 @@ import Image from "next/image";
 import {
   ArrowRight,
   FolderOpen,
-  FolderSync,
   MoreHorizontal,
-  Play,
-  Plus,
 } from "lucide-react";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
@@ -181,46 +178,43 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
   return (
     <div className="flex h-full bg-white">
       {/* Left sidebar – tabs */}
-      <div className="w-20 border-r border-stone-100 flex flex-col items-center py-16 gap-12 flex-shrink-0">
-        <div className="flex flex-col gap-4 items-center">
-          {(["Overview", "Submission", "Payouts"] as TabType[]).map((tab) => {
-            const isActive = activeTab === tab;
+      <div className="w-56 flex flex-col pt-28 gap-8 flex-shrink-0 bg-white">
+        <div className="flex flex-col gap-1 pl-16 pr-4">
+          {([
+            { label: "Overview",    value: "Overview"   as TabType },
+            { label: "Submissions", value: "Submission" as TabType },
+            { label: "Payouts",     value: "Payouts"    as TabType },
+          ]).map(({ label, value }) => {
+            const isActive = activeTab === value;
             return (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={value}
+                onClick={() => setActiveTab(value)}
                 className={cn(
-                  "w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200",
+                  "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium font-rethink tracking-tight transition-all duration-150 text-left",
                   isActive
-                    ? "bg-stone-900 text-white"
-                    : "text-stone-400 hover:bg-stone-100 hover:text-stone-600"
+                    ? "bg-stone-100 text-stone-900"
+                    : "text-stone-400 hover:bg-stone-50 hover:text-stone-600"
                 )}
               >
-                {tab === "Overview" && <FolderSync className="w-4 h-4" />}
-                {tab === "Submission" && <FolderOpen className="w-4 h-4" />}
-                {tab === "Payouts" && (
+                {value === "Overview" && (
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                )}
+                {value === "Submission" && <FolderOpen className="w-4 h-4 flex-shrink-0" />}
+                {value === "Payouts" && (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="1" x2="12" y2="23" />
-                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                   </svg>
                 )}
+                <span>{label}</span>
               </button>
             );
           })}
         </div>
-
-        <div className="flex flex-col gap-4 items-center mt-auto pb-4">
-          <button className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors">
-            <Plus className="w-4 h-4" />
-          </button>
-          <button className="w-10 h-10 flex items-center justify-center rounded-full border border-stone-200 text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors">
-            <MoreHorizontal className="w-4 h-4" />
-          </button>
-        </div>
       </div>
 
       {/* Right Dashboard Area */}
-      <div className="flex-1 p-12 overflow-y-auto h-full" data-lenis-prevent>
+      <div className="flex-1 pt-16 pb-12 px-10 overflow-y-auto h-full" data-lenis-prevent>
         {/* ================= TAB 1: OVERVIEW ================= */}
         {activeTab === "Overview" && (
           <div className="w-[350px] mx-auto space-y-8 pb-10">

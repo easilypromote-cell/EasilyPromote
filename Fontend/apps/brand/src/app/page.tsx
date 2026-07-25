@@ -118,7 +118,7 @@ function BrandDashboardContent() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
+    <div className="h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
       <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName={userName} onLogout={handleLogout} />
 
       {showAlert && activeTab === "home" && draftCount > 0 && (
