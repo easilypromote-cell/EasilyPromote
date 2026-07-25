@@ -23,7 +23,14 @@ function CreateCampaignContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isMobile = useIsMobile();
-  const draftId = searchParams.get("id") || undefined;
+
+  // Detect Paystack return: ?payment=success&campaignId=xxx
+  const paymentSuccess = searchParams.get("payment") === "success";
+  const paymentCampaignId = searchParams.get("campaignId") || undefined;
+
+  const draftId = paymentCampaignId || searchParams.get("id") || undefined;
+  const initialStep: 1 | 2 | 3 | 4 = paymentSuccess ? 4 : 1;
+
   const [userName, setUserName] = useState("User");
 
   useEffect(() => {
@@ -48,7 +55,7 @@ function CreateCampaignContent() {
           <h3 className="font-rethink font-semibold tracking-tight text-xl text-stone-900">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
         </header>
         <div className="flex-1 overflow-hidden">
-          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} isMobile />
+          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} initialStep={initialStep} isMobile />
         </div>
       </div>
     );
@@ -59,7 +66,7 @@ function CreateCampaignContent() {
       <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <DrawerContent className="overflow-hidden">
-          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} />
+          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} initialStep={initialStep} />
         </DrawerContent>
       </Drawer>
     </div>
