@@ -66,9 +66,11 @@
 
 | Weight | Tailwind | Usage |
 |--------|----------|-------|
-| Medium (500) | `font-medium` | Labels, inputs, subtitles, body text, role card descriptions, campaign budget, "What happens next" heading |
-| Semibold (600) | `font-semibold` | Right-section headings (h2), role card titles, wizard heading |
-| Bold (700) | `font-bold` | Submit buttons, links, step indicators |
+| Medium (500) | `font-medium` | All body text, labels, headings, inputs, subtitles, role card descriptions, campaign budget |
+| Semibold (600) | `font-semibold` | All button text, tab active states |
+
+> **Rule**: `font-medium` for all non-button text. `font-semibold` only for buttons.
+> **Font family**: `font-rethink` for all text (no `font-inter` in body content).
 
 ### Letter Spacing
 
@@ -87,7 +89,7 @@
 | Width | `w-full` (300px on role-select) |
 | Padding | `py-4` (16px vertical) |
 | Background | `bg-[#FEB604]` |
-| Text | `text-stone-900`, `text-sm`, `font-bold` |
+| Text | `text-stone-900`, `text-sm`, `font-semibold` |
 | Border radius | `rounded-full` |
 | Border | `border border-stone-100` |
 | Font | `font-rethink` |
@@ -120,7 +122,7 @@
 | Padding | `py-4` |
 | Background | `bg-white` |
 | Border | `border border-stone-100` |
-| Text | `text-stone-900`, `text-sm`, `font-bold` |
+| Text | `text-stone-900`, `text-sm`, `font-semibold` |
 | Border radius | `rounded-full` |
 
 ### Text Link
@@ -128,7 +130,7 @@
 | Property | Value |
 |----------|-------|
 | Size | `text-sm` |
-| Weight | `font-bold` |
+| Weight | `font-semibold` |
 | Color | `text-stone-900` |
 | Font | `font-rethink` |
 
@@ -179,7 +181,7 @@
 | Height | `h-14` (56px) |
 | Border | `border border-stone-200` |
 | Radius | `rounded-xl` |
-| Text | `text-lg`, `font-bold`, `text-center` |
+| Text | `text-lg`, `font-medium`, `text-center` |
 | Background | `bg-[#FBFBFA]` |
 | Focus | `focus:outline-none focus:border-stone-400 focus:ring-0` |
 | Transition | `transition-colors` |
@@ -253,7 +255,10 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 |----------|-------|
 | Root | `flex w-full h-full overflow-hidden bg-stone-50` |
 | Left sidebar | `w-80`, `bg-stone-50`, `border-r border-stone-100`, `p-8`, `flex flex-col justify-between h-full` |
-| Right content | `w-[350px]`, `bg-stone-50`, `p-12`, `overflow-y-auto h-full`, `data-lenis-prevent` |
+| Right content | `flex-1`, `bg-stone-50`, `p-12`, `overflow-y-auto h-full`, `data-lenis-prevent` |
+| Overview content width | `w-[350px]` |
+| Payouts content width | `w-[500px]` |
+| Submission content width | `w-[400px]` |
 | Tab buttons | `rounded-[40px]` (hug content) |
 | Tab active | `bg-white border border-stone-200/80 text-stone-900 font-semibold` |
 | Tab inactive | `text-stone-500 font-semibold` |
@@ -270,6 +275,26 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 | Text | `text-stone-600 font-medium tracking-tight text-[10px]` |
 | Font | `font-rethink` |
 
+### Campaign Card Status Badges
+
+All status badges: `px-2 py-0.5 rounded-full font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1`. Dot: `w-1 h-1 rounded-full`.
+
+| Status | Background | Text | Dot | Label |
+|--------|------------|------|-----|-------|
+| Under Review | `bg-[#FBDFB1]` | `text-[#693D11]` | `bg-[#693D11]` | Under Review |
+| Live Campaigns | `bg-[#CBF5E5]` | `text-[#176448]` | `bg-[#176448]` | Live Campaigns |
+| Completed | `bg-[#CBF5E5]` | `text-[#176448]` | `bg-[#176448]` | Completed |
+| Draft | `bg-stone-200` | `text-stone-600` | `bg-stone-500` | Draft |
+
+### Campaign Card Category Pills
+
+Category and delivery pills: `inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]`.
+
+| Pill | Icon | Icon Color |
+|------|------|------------|
+| Music (category) | `MusicNote01Icon` size 12 | `text-stone-500` |
+| Delivery (e.g. 7 Day Delivery) | `Clock01Icon` size 12 | `text-stone-500` |
+
 ### Campaign Details Progress
 
 | Property | Value |
@@ -277,12 +302,32 @@ Same as standard input + `appearance-none`, `bg-white`, `cursor-pointer`
 | Progress numbers | `text-2xl font-semibold tracking-tight text-stone-900` |
 | Percentage | `text-xs font-semibold tracking-tight text-stone-700` |
 
+### Campaign Details Submission Tab
+
+| Property | Value |
+|----------|-------|
+| Container width | `w-[400px]` |
+| Container spacing | `space-y-8 pb-10` |
+| No sub-navigation | Sub-tabs removed; Posted content shown directly |
+| Card container | `bg-stone-100 rounded-[16px] p-[8px]` |
+| Card layout | `flex flex-col gap-3` |
+| Card top row | `flex gap-3` (thumbnail + text side by side) |
+| Thumbnail | `w-[75px] h-[100px] rounded-xl` |
+| Platform pills | `px-3 py-1.5 rounded-full text-[10px] font-medium flex-1 justify-center text-center` |
+| Platform active | `bg-white border border-stone-200 text-stone-900` |
+| Platform inactive | `text-stone-400` |
+| Stats row | `flex items-center justify-between` |
+| Stats labels | `text-[10px] font-medium text-stone-500` |
+| Stats values | `text-xs font-medium text-stone-800` |
+
 ### Content Widths
 
 | Component | Width |
 |-----------|-------|
 | All right-section steps | `w-[350px]` |
-| Campaign details right content | `w-[350px]` |
+| Campaign details overview | `w-[350px]` |
+| Campaign details payouts | `w-[500px]` |
+| Campaign details submission | `w-[400px]` |
 | Role select continue button | `w-[300px] max-w-full` |
 | Left panel text area | `w-[430px]` |
 
@@ -337,7 +382,7 @@ All indicators are clickable `<button>` elements — navigate back to that step.
 |----------|-------|
 | Layout | `flex items-center gap-4` (no bg/border/padding wrapper) |
 | Image container | `w-16 h-16 bg-stone-200 rounded-xl` |
-| Title | `text-xs font-bold text-stone-900` |
+| Title | `text-xs font-semibold text-stone-900` |
 
 ## Campaign Budget Display (Step 1)
 

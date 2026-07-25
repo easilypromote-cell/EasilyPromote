@@ -15,7 +15,7 @@ export function DraftAlertBanner({ onClose }: DraftAlertBannerProps) {
           <Image src={illustration4} alt="Unfinished business" width={52} height={52} />
         </div>
         <div>
-          <h4 className="font-rethink font-bold text-sm text-stone-900">Unfinished business!</h4>
+          <h4 className="font-rethink font-medium text-sm text-stone-900">Unfinished business!</h4>
           <p className="font-rethink text-xs text-stone-500 mt-0.5">You have 3 draft campaigns waiting</p>
         </div>
       </div>

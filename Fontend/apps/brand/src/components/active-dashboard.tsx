@@ -1,9 +1,12 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Filter, ChevronDown } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { FilterIcon, ChevronDownIcon } from "@hugeicons/core-free-icons";
+import { Add01Icon } from "@hugeicons/core-free-icons";
 import { CampaignCard } from "@ep/ui/components/campaign-card";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
+import { MobileDrawer } from "@ep/ui/components/mobile-drawer";
 
 interface ActiveDashboardProps {
   onCreateCampaign: () => void;
@@ -38,7 +41,7 @@ export function ActiveDashboard({
   return (
     <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 z-10">
       {/* Header section */}
-      <div data-reveal className="grid grid-cols-[1fr_auto] items-center gap-4 mb-16">
+      <div className="grid grid-cols-[1fr_auto] items-center gap-4 mb-16">
         <h2 className="font-motterdam font-normal text-[23px] leading-[28px] text-stone-900 m-0">
           Welcome, Acme Inc.
         </h2>
@@ -48,15 +51,16 @@ export function ActiveDashboard({
           <div ref={filterRef} className="relative z-[100]">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 bg-white border border-stone-200 rounded-full px-4 py-2.5 cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-white border border-stone-200 rounded-full p-3 md:px-4 md:py-2.5 cursor-pointer"
             >
-              <Filter className="w-4 h-4 text-stone-500" />
-              <span className="text-sm font-medium text-stone-900">{selectedFilter}</span>
-              <ChevronDown className="w-4 h-4 text-stone-400" />
+              <HugeiconsIcon icon={FilterIcon} size={20} className="text-stone-500 md:hidden" />
+              <HugeiconsIcon icon={FilterIcon} size={16} className="text-stone-500 hidden md:block" />
+              <span className="hidden md:inline text-sm font-medium text-stone-900">{selectedFilter}</span>
+              <HugeiconsIcon icon={ChevronDownIcon} size={16} className="hidden md:block text-stone-400" />
             </button>
 
             {isFilterOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl py-1 z-50">
+              <div className="hidden md:block absolute top-full right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl py-1 z-50">
                 {FILTER_OPTIONS.map((option) => (
                   <button
                     key={option}
@@ -74,14 +78,36 @@ export function ActiveDashboard({
                 ))}
               </div>
             )}
+
+            {/* Mobile Drawer */}
+            <div className="md:hidden">
+              <MobileDrawer open={isFilterOpen} onOpenChange={(open) => setIsFilterOpen(open)}>
+                {FILTER_OPTIONS.map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => {
+                      setSelectedFilter(option);
+                      setIsFilterOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center w-full px-4 py-3 text-sm text-left",
+                      selectedFilter === option ? "font-semibold text-stone-900" : "font-medium text-stone-700"
+                    )}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </MobileDrawer>
+            </div>
           </div>
 
           {/* Create Campaign Button */}
           <button
             onClick={onCreateCampaign}
-            className="px-6 py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-bold text-sm rounded-full border border-stone-100"
+            className="flex items-center justify-center gap-2 p-3 md:px-6 md:py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-semibold text-sm rounded-full border border-stone-100"
           >
-            Create Campaign
+            <HugeiconsIcon icon={Add01Icon} size={20} className="md:hidden" />
+            <span className="hidden md:inline">Create Campaign</span>
           </button>
         </div>
       </div>
@@ -115,17 +141,6 @@ export function ActiveDashboard({
             title="Launch my new Afrobeats single"
             status="draft"
             onResume={onCreateCampaign}
-          />
-        </div>
-
-        <div data-reveal>
-          <CampaignCard
-            title="Launch my new Afrobeats single"
-            status="paused"
-            progress={68}
-            currentViews="170,000"
-            targetViews="250,000"
-            onClick={() => handleCardClick("afrobeats-single")}
           />
         </div>
       </div>

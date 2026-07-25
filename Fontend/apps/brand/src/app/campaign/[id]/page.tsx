@@ -14,7 +14,7 @@ export default function CampaignDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
+    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
       {/* Background Page Layout (NavBar shown blurred underneath) */}
       <NavBar activeTab="home" onTabChange={(tab) => router.push("/")} userName="Acme Inc." />
 
