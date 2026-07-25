@@ -12,6 +12,9 @@ function CreateCampaignContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const draftId = searchParams.get("id") || undefined;
+  const paymentSuccess = searchParams.get("payment") === "success";
+  const reference = searchParams.get("reference");
+  const campaignId = searchParams.get("campaignId");
   const [userName, setUserName] = useState("User");
 
   useEffect(() => {
@@ -19,6 +22,12 @@ function CreateCampaignContent() {
       router.push("/login");
       return;
     }
+
+    if (paymentSuccess && reference) {
+      router.replace(`/?payment=success&reference=${reference}${campaignId ? `&campaignId=${campaignId}` : ""}`);
+      return;
+    }
+
     const user = getUser();
     if (user?.name) setUserName(user.name);
   }, []);
@@ -27,7 +36,7 @@ function CreateCampaignContent() {
   const handleSuccess = () => router.push("/");
 
   return (
-    <div className="min-h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
+    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
       <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <DrawerContent className="overflow-hidden">
@@ -40,7 +49,7 @@ function CreateCampaignContent() {
 
 export default function CreateCampaignPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F5F5F4] flex items-center justify-center font-rethink text-stone-500">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-stone-50 flex items-center justify-center font-rethink text-stone-500">Loading...</div>}>
       <CreateCampaignContent />
     </Suspense>
   );

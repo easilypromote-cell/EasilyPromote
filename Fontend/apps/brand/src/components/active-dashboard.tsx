@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Filter, ChevronDown } from "lucide-react";
+import { Filter, ChevronDown, Plus } from "lucide-react";
 import { CampaignCard } from "@ep/ui/components/campaign-card";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
@@ -82,15 +82,15 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
           <div ref={filterRef} className="relative z-[100]">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center gap-2 bg-white border border-stone-200 rounded-full px-4 py-2.5 cursor-pointer"
+              className="flex items-center justify-center gap-2 bg-white border border-stone-200 rounded-full p-3 md:px-4 md:py-2.5 cursor-pointer"
             >
-              <Filter className="w-4 h-4 text-stone-500" />
-              <span className="text-sm font-medium text-stone-900">{selectedFilter}</span>
-              <ChevronDown className="w-4 h-4 text-stone-400" />
+              <Filter className="w-5 h-5 md:w-4 md:h-4 text-stone-500" />
+              <span className="hidden md:inline text-sm font-medium text-stone-900">{selectedFilter}</span>
+              <ChevronDown className="w-4 h-4 hidden md:block text-stone-400" />
             </button>
 
             {isFilterOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl py-1 z-50">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl py-1 z-50 shadow-lg">
                 {FILTER_OPTIONS.map((option) => (
                   <button
                     key={option}
@@ -112,9 +112,10 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
 
           <button
             onClick={onCreateCampaign}
-            className="px-6 py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-bold text-sm rounded-full border border-stone-100"
+            className="flex items-center justify-center gap-2 p-3 md:px-6 md:py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-semibold text-sm rounded-full border border-stone-100"
           >
-            Create Campaign
+            <Plus className="w-5 h-5 md:hidden" />
+            <span className="hidden md:inline">Create Campaign</span>
           </button>
         </div>
       </div>
