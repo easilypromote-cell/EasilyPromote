@@ -3,9 +3,58 @@ const Submission = require("../models/Submission");
 const Campaign = require("../models/Campaign");
 const Transaction = require("../models/Transaction");
 const Notification = require("../models/Notification");
+const User = require("../models/User");
+const CreatorProfile = require("../models/CreatorProfile");
 const { protect, authorizeRoles } = require("../middleware/auth");
 
 const router = express.Router();
+
+router.post("/", protect, authorizeRoles("creator"), async (req, res, next) => {
+  try {
+    const { campaignId, slotId, videoUrl, caption, durationSeconds } = req.body;
+
+    if (!campaignId) {
+      return res.status(400).json({ error: "campaignId is required" });
+    }
+
+    const campaign = await Campaign.findById(campaignId);
+    if (!campaign || campaign.status !== "live") {
+      return res.status(400).json({ error: "Campaign is not available for submissions" });
+    }
+
+    const user = await User.findById(req.user._id);
+    const profile = await CreatorProfile.findOne({ userId: req.user._id });
+    const creatorHandle = profile ? profile.username : user.name;
+
+    const submission = await Submission.create({
+      campaignId,
+      creatorId: req.user._id,
+      creatorHandle,
+      videoUrl,
+      caption,
+      durationSeconds,
+      status: "new",
+    });
+
+    if (slotId) {
+      const Slot = require("../models/Slot");
+      const slot = await Slot.findById(slotId);
+      if (slot && slot.creatorId.toString() === req.user._id.toString()) {
+        slot.status = "submitted";
+        slot.submissionUrl = videoUrl || "";
+        await slot.save();
+      }
+    }
+
+    res.status(201).json({
+      id: submission._id,
+      status: submission.status,
+      campaignId: submission.campaignId,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get("/campaign/:campaignId", protect, async (req, res, next) => {
   try {
@@ -28,6 +77,10 @@ router.get("/campaign/:campaignId", protect, async (req, res, next) => {
 
     const counts = {
       new: await Submission.countDocuments({ campaignId: req.params.campaignId, status: "new" }),
+      approved: await Submission.countDocuments({
+        campaignId: req.params.campaignId,
+        status: "awaiting_post",
+      }),
       awaitingPost: await Submission.countDocuments({
         campaignId: req.params.campaignId,
         status: "awaiting_post",
@@ -44,12 +97,21 @@ router.get("/campaign/:campaignId", protect, async (req, res, next) => {
 
     const submissionsResponse = submissions.map((s) => ({
       id: s._id,
+      creatorId: s.creatorId,
       creatorHandle: s.creatorHandle,
       videoUrl: s.videoUrl,
       caption: s.caption,
       durationSeconds: s.durationSeconds,
       uploadedAt: s.submittedAt,
       status: s.status,
+      rejectionReason: s.rejectionReason,
+      postedPlatforms: s.postedPlatforms,
+      viewsDelivered: s.viewsDelivered,
+      payoutAmount: s.payoutAmount,
+      payoutStatus: s.payoutStatus,
+      submittedAt: s.submittedAt,
+      reviewedAt: s.reviewedAt,
+      postedAt: s.postedAt,
     }));
 
     res.json({ counts, submissions: submissionsResponse });
@@ -76,6 +138,14 @@ router.patch("/:id/approve", protect, async (req, res, next) => {
     submission.status = "awaiting_post";
     submission.reviewedAt = new Date();
     await submission.save();
+
+    await Notification.create({
+      creatorId: submission.creatorId,
+      campaignId: submission.campaignId,
+      type: "content_approved",
+      title: "Content approved",
+      body: `Your submission for "${campaign.name}" has been approved. Post it on your socials now!`,
+    });
 
     res.json({ id: submission._id, status: submission.status });
   } catch (error) {
@@ -106,11 +176,11 @@ router.patch("/:id/reject", protect, async (req, res, next) => {
     await submission.save();
 
     await Notification.create({
-      businessId: req.user._id,
+      creatorId: submission.creatorId,
       campaignId: submission.campaignId,
-      type: "rejected",
-      title: "Submission rejected",
-      body: `Submission from ${submission.creatorHandle} was rejected.${reason ? ` Reason: ${reason}` : ""}`,
+      type: "content_rejected",
+      title: "Content rejected",
+      body: `Your submission for "${campaign.name}" was rejected.${reason ? ` Reason: ${reason}` : ""}`,
     });
 
     res.json({

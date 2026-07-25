@@ -14,6 +14,7 @@ interface CampaignFeedProps {
   postUrls: Record<string, string>;
   onPostUrlChange: (id: string, url: string) => void;
   onSelectCampaign: (campaign: CampaignItem) => void;
+  onBrowseCampaign?: () => void;
 }
 
 export function CampaignFeed({
@@ -27,6 +28,7 @@ export function CampaignFeed({
   postUrls,
   onPostUrlChange,
   onSelectCampaign,
+  onBrowseCampaign,
 }: CampaignFeedProps) {
   return (
     <div className="w-full flex flex-col">
@@ -90,7 +92,7 @@ export function CampaignFeed({
             </svg>
           </div>
           <button
-            onClick={() => alert("Simulating Browse Marketplace view.")}
+            onClick={() => onBrowseCampaign?.()}
             className="px-6 py-2.5 bg-white border border-stone-200 hover:bg-stone-50 text-stone-900 rounded-full font-semibold text-xs shadow-sm transition-colors"
           >
             Browse campaign

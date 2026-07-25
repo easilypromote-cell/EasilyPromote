@@ -7,9 +7,10 @@ import { useReveal } from "../hooks/use-reveal";
 
 interface EmptyStateProps {
   onCreateCampaign: () => void;
+  userName?: string;
 }
 
-export function EmptyState({ onCreateCampaign }: EmptyStateProps) {
+export function EmptyState({ onCreateCampaign, userName = "User" }: EmptyStateProps) {
   useReveal();
 
   return (
@@ -29,7 +30,7 @@ export function EmptyState({ onCreateCampaign }: EmptyStateProps) {
 
         {/* Welcome Script Header */}
         <h2 data-reveal className={`${TYPOGRAPHY.welcomeHeader} mb-0`}>
-          Welcome, Acme Inc.
+          Welcome, {userName.split(" ")[0]}
         </h2>
 
         {/* Subtitle */}

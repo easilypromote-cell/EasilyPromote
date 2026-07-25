@@ -29,6 +29,7 @@ const motterdam = Alex_Brush({
 export const metadata: Metadata = {
   title: "EasilyPromote — Creator Dashboard",
   description: "Find campaigns, earn rewards, grow your rank",
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

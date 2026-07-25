@@ -1,16 +1,16 @@
 "use client";
 
-import type { ActiveTab, DemoState, CreatorProfile } from "./types";
+import type { ActiveTab, CreatorProfile } from "./types";
 
 interface CreatorHeaderProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   profile: CreatorProfile;
-  demoState: DemoState;
+  onLogout?: () => void;
 }
 
-export function CreatorHeader({ activeTab, onTabChange, profile, demoState }: CreatorHeaderProps) {
-  const isFeed = demoState === "feed";
+export function CreatorHeader({ activeTab, onTabChange, profile, onLogout }: CreatorHeaderProps) {
+  const isOnboarding = !profile.socialAccounts.length || !profile.niches.length || !profile.country;
 
   return (
     <header className="sticky top-0 z-40 w-full bg-white/80 backdrop-blur-md border-b border-stone-200">
@@ -44,9 +44,9 @@ export function CreatorHeader({ activeTab, onTabChange, profile, demoState }: Cr
 
           <button
             onClick={() => {
-              if (isFeed) onTabChange("campaign");
+              if (!isOnboarding) onTabChange("campaign");
             }}
-            disabled={!isFeed}
+            disabled={isOnboarding}
             className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all text-xs font-semibold ${
               activeTab === "campaign"
                 ? "bg-white text-stone-950 shadow-sm border border-stone-200"
@@ -65,9 +65,9 @@ export function CreatorHeader({ activeTab, onTabChange, profile, demoState }: Cr
 
           <button
             onClick={() => {
-              if (isFeed) onTabChange("wallet");
+              if (!isOnboarding) onTabChange("wallet");
             }}
-            disabled={!isFeed}
+            disabled={isOnboarding}
             className={`flex items-center gap-2 px-5 py-2 rounded-full transition-all text-xs font-semibold ${
               activeTab === "wallet"
                 ? "bg-white text-stone-950 shadow-sm border border-stone-200"
@@ -87,26 +87,48 @@ export function CreatorHeader({ activeTab, onTabChange, profile, demoState }: Cr
           {/* Rank badge */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F5F3FF] border border-[#DDD6FE] rounded-full">
             <span className="w-2 h-2 bg-[#7C3AED] rounded-full"></span>
-            <span className="text-[11px] font-bold font-inter text-[#6D28D9]">{profile.rank}</span>
-            <span className="text-[10px] text-stone-500 font-inter">0/10,000 views</span>
+            <span className="text-[11px] font-bold font-inter text-[#6D28D9]">
+              {profile.rank === "rank1" ? "Rank #1" : profile.rank}
+            </span>
+            <span className="text-[10px] text-stone-500 font-inter">
+              {profile.creatorScore}/10,000 views
+            </span>
           </div>
 
           {/* Profile Dropdown */}
-          <div className="flex items-center gap-2.5 bg-white hover:bg-stone-50 border border-stone-200 rounded-full pl-2 pr-3 py-1 cursor-pointer transition-colors">
-            <div className="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center overflow-hidden border border-stone-300">
-              <span className="text-xs font-bold text-stone-600">
-                {profile.displayName.charAt(0).toUpperCase()}
-              </span>
+          <div className="relative group">
+            <button className="flex items-center gap-2.5 bg-white hover:bg-stone-50 border border-stone-200 rounded-full pl-2 pr-3 py-1 cursor-pointer transition-colors">
+              <div className="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center overflow-hidden border border-stone-300">
+                {profile.avatar ? (
+                  <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs font-bold text-stone-600">
+                    {profile.displayName.charAt(0).toUpperCase()}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-col text-left">
+                <span className="text-[11px] font-bold leading-tight text-stone-900">
+                  {profile.displayName}
+                </span>
+                <span className="text-[9px] text-stone-500 leading-none">@{profile.username}</span>
+              </div>
+              <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* Dropdown menu */}
+            <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-stone-200 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="w-full text-left px-4 py-2.5 text-xs font-semibold text-stone-600 hover:bg-stone-50 hover:text-stone-900 rounded-xl transition-colors"
+                >
+                  Sign out
+                </button>
+              )}
             </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[11px] font-bold leading-tight text-stone-900">
-                {profile.displayName}
-              </span>
-              <span className="text-[9px] text-stone-500 leading-none">@{profile.username}</span>
-            </div>
-            <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
           </div>
         </div>
       </div>

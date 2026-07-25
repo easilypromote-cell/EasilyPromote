@@ -1,12 +1,18 @@
 "use client";
 
-import type { CreatorProfile } from "./types";
+import type { CreatorProfile, WalletData } from "./types";
 
 interface WalletViewProps {
   profile: CreatorProfile;
+  walletData: WalletData | null;
 }
 
-export function WalletView({ profile }: WalletViewProps) {
+export function WalletView({ profile, walletData }: WalletViewProps) {
+  const balance = walletData?.balance ?? profile.lifetimeEarnings;
+  const lifetimeEarnings = walletData?.lifetimeEarnings ?? profile.lifetimeEarnings;
+  const completionRate = walletData?.completionRate ?? profile.completionRate;
+  const totalReleased = walletData?.totalReleased ?? 0;
+
   return (
     <div className="w-full max-w-lg bg-white border border-stone-200 rounded-3xl p-8 shadow-sm text-center animate-in fade-in slide-in-from-bottom-2 duration-200">
       <h2 className="text-xl font-bold mb-3">Earnings Wallet</h2>
@@ -19,7 +25,7 @@ export function WalletView({ profile }: WalletViewProps) {
           Available Balance
         </div>
         <div className="text-3xl font-bold text-stone-900 mb-2">
-          ₦{profile.lifetimeEarnings.toLocaleString()}.00
+          ₦{balance.toLocaleString()}.00
         </div>
         <span className="text-[10px] font-bold px-2.5 py-1 bg-green-50 text-green-700 border border-green-100 rounded-full">
           Ledger Reconciled
@@ -29,13 +35,20 @@ export function WalletView({ profile }: WalletViewProps) {
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-stone-50 border border-stone-200/50 rounded-2xl p-4 text-left">
           <span className="text-[10px] font-semibold text-stone-500">Lifetime Earnings</span>
-          <p className="text-lg font-bold mt-0.5">₦60,800</p>
+          <p className="text-lg font-bold mt-0.5">₦{lifetimeEarnings.toLocaleString()}</p>
         </div>
         <div className="bg-stone-50 border border-stone-200/50 rounded-2xl p-4 text-left">
           <span className="text-[10px] font-semibold text-stone-500">Completion Rate</span>
-          <p className="text-lg font-bold mt-0.5">100%</p>
+          <p className="text-lg font-bold mt-0.5">{completionRate}%</p>
         </div>
       </div>
+
+      {totalReleased > 0 && (
+        <div className="bg-stone-50 border border-stone-200/50 rounded-2xl p-4 mb-6 text-left">
+          <span className="text-[10px] font-semibold text-stone-500">Total Released</span>
+          <p className="text-lg font-bold mt-0.5">₦{totalReleased.toLocaleString()}</p>
+        </div>
+      )}
 
       <button
         onClick={() => alert("Payout request submitted. Processing batch window.")}

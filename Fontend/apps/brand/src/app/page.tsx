@@ -1,78 +1,152 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useEffect, Suspense, useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { NavBar } from "@ep/ui/components/nav-bar";
 import { EmptyState } from "../components/empty-state";
-import { ActiveDashboard } from "../components/active-dashboard";
+import { ActiveDashboard, type BrandCampaign } from "../components/active-dashboard";
 import { DraftAlertBanner } from "../components/draft-alert-banner";
-import { getUser, clearAuth } from "../lib/auth";
+import { apiRequest, getUser, clearAuth, isAuthenticated, getToken } from "../lib/api";
+import { useSocket } from "../lib/socket";
 import { useReveal } from "../hooks/use-reveal";
 
 function BrandDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const stateParam = searchParams.get("state");
 
   const [activeTab, setActiveTab] = useState<"home" | "wallet">("home");
   const [dashboardState, setDashboardState] = useState<"empty" | "active">("empty");
   const [showAlert, setShowAlert] = useState(true);
   const [userName, setUserName] = useState("User");
+  const [campaigns, setCampaigns] = useState<BrandCampaign[]>([]);
+  const [draftCount, setDraftCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const user = getUser();
-    if (user?.name) setUserName(user.name);
+  const fetchCampaigns = useCallback(async () => {
+    try {
+      const data = await apiRequest<{ campaigns: BrandCampaign[]; draftCount: number }>("/campaigns", {
+        method: "GET",
+        token: getToken() || undefined,
+      });
+
+      const list = data.campaigns || [];
+      setDraftCount(data.draftCount || 0);
+
+      const pending = list.filter(c => c.status === "pending_payment");
+      await Promise.allSettled(
+        pending.map(c =>
+          apiRequest(`/campaigns/${c.id}/payment-status`, { token: getToken() || undefined })
+        )
+      );
+
+      const refreshed = await apiRequest<{ campaigns: BrandCampaign[]; draftCount: number }>("/campaigns", {
+        method: "GET",
+        token: getToken() || undefined,
+      });
+
+      const finalList = refreshed.campaigns || list;
+      setDraftCount(refreshed.draftCount || 0);
+      setCampaigns(finalList);
+      setDashboardState(finalList.length > 0 ? "active" : "empty");
+    } catch {
+      console.log("Could not load campaigns");
+      setDashboardState("empty");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Sync dashboard state with query parameters
+  useSocket((data) => {
+    setCampaigns((prev) =>
+      prev.map((c) =>
+        c.id === data.campaignId ? { ...c, status: data.status } : c
+      )
+    );
+  });
+
   useEffect(() => {
-    if (stateParam === "active") {
-      setDashboardState("active");
+    if (!isAuthenticated()) {
+      router.push("/login");
+      return;
     }
-  }, [stateParam]);
 
-  const handleCreateCampaign = () => {
+    const reference = searchParams.get("reference") || searchParams.get("trxref");
+    const payment = searchParams.get("payment");
+    if (reference || payment === "success") {
+      let campaignId = searchParams.get("campaignId");
+      if (!campaignId && reference && reference.startsWith("ep_")) {
+        const parts = reference.split("_");
+        if (parts.length >= 2) campaignId = parts[1];
+      }
+      router.replace(`/create-campaign?payment=success${campaignId ? `&campaignId=${campaignId}` : ""}${reference ? `&reference=${reference}` : ""}`);
+      return;
+    }
+
+    const user = getUser();
+    if (user?.name) setUserName(user.name);
+
+    apiRequest<{ emailVerified: boolean }>("/auth/me", { token: getToken() || undefined })
+      .then((me) => {
+        if (!me.emailVerified) {
+          router.push("/login");
+          return;
+        }
+        const freshUser = getUser();
+        if (freshUser) {
+          freshUser.emailVerified = me.emailVerified;
+          localStorage.setItem("user", JSON.stringify(freshUser));
+        }
+        fetchCampaigns();
+      })
+      .catch(() => {
+        router.push("/login");
+      });
+  }, [searchParams, router, fetchCampaigns]);
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible" && isAuthenticated()) {
+        fetchCampaigns();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [fetchCampaigns]);
+
+  const handleCreateCampaign = useCallback(() => {
     router.push("/create-campaign");
-  };
+  }, [router]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     clearAuth();
     router.push("/login");
-  };
+  }, [router]);
 
   return (
     <div className="h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
-      {/* Floating State Switcher for review */}
-      <div className="fixed bottom-6 left-6 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-full shadow-lg flex items-center gap-3 text-xs font-semibold border border-stone-800">
-        <span>State: {dashboardState === "empty" ? "Empty State" : "Active Dashboard"}</span>
-        <button
-          onClick={() => setDashboardState(prev => (prev === "empty" ? "active" : "empty"))}
-          className="bg-[#FEB604] text-stone-900 px-3 py-1 rounded-full hover:bg-[#FEB604]/90 transition-colors"
-        >
-          Toggle Screen
-        </button>
-      </div>
-
-      {/* Navigation Bar */}
       <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName={userName} onLogout={handleLogout} />
 
-      {/* Draft Alert Banner - Fixed bottom right */}
-      {showAlert && activeTab === "home" && dashboardState === "active" && (
+      {showAlert && activeTab === "home" && draftCount > 0 && (
         <div className="fixed bottom-6 right-6 z-50">
-          <DraftAlertBanner onClose={() => setShowAlert(false)} />
+          <DraftAlertBanner draftCount={draftCount} onClose={() => setShowAlert(false)} />
         </div>
       )}
 
       {activeTab === "home" ? (
-        dashboardState === "empty" ? (
-          <EmptyState onCreateCampaign={handleCreateCampaign} />
+        loading ? (
+          <main className="flex-1 flex items-center justify-center">
+            <span className="text-sm font-semibold text-stone-500">Loading campaigns...</span>
+          </main>
+        ) : dashboardState === "empty" ? (
+          <EmptyState onCreateCampaign={handleCreateCampaign} userName={userName} />
         ) : (
           <ActiveDashboard
+            campaigns={campaigns}
             onCreateCampaign={handleCreateCampaign}
+            userName={userName}
           />
         )
       ) : (
-        /* Wallet Tab Placeholder View */
         <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto px-6 py-12">
           <div className="text-center max-w-md bg-white border border-stone-200 rounded-2xl p-8">
             <h2 className="text-2xl font-bold mb-3">Wallet & Billing</h2>

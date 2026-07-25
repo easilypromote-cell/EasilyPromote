@@ -14,18 +14,15 @@ interface ViewsSliderProps {
 
 const DEFAULT_STEPS = [100000, 500000, 1000000, 1500000, 2000000, 3000000];
 
-function formatViews(value: number): string {
-  if (value >= 1000000) {
-    return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
-  }
-  if (value >= 1000) {
-    return `${(value / 1000).toFixed(0)}K`;
-  }
-  return value.toString();
-}
-
 function formatFullNumber(value: number): string {
   return value.toLocaleString();
+}
+
+function formatCompact(value: number): string {
+  if (value >= 1000000) {
+    return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  return `${Math.round(value / 1000)}K`;
 }
 
 export function ViewsSlider({
@@ -38,85 +35,60 @@ export function ViewsSlider({
 }: ViewsSliderProps) {
   const trackRef = React.useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = React.useState(false);
-  const [activeIndex, setActiveIndex] = React.useState(() => {
-    const idx = steps.findIndex((s) => s === value);
-    return idx >= 0 ? idx : 0;
-  });
 
-  const fillPercent = (activeIndex / (steps.length - 1)) * 100;
+  const fillPercent = ((value - min) / (max - min)) * 100;
 
   const getValueFromPosition = React.useCallback(
     (clientX: number) => {
-      if (!trackRef.current) return activeIndex;
+      if (!trackRef.current) return value;
       const rect = trackRef.current.getBoundingClientRect();
       const percent = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      const nearestIndex = Math.round(percent * (steps.length - 1));
-      return nearestIndex;
+      const raw = min + percent * (max - min);
+      return Math.round(raw / 10000) * 10000;
     },
-    [activeIndex, steps.length]
-  );
-
-  const updateValue = React.useCallback(
-    (index: number) => {
-      setActiveIndex(index);
-      onChange(steps[index]);
-    },
-    [steps, onChange]
+    [min, max, value]
   );
 
   const handlePointerDown = React.useCallback(
     (e: React.PointerEvent) => {
       e.preventDefault();
       setIsDragging(true);
-      const idx = getValueFromPosition(e.clientX);
-      updateValue(idx);
+      const newVal = getValueFromPosition(e.clientX);
+      onChange(newVal);
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
     },
-    [getValueFromPosition, updateValue]
+    [getValueFromPosition, onChange]
   );
 
   const handlePointerMove = React.useCallback(
     (e: React.PointerEvent) => {
       if (!isDragging) return;
-      const idx = getValueFromPosition(e.clientX);
-      if (idx !== activeIndex) {
-        updateValue(idx);
-      }
+      const newVal = getValueFromPosition(e.clientX);
+      onChange(newVal);
     },
-    [isDragging, getValueFromPosition, activeIndex, updateValue]
+    [isDragging, getValueFromPosition, onChange]
   );
 
   const handlePointerUp = React.useCallback(() => {
     setIsDragging(false);
   }, []);
 
-  const handleKeyDown = React.useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowRight" || e.key === "ArrowUp") {
-        e.preventDefault();
-        if (activeIndex < steps.length - 1) {
-          updateValue(activeIndex + 1);
-        }
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
-        e.preventDefault();
-        if (activeIndex > 0) {
-          updateValue(activeIndex - 1);
-        }
-      }
-    },
-    [activeIndex, steps.length, updateValue]
-  );
-
   return (
     <div className={cn("relative select-none", className)} data-vaul-no-drag>
-      {/* Outer track container */}
+      {/* Value bubble */}
+      <div className="flex justify-center mb-3">
+        <div className="bg-stone-900 text-white text-sm font-bold font-rethink px-3 py-1 rounded-full">
+          {formatFullNumber(value)} views
+        </div>
+      </div>
+
+      {/* Track */}
       <div
         ref={trackRef}
-        className="relative h-[30px] bg-white rounded-[30px] border border-stone-200 cursor-pointer overflow-hidden"
+        className="relative h-[30px] bg-stone-200 rounded-full cursor-pointer overflow-hidden"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
-        onKeyDown={handleKeyDown}
         tabIndex={0}
         role="slider"
         aria-valuemin={min}
@@ -124,55 +96,57 @@ export function ViewsSlider({
         aria-valuenow={value}
         aria-valuetext={`${formatFullNumber(value)} views`}
       >
-        {/* Inner fill slider */}
+        {/* Fill */}
         <div
-          className="absolute top-0 left-0 h-full bg-stone-900 rounded-[30px] transition-all duration-300 ease-out"
+          className="absolute top-0 left-0 h-full bg-stone-900 rounded-full transition-[width] duration-75"
           style={{ width: `${fillPercent}%` }}
         />
 
         {/* Milestone dots */}
-        {steps.map((step, i) => {
-          const isActive = i <= activeIndex;
-          const isCurrent = i === activeIndex;
-          const percent = (i / (steps.length - 1)) * 100;
+        {steps.map((step) => {
+          const percent = ((step - min) / (max - min)) * 100;
+          const isPassed = step <= value;
           return (
             <div
               key={step}
-              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10"
+              className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-[5]"
               style={{ left: `${percent}%` }}
             >
               <div
                 className={cn(
-                  "rounded-full transition-all duration-300",
-                  isCurrent
-                    ? "w-2.5 h-2.5 bg-white"
-                    : isActive
-                    ? "w-1.5 h-1.5 bg-white/80"
-                    : "w-1.5 h-1.5 bg-stone-300"
+                  "w-1.5 h-1.5 rounded-full",
+                  isPassed ? "bg-white/70" : "bg-stone-300"
                 )}
               />
             </div>
           );
         })}
+
+        {/* Thumb */}
+        <div
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-5 h-5 bg-white rounded-full shadow-md border border-stone-200 transition-[left] duration-75"
+          style={{ left: `${fillPercent}%` }}
+        />
       </div>
 
-      {/* Step labels */}
-      <div className="flex justify-between mt-3 px-1">
-        {steps.map((step, i) => {
-          const isActive = i === activeIndex;
+      {/* Step labels — clickable presets */}
+      <div className="flex justify-between mt-2 px-0">
+        {steps.map((step) => {
+          const isClosest = steps.reduce((prev, curr) =>
+            Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+          ) === step;
           return (
             <button
               key={step}
-              onClick={() => updateValue(i)}
+              type="button"
+              onClick={() => onChange(step)}
               className={cn(
-                "text-[10px] font-medium font-rethink tracking-tight transition-colors",
-                isActive ? "text-stone-900" : "text-stone-400"
+                "text-[10px] font-medium font-rethink tracking-tight transition-colors hover:text-stone-700",
+                isClosest ? "text-stone-900" : "text-stone-400"
               )}
-              style={{
-                width: `${100 / steps.length}%`,
-              }}
+              style={{ width: `${100 / steps.length}%` }}
             >
-              {formatViews(step)}
+              {formatCompact(step)}
             </button>
           );
         })}

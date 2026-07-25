@@ -36,6 +36,10 @@ const creatorProfileSchema = new mongoose.Schema(
         verified: { type: Boolean, default: false },
       },
     ],
+    niches: {
+      type: [String],
+      default: [],
+    },
     rank: {
       type: String,
       enum: ["rank1", "rank2", "rank3", "rank4", "rank5", "elite"],

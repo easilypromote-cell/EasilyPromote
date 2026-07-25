@@ -1,19 +1,32 @@
-import { useRef } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 
 interface OtpStepProps {
   email: string;
   otpValues: string[];
   onOtpChange: (index: number, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  onResend?: () => void;
 }
 
-export function OtpStep({ email, otpValues, onOtpChange, onSubmit }: OtpStepProps) {
+export function OtpStep({ email, otpValues, onOtpChange, onSubmit, onResend }: OtpStepProps) {
   const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
+  const [secondsLeft, setSecondsLeft] = useState(30);
+
+  useEffect(() => {
+    if (secondsLeft <= 0) return;
+    const id = setInterval(() => setSecondsLeft((s) => s - 1), 1000);
+    return () => clearInterval(id);
+  }, [secondsLeft]);
+
+  const handleResend = useCallback(() => {
+    setSecondsLeft(30);
+    onResend?.();
+  }, [onResend]);
 
   const handleChange = (index: number, val: string) => {
-    onOtpChange(index, val);
-    const numericVal = val.replace(/\D/g, "").slice(-1);
-    if (numericVal && index < 5) {
+    const char = val.replace(/[^a-zA-Z0-9]/g, "").slice(-1).toUpperCase();
+    onOtpChange(index, char);
+    if (char && index < 5) {
       refs[index + 1].current?.focus();
     }
   };
@@ -24,6 +37,9 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit }: OtpStepProp
       refs[index - 1].current?.focus();
     }
   };
+
+  const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+  const ss = String(secondsLeft % 60).padStart(2, "0");
 
   return (
     <div className="w-[350px] space-y-8">
@@ -43,7 +59,6 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit }: OtpStepProp
               key={index}
               ref={refs[index]}
               type="text"
-              pattern="\d*"
               maxLength={1}
               value={val}
               onChange={(e) => handleChange(index, e.target.value)}
@@ -56,9 +71,13 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit }: OtpStepProp
         <div data-reveal className="text-center">
           <span className="text-sm font-semibold text-stone-400 font-rethink">
             Didn&apos;t get it?{" "}
-            <button type="button" className="text-stone-900">
-              Resend code (0:45)
-            </button>
+            {secondsLeft > 0 ? (
+              <span className="text-stone-900">Resend code ({mm}:{ss})</span>
+            ) : (
+              <button type="button" onClick={handleResend} className="text-stone-900 underline">
+                Resend code
+              </button>
+            )}
           </span>
         </div>
 

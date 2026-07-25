@@ -17,9 +17,27 @@ const webhookRoutes = require("./routes/webhooks");
 
 const app = express();
 
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003")
+  .split(",")
+  .map((o) => o.trim());
+
 app.use(helmet());
-app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(morgan("dev"));
+
+app.use("/api/webhooks", webhookRoutes);
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
@@ -36,7 +54,6 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/payouts", payoutRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/webhooks", webhookRoutes);
 
 app.use(errorHandler);
 

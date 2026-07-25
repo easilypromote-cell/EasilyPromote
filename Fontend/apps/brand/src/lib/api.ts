@@ -26,5 +26,5 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
   return res.json();
 }
 
-export { getToken, getUser, isAuthenticated, clearAuth } from "./auth";
+export { getToken, getUser, isAuthenticated, clearAuth, saveAuth } from "./auth";
 export type { User } from "./auth";

@@ -5,7 +5,10 @@ const notificationSchema = new mongoose.Schema(
     businessId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+    },
+    creatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
     campaignId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -13,7 +16,7 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["under_review", "completed", "rejected", "submission_pending"],
+      enum: ["under_review", "completed", "rejected", "submission_pending", "slot_claimed", "content_approved", "content_rejected", "payment_released", "campaign_live"],
       required: true,
     },
     title: {

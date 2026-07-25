@@ -40,9 +40,9 @@ export default function LoginPage() {
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    const numericVal = value.replace(/\D/g, "").slice(-1);
+    const char = value.replace(/[^a-zA-Z0-9]/g, "").slice(-1).toUpperCase();
     const newOtp = [...form.otpValues];
-    newOtp[index] = numericVal;
+    newOtp[index] = char;
     setField("otpValues", newOtp);
   };
 
@@ -79,6 +79,13 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+
+      await fetch(`${API_URL}/auth/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, purpose: "registration" }),
+      });
+
       setPostOtpTarget("dashboard");
       setStep("otp");
     } catch (err: unknown) {
@@ -88,12 +95,36 @@ export default function LoginPage() {
     }
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (postOtpTarget === "reset-password") {
-      setStep("reset-password");
-    } else {
-      router.push("/");
+    setError("");
+    setLoading(true);
+
+    try {
+      const code = form.otpValues.join("");
+      if (code.length !== 6) throw new Error("Enter all 6 digits");
+
+      const res = await fetch(`${API_URL}/auth/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, otp: code, purpose: postOtpTarget === "reset-password" ? "forgot_password" : "registration" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "OTP verification failed");
+
+      if (postOtpTarget === "reset-password") {
+        sessionStorage.setItem("resetToken", data.resetToken);
+        setStep("reset-password");
+      } else {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        router.push("/");
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -114,6 +145,18 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+
+      if (!data.user.emailVerified) {
+        await fetch(`${API_URL}/auth/send-otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: form.email, purpose: "registration" }),
+        });
+        setPostOtpTarget("dashboard");
+        setStep("otp");
+        return;
+      }
+
       router.push("/");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -122,18 +165,56 @@ export default function LoginPage() {
     }
   };
 
-  const handleForgotPassword = (e: React.FormEvent) => {
+  const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Reset code sent successfully to ${form.email}`);
-    setPostOtpTarget("reset-password");
-    setStep("otp");
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to send reset code");
+
+      setPostOtpTarget("reset-password");
+      setStep("otp");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResetPassword = (e: React.FormEvent) => {
+  const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) return;
-    alert("Password reset successful!");
-    setStep("login");
+    setError("");
+    setLoading(true);
+
+    try {
+      const resetToken = sessionStorage.getItem("resetToken");
+      if (!resetToken) throw new Error("Session expired. Please try again.");
+
+      const res = await fetch(`${API_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, token: resetToken, newPassword }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Password reset failed");
+
+      sessionStorage.removeItem("resetToken");
+      setStep("login");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const actions = { setField, goToStep: setStep };
@@ -166,6 +247,15 @@ export default function LoginPage() {
             otpValues={form.otpValues}
             onOtpChange={handleOtpChange}
             onSubmit={handleVerifyOtp}
+            onResend={async () => {
+              try {
+                await fetch(`${API_URL}/auth/send-otp`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ email: form.email, purpose: "registration" }),
+                });
+              } catch {}
+            }}
           />
         )}
 

@@ -1,26 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import type { MarketplaceCampaign } from "./types";
 
 interface CampaignMarketplaceProps {
-  isEmpty: boolean;
+  campaigns: MarketplaceCampaign[];
+  meta: { activeSlots: number; maxSlots: number; canClaim: boolean };
+  onClaimSlot: (campaignId: string) => void;
 }
 
-export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
+export function CampaignMarketplace({ campaigns, meta, onClaimSlot }: CampaignMarketplaceProps) {
   const [activeCategory, setActiveCategory] = useState("All");
   const [showLimitBanner, setShowLimitBanner] = useState(true);
 
-  const categories = ["All", "Music", "Lifestyle", "Fashion", "Beauty", "Tech"];
+  const categories = ["All", "Music", "Lifestyle", "Fashion", "Beauty", "Tech", "Food", "Fitness", "Travel"];
 
-  // Mock campaigns available in the marketplace
-  const marketplaceCampaigns = [
-    { id: "m1", title: "Launch my new Afrobeats single", slotsLeft: 18, daysLeft: 5, reward: 60800 },
-    { id: "m2", title: "Launch my new Afrobeats single", slotsLeft: 18, daysLeft: 5, reward: 60800 },
-    { id: "m3", title: "Launch my new Afrobeats single", slotsLeft: 18, daysLeft: 5, reward: 60800 },
-    { id: "m4", title: "Launch my new Afrobeats single", slotsLeft: 18, daysLeft: 5, reward: 60800 },
-    { id: "m5", title: "Launch my new Afrobeats single", slotsLeft: 18, daysLeft: 5, reward: 60800 },
-    { id: "m6", title: "Launch my new Afrobeats single", slotsLeft: 18, daysLeft: 5, reward: 60800 },
-  ];
+  const filtered = activeCategory === "All"
+    ? campaigns
+    : campaigns.filter((c) => c.category === activeCategory);
+
+  const isAtLimit = !meta.canClaim;
 
   return (
     <div className="w-full flex flex-col font-rethink">
@@ -46,7 +45,6 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
           })}
         </div>
 
-        {/* Sort dropdown */}
         <button className="flex items-center gap-1.5 px-4 py-2 border border-stone-200 hover:border-stone-300 bg-white text-stone-700 font-semibold text-xs rounded-full shadow-sm transition-colors">
           <span>⇅ Sort</span>
           <svg className="w-3.5 h-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -56,16 +54,12 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
       </div>
 
       {/* Empty State View */}
-      {isEmpty ? (
+      {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center text-center py-20 px-6">
-          {/* Yoga Meditation sketch illustration */}
           <div className="w-64 h-64 mb-6 relative flex items-center justify-center">
-            {/* Zen Circle Mat Background */}
             <div className="absolute inset-0 rounded-full border-2 border-dashed border-[#FEB604]/60 animate-spin-slow"></div>
             
-            {/* Meditator SVG */}
             <svg className="w-48 h-48 text-stone-800" viewBox="0 0 100 100" fill="none">
-              {/* Crossed legs/Body sketch outline */}
               <path 
                 d="M30 75C30 75 35 60 50 60C65 60 70 75 70 75M50 60V38M50 38C52.5 38 54 36.5 54 34C54 31.5 52.5 30 50 30C47.5 30 46 31.5 46 34C46 36.5 47.5 38 50 38Z" 
                 stroke="currentColor" 
@@ -73,9 +67,7 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
                 strokeLinecap="round" 
                 strokeLinejoin="round"
               />
-              {/* Hair tie */}
               <circle cx="50" cy="27" r="2.5" fill="#FEB604" />
-              {/* Meditating arms */}
               <path 
                 d="M36 50C38 48 42 48 44 51M64 50C62 48 58 48 56 51M25 70C20 68 20 62 26 56C32 50 36 50 36 50M75 70C80 68 80 62 74 56C68 50 64 50 64 50" 
                 stroke="currentColor" 
@@ -83,7 +75,6 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
                 strokeLinecap="round" 
                 strokeLinejoin="round"
               />
-              {/* Mudra Hand circles */}
               <circle cx="27" cy="56" r="1.5" fill="#FEB604" />
               <circle cx="73" cy="56" r="1.5" fill="#FEB604" />
             </svg>
@@ -97,11 +88,10 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
           </p>
         </div>
       ) : (
-        /* Marketplace Campaigns Grid (Screenshot 4) */
         <div className="space-y-6 w-full">
           
           {/* Active Limit Warning Banner */}
-          {showLimitBanner && (
+          {isAtLimit && showLimitBanner && (
             <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-3xl p-5 flex items-center justify-between gap-4 text-left shadow-sm">
               <div className="flex gap-4 items-center">
                 <div className="w-11 h-11 rounded-full bg-white border border-blue-200 flex items-center justify-center shrink-0 shadow-sm">
@@ -109,7 +99,7 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
                 </div>
                 <div className="space-y-0.5">
                   <h4 className="text-xs font-bold text-stone-900 leading-snug">
-                    You&apos;re at your active slot limit (3/3). Complete or deliver a slot to claim something new.
+                    You&apos;re at your active slot limit ({meta.activeSlots}/{meta.maxSlots}). Complete or deliver a slot to claim something new.
                   </h4>
                 </div>
               </div>
@@ -124,13 +114,19 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
 
           {/* Available Slots Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-            {marketplaceCampaigns.map((camp) => (
+            {filtered.map((camp) => (
               <div 
                 key={camp.id} 
-                onClick={() => alert("You're at your active slot limit. Complete a campaign first!")}
+                onClick={() => {
+                  if (isAtLimit) {
+                    alert("You're at your active slot limit. Complete a campaign first!");
+                  } else {
+                    onClaimSlot(camp.id);
+                  }
+                }}
                 className="bg-white border border-stone-200 rounded-3xl p-6 flex flex-col justify-between shadow-sm relative overflow-hidden transition-all hover:shadow-md hover:border-stone-300 cursor-pointer text-left"
               >
-                {/* Platform Icon and Tags */}
+                {/* Platform Icon */}
                 <div className="flex items-start justify-between mb-5">
                   <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200">
                     <svg className="w-6 h-6 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
@@ -147,11 +143,13 @@ export function CampaignMarketplace({ isEmpty }: CampaignMarketplaceProps) {
                   <div className="flex gap-2 mb-5">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF3FF] text-[#2563EB] font-bold text-[10px] tracking-wider uppercase">
                       <span className="w-1.5 h-1.5 bg-[#2563EB] rounded-full"></span>
-                      Music
+                      {camp.category}
                     </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-500 font-semibold text-[10px]">
-                      TikTok, Instagram
-                    </span>
+                    {camp.platforms.length > 0 && (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-100 text-stone-500 font-semibold text-[10px]">
+                        {camp.platforms.join(", ")}
+                      </span>
+                    )}
                   </div>
                 </div>
 

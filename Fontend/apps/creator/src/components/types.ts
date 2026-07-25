@@ -13,6 +13,7 @@ export interface SocialAccount {
 
 export interface CreatorProfile {
   name: string;
+  avatar: string | null;
   displayName: string;
   username: string;
   bio: string;
@@ -25,20 +26,14 @@ export interface CreatorProfile {
   completionRate: number;
 }
 
-export type DemoState =
-  | "onboarding_start"
-  | "onboarding_progress"
-  | "onboarding_done"
-  | "feed"
-  | "marketplace_empty"
-  | "marketplace_feed";
-
 export type ActiveTab = "home" | "campaign" | "wallet";
 
 export interface CampaignItem {
   id: string;
+  slotId?: string;
   title: string;
   category: string;
+  coverImageUrl?: string;
   delivery: string;
   status:
     | "needs_content"
@@ -48,11 +43,46 @@ export interface CampaignItem {
     | "live_tracking"
     | "delivered";
   reward: number;
-  slotTarget?: string;
+  viewTarget?: number;
   submittedAgo?: string;
   comment?: string;
   progress?: number;
   currentViews?: number;
   targetViews?: number;
-  postUrl?: string;
+  videoUrl?: string;
+  postedPlatforms?: string[];
+  submissionId?: string;
+  contentBrief?: string;
+  keyMessageCta?: string;
+  whatToAvoid?: string;
+  platforms?: string[];
+  contentStyle?: string;
+}
+
+export interface MarketplaceCampaign {
+  id: string;
+  title: string;
+  category: string;
+  coverImageUrl?: string;
+  reward: number;
+  platforms: string[];
+  slotsLeft: number;
+  daysLeft: number;
+  targetViews: number;
+  costPerView: number;
+  contentBrief?: string;
+}
+
+export interface WalletData {
+  balance: number;
+  lifetimeEarnings: number;
+  completionRate: number;
+  totalReleased: number;
+  recentTransactions: Array<{
+    id: string;
+    type: string;
+    amount: number;
+    status: string;
+    createdAt: string;
+  }>;
 }

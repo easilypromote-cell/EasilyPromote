@@ -3,19 +3,30 @@ const cloudinary = require("../config/cloudinary");
 const uploadToCloudinary = (file, folder = "easily-promote") => {
   return new Promise((resolve, reject) => {
     const isVideo = file.mimetype.startsWith("video/");
-    const resourceType = isVideo ? "video" : "image";
+    const isDocument =
+      file.mimetype === "application/pdf" ||
+      file.mimetype === "application/msword" ||
+      file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+    const resourceType = isVideo ? "video" : isDocument ? "raw" : "image";
+
+    const options = {
+      folder,
+      resource_type: resourceType,
+    };
+
+    if (isVideo) {
+      options.allowed_formats = ["mp4", "mov", "avi", "webm"];
+      options.transformation = [{ quality: "auto", fetch_format: "auto" }];
+    } else if (isDocument) {
+      options.allowed_formats = ["pdf", "doc", "doc"];
+    } else {
+      options.allowed_formats = ["jpg", "jpeg", "png", "gif", "webp"];
+      options.transformation = [{ quality: "auto", width: 1920, crop: "limit" }];
+    }
 
     const stream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: resourceType,
-        allowed_formats: isVideo
-          ? ["mp4", "mov", "avi", "webm"]
-          : ["jpg", "jpeg", "png", "gif", "webp"],
-        transformation: isVideo
-          ? [{ quality: "auto", fetch_format: "auto" }]
-          : [{ quality: "auto", width: 1920, crop: "limit" }],
-      },
+      options,
       (error, result) => {
         if (error) reject(error);
         else resolve(result);

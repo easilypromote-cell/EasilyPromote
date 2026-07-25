@@ -1,5 +1,8 @@
 "use client";
 
+import { useRef } from "react";
+import { apiRequest } from "../../lib/api";
+
 interface ProfileForm {
   displayName: string;
   bio: string;
@@ -22,7 +25,28 @@ export function ProfileModal({
   profileForm,
   onProfileFormChange,
 }: ProfileModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   if (!isOpen) return null;
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const data = await apiRequest<{ url: string }>("/upload/image", {
+        method: "POST",
+        body: formData,
+        headers: {},
+      });
+      onProfileFormChange({ ...profileForm, avatarUrl: data.url });
+    } catch (err) {
+      console.error("Avatar upload failed", err);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/40 backdrop-blur-sm">
@@ -32,6 +56,29 @@ export function ProfileModal({
           <p className="text-xs text-stone-500 font-medium">
             Help brands know you by filling out your creator profile.
           </p>
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="relative w-20 h-20 rounded-full bg-stone-100 border-2 border-dashed border-stone-300 hover:border-stone-400 flex items-center justify-center overflow-hidden transition-colors group"
+          >
+            {profileForm.avatarUrl ? (
+              <img src={profileForm.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            ) : (
+              <svg className="w-8 h-8 text-stone-300 group-hover:text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarUpload}
+          />
         </div>
 
         <div className="space-y-3.5">

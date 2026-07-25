@@ -4,6 +4,34 @@ const { protect, authorizeRoles } = require("../middleware/auth");
 
 const router = express.Router();
 
+router.get("/me", protect, async (req, res, next) => {
+  try {
+    const profile = await BusinessProfile.findOne({ userId: req.user._id }).populate(
+      "userId",
+      "name email avatar"
+    );
+    if (!profile) {
+      return res.status(404).json({ error: "Business profile not found" });
+    }
+    res.json({
+      id: profile._id,
+      userId: profile.userId._id,
+      companyName: profile.companyName,
+      industry: profile.industry,
+      logo: profile.logo,
+      cac: profile.cac,
+      verificationStatus: profile.verificationStatus,
+      website: profile.website,
+      description: profile.description,
+      contactName: profile.userId.name,
+      contactEmail: profile.userId.email,
+      avatar: profile.userId.avatar,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/", async (req, res, next) => {
   try {
     const profiles = await BusinessProfile.find().populate("userId", "name email");

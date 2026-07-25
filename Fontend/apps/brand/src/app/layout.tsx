@@ -30,6 +30,7 @@ const motterdam = localFont({
 export const metadata: Metadata = {
   title: "EasilyPromote — Brand Dashboard",
   description: "Manage your promotional campaigns",
+  icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/favicon.svg" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -64,7 +64,7 @@ export function CampaignCard({
         {camp.status === "needs_content" && (
           <div className="space-y-3">
             <div className="flex justify-between items-center text-xs font-semibold text-stone-500">
-              <span>Slot target: {camp.slotTarget}</span>
+              {camp.viewTarget && <span>Target: {camp.viewTarget.toLocaleString()} views</span>}
               <span className="text-stone-900 font-bold">Reward: ₦{camp.reward.toLocaleString()}</span>
             </div>
             <button
@@ -108,7 +108,7 @@ export function CampaignCard({
         {camp.status === "under_review" && (
           <div className="space-y-3">
             <div className="flex justify-between items-center text-xs font-semibold text-stone-500">
-              <span>Slot target: {camp.slotTarget}</span>
+              {camp.viewTarget && <span>Target: {camp.viewTarget.toLocaleString()} views</span>}
               <span className="text-stone-900 font-bold">Reward: ₦{camp.reward.toLocaleString()}</span>
             </div>
             <button

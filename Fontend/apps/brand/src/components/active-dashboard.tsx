@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Filter, ChevronDown } from "lucide-react";
@@ -5,15 +7,40 @@ import { CampaignCard } from "@ep/ui/components/campaign-card";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
 
-interface ActiveDashboardProps {
-  onCreateCampaign: () => void;
+export interface BrandCampaign {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  targetViews: number;
+  viewsDelivered: number;
+  budget: number;
+  progressPercent: number;
+  coverImageUrl?: string;
 }
 
-const FILTER_OPTIONS = ["All Campaigns", "Live", "Draft", "Paused"] as const;
+interface ActiveDashboardProps {
+  campaigns: BrandCampaign[];
+  onCreateCampaign: () => void;
+  userName: string;
+}
 
-export function ActiveDashboard({
-  onCreateCampaign,
-}: ActiveDashboardProps) {
+const FILTER_OPTIONS = ["All Campaigns", "Live", "Draft", "Paused", "Completed"] as const;
+
+function mapStatus(s: string): "review_needed" | "live" | "draft" | "paused" | "under_review" | "completed" | "cancelled" | "pending_payment" {
+  switch (s) {
+    case "live": return "live";
+    case "draft": return "draft";
+    case "paused": return "paused";
+    case "completed": return "completed";
+    case "cancelled": return "cancelled";
+    case "under_review": return "under_review";
+    case "pending_payment": return "pending_payment";
+    default: return "draft";
+  }
+}
+
+export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: ActiveDashboardProps) {
   const router = useRouter();
   useReveal();
 
@@ -31,20 +58,27 @@ export function ActiveDashboard({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleCardClick = (id: string) => {
-    router.push(`/campaign/${id}`);
+  const handleCardClick = (id: string, status: string) => {
+    if (status === "draft") {
+      router.push(`/create-campaign?id=${id}`);
+    } else {
+      router.push(`/campaign/${id}`);
+    }
   };
+
+  const filteredCampaigns = campaigns.filter((c) => {
+    if (selectedFilter === "All Campaigns") return true;
+    return c.status.toLowerCase() === selectedFilter.toLowerCase();
+  });
 
   return (
     <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 z-10">
-      {/* Header section */}
       <div data-reveal className="grid grid-cols-[1fr_auto] items-center gap-4 mb-16">
         <h2 className="font-motterdam font-normal text-[23px] leading-[28px] text-stone-900 m-0">
-          Welcome, Acme Inc.
+          Welcome, {userName.split(" ")[0]}
         </h2>
 
         <div className="flex items-center gap-3">
-          {/* All Campaigns Filter Dropdown */}
           <div ref={filterRef} className="relative z-[100]">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
@@ -76,7 +110,6 @@ export function ActiveDashboard({
             )}
           </div>
 
-          {/* Create Campaign Button */}
           <button
             onClick={onCreateCampaign}
             className="px-6 py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-bold text-sm rounded-full border border-stone-100"
@@ -86,48 +119,29 @@ export function ActiveDashboard({
         </div>
       </div>
 
-      {/* Campaigns Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div data-reveal>
-          <CampaignCard
-            title="Launch my new Afrobeats single"
-            status="under_review"
-            progress={0}
-            currentViews="0"
-            targetViews="250,000"
-            onClick={() => handleCardClick("afrobeats-single")}
-          />
-        </div>
+        {filteredCampaigns.map((camp) => (
+          <div data-reveal key={camp.id}>
+            <CampaignCard
+              title={camp.name}
+              status={mapStatus(camp.status)}
+              category={camp.category}
+              imageSrc={camp.coverImageUrl}
+              progress={camp.progressPercent}
+              currentViews={camp.viewsDelivered.toLocaleString()}
+              targetViews={camp.targetViews.toLocaleString()}
+              delivery=""
+              onClick={() => handleCardClick(camp.id, camp.status)}
+              onResume={() => handleCardClick(camp.id, camp.status)}
+            />
+          </div>
+        ))}
 
-        <div data-reveal>
-          <CampaignCard
-            title="Launch my new Afrobeats single"
-            status="review_needed"
-            progress={68}
-            currentViews="170,000"
-            targetViews="250,000"
-            onClick={() => handleCardClick("afrobeats-single")}
-          />
-        </div>
-
-        <div data-reveal>
-          <CampaignCard
-            title="Launch my new Afrobeats single"
-            status="draft"
-            onResume={onCreateCampaign}
-          />
-        </div>
-
-        <div data-reveal>
-          <CampaignCard
-            title="Launch my new Afrobeats single"
-            status="paused"
-            progress={68}
-            currentViews="170,000"
-            targetViews="250,000"
-            onClick={() => handleCardClick("afrobeats-single")}
-          />
-        </div>
+        {filteredCampaigns.length === 0 && (
+          <div className="col-span-full text-center py-12">
+            <p className="text-stone-500 text-sm font-medium">No campaigns found.</p>
+          </div>
+        )}
       </div>
     </main>
   );

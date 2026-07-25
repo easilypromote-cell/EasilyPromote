@@ -5,7 +5,7 @@ import { TYPOGRAPHY } from "../lib/constants";
 
 export interface CampaignCardProps {
   title: string;
-  status: "review_needed" | "live" | "draft" | "paused" | "under_review" | "completed" | "cancelled";
+  status: "review_needed" | "live" | "draft" | "paused" | "under_review" | "completed" | "cancelled" | "pending_payment";
   imageSrc?: string;
   category?: string;
   delivery?: string;
@@ -67,6 +67,12 @@ export function CampaignCard({
         return (
           <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-green-600" /> Completed
+          </span>
+        );
+      case "pending_payment":
+        return (
+          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-[#6E330C] font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-[#6E330C]" /> Payment Pending
           </span>
         );
       case "cancelled":
@@ -133,10 +139,12 @@ export function CampaignCard({
               <Music className="w-3 h-3 text-[#162664]" />
               {category}
             </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
-              <Clock className="w-3 h-3" />
-              {delivery}
-            </span>
+            {delivery && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
+                <Clock className="w-3 h-3" />
+                {delivery}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

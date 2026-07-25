@@ -1,12 +1,12 @@
 const Paystack = require("paystack")(process.env.PAYSTACK_SECRET_KEY);
 
-async function initializeTransaction({ email, amount, reference, metadata }) {
+async function initializeTransaction({ email, amount, reference, metadata, callback_url }) {
   const result = await Paystack.transaction.initialize({
     email,
     amount: Math.round(amount * 100),
     reference,
     metadata: metadata || {},
-    callback_url: process.env.PAYSTACK_CALLBACK_URL,
+    callback_url: callback_url || process.env.PAYSTACK_CALLBACK_URL,
   });
   return result.data;
 }

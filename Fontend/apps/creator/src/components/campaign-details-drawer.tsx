@@ -31,20 +31,26 @@ export function CampaignDetailsDrawer({
     });
   };
 
-  // Activity list data generated dynamically based on state
+  const platformLabels: Record<string, string> = {
+    tiktok: "TikTok",
+    instagram: "Instagram",
+    youtube: "YouTube",
+    twitter: "X (Twitter)",
+  };
+
+  const displayPlatforms = (campaign.platforms || ["tiktok", "instagram"])
+    .map((p) => platformLabels[p] || p);
+
   const renderActivity = () => {
     const items = [];
 
-    // Helper for activity post item layout
     const ActivityPostItem = ({
-      title,
       badgeLabel,
       badgeColorClass,
       badgeDotColorClass,
       timeText,
       commentText,
     }: {
-      title: string;
       badgeLabel: string;
       badgeColorClass: string;
       badgeDotColorClass: string;
@@ -53,28 +59,18 @@ export function CampaignDetailsDrawer({
     }) => (
       <div className="space-y-3">
         <div className="flex gap-4">
-          {/* Square Video Thumbnail */}
           <div className="w-14 h-14 rounded-2xl bg-stone-200 border border-stone-300 relative flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-            {/* Play Button Overlay */}
             <div className="w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-stone-900 shadow-sm z-10">
               <svg className="w-2.5 h-2.5 translate-x-[1px]" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
-            {/* Mock background pattern */}
             <div className="absolute inset-0 bg-gradient-to-tr from-purple-200 to-indigo-100 opacity-60"></div>
           </div>
 
           <div className="flex-1 space-y-1.5 text-left">
-            <p className="text-xs font-semibold text-stone-850 leading-normal">
-              {title}
-            </p>
             <div className="flex items-center gap-2 text-[10px] text-stone-500 font-medium">
-              <span>00:34sec</span>
-              <span>•</span>
               <span>{timeText}</span>
-              <span>•</span>
-              {/* Badge */}
               <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 ${badgeColorClass}`}>
                 <span className={`w-1 h-1 rounded-full ${badgeDotColorClass}`} />
                 {badgeLabel}
@@ -100,11 +96,10 @@ export function CampaignDetailsDrawer({
       items.push(
         <div key="activity-delivered" className="space-y-4 border-b border-stone-100 pb-5">
           <ActivityPostItem
-            title="New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral"
             badgeLabel="Delivered"
             badgeColorClass="bg-teal-50 text-teal-700 border border-teal-100"
             badgeDotColorClass="bg-teal-500"
-            timeText="Uploaded 1h ago"
+            timeText="Campaign completed"
           />
         </div>
       );
@@ -114,11 +109,10 @@ export function CampaignDetailsDrawer({
       items.push(
         <div key="activity-live" className="space-y-4 border-b border-stone-100 pb-5">
           <ActivityPostItem
-            title="New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral"
             badgeLabel="Live · tracking views"
             badgeColorClass="bg-blue-50 text-blue-700 border border-blue-100"
             badgeDotColorClass="bg-blue-500"
-            timeText="Uploaded 1h ago"
+            timeText="Content posted"
           />
         </div>
       );
@@ -128,40 +122,37 @@ export function CampaignDetailsDrawer({
       items.push(
         <div key="activity-approved" className="space-y-4 border-b border-stone-100 pb-5">
           <ActivityPostItem
-            title="New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral"
             badgeLabel="Approved — Ready To Post"
             badgeColorClass="bg-green-50 text-green-700 border border-green-100"
             badgeDotColorClass="bg-green-500"
-            timeText="Uploaded 1h ago"
+            timeText="Content approved"
           />
         </div>
       );
     }
 
-    if (campaign.status === "live_tracking" || campaign.status === "delivered" || campaign.status === "approved_post" || campaign.status === "changes_requested") {
+    if (campaign.status === "changes_requested") {
       items.push(
         <div key="activity-changes" className="space-y-4 border-b border-stone-100 pb-5">
           <ActivityPostItem
-            title="New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral"
             badgeLabel="Changes requested"
             badgeColorClass="bg-red-50 text-red-700 border border-red-100"
             badgeDotColorClass="bg-red-500"
-            timeText="Uploaded 1h ago"
-            commentText="Missed the CTA — please mention the streaming link Doesn't follow the brief"
+            timeText="Review feedback"
+            commentText={campaign.comment || "Please revise the content"}
           />
         </div>
       );
     }
 
-    if (campaign.status !== "needs_content") {
+    if (campaign.status === "under_review" || campaign.status === "approved_post") {
       items.push(
         <div key="activity-review" className="space-y-4">
           <ActivityPostItem
-            title="New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral"
             badgeLabel="Review In Progress"
             badgeColorClass="bg-amber-50 text-[#6E330C] border border-amber-100"
             badgeDotColorClass="bg-[#FEB604]"
-            timeText="Uploaded 1h ago"
+            timeText="Awaiting review"
           />
         </div>
       );
@@ -172,8 +163,6 @@ export function CampaignDetailsDrawer({
 
   return (
     <div className="fixed inset-0 z-50 flex">
-      
-      {/* Left sidebar / Blurred backdrop area */}
       <div 
         onClick={onClose}
         className="w-1/5 bg-stone-900/10 backdrop-blur-md p-6 flex flex-col justify-between cursor-pointer"
@@ -186,10 +175,7 @@ export function CampaignDetailsDrawer({
         </div>
       </div>
 
-      {/* Right Drawer Sheet */}
       <div className="w-4/5 h-full bg-[#FAFAF9] rounded-l-[32px] border-l border-stone-250 overflow-y-auto p-10 flex flex-col shadow-2xl relative animate-in slide-in-from-right duration-300">
-        
-        {/* Drawer Header Controls */}
         <div className="flex justify-between items-center w-full mb-10 pb-4 border-b border-stone-200/60">
           <button 
             onClick={onClose}
@@ -205,42 +191,32 @@ export function CampaignDetailsDrawer({
             {campaign.title}
           </h2>
           
-          <div className="w-20"></div> {/* Spacer to center title */}
+          <div className="w-20"></div>
         </div>
 
-        {/* Content Layout (Centered Single Column) */}
         <div className="max-w-xl w-full mx-auto space-y-8 pb-12">
           
-          {/* Main Campaign Card */}
           <div className="bg-white border border-stone-200 rounded-3xl p-6 flex flex-col items-center text-center shadow-sm relative overflow-hidden">
-            
-            {/* Twitch / Platform Icon */}
             <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200 mb-4">
               <svg className="w-7 h-7 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
               </svg>
             </div>
 
-            {/* Title */}
             <h3 className="font-rethink font-bold text-[18px] text-stone-900 leading-snug mb-3">
               {campaign.title}
             </h3>
 
-            {/* Tags / Badge */}
             <div className="flex items-center gap-2 mb-6">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF3FF] text-[#2563EB] font-bold text-[10px] tracking-wider uppercase font-rethink">
                 <span className="w-1.5 h-1.5 bg-[#2563EB] rounded-full"></span>
                 {campaign.category}
               </span>
-              
-              {/* Status Badge */}
               <StatusDetailsBadge status={campaign.status} />
             </div>
 
-            {/* Action Areas depending on state */}
             <div className="w-full border-t border-stone-100 pt-6">
               
-              {/* NEEDS CONTENT (Screenshot 1) */}
               {campaign.status === "needs_content" && (
                 <div className="flex gap-2 w-full">
                   <button
@@ -255,10 +231,8 @@ export function CampaignDetailsDrawer({
                 </div>
               )}
 
-              {/* REVIEW IN PROGRESS (Screenshot 2) */}
               {campaign.status === "under_review" && (
                 <div className="space-y-5 w-full">
-                  {/* Alert banner */}
                   <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
                     <div className="w-10 h-10 rounded-full bg-white/90 border border-amber-250 flex items-center justify-center shrink-0 shadow-sm">
                       <span className="text-[#FEB604] text-lg font-bold">⌛</span>
@@ -266,7 +240,7 @@ export function CampaignDetailsDrawer({
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-stone-900">Waiting on brand review</h4>
                       <p className="text-[11px] leading-relaxed text-stone-500 font-medium">
-                        Submitted 4 hours ago. Most reviews are completed within 24 hours.
+                        Submitted recently. Most reviews are completed within 24 hours.
                       </p>
                     </div>
                   </div>
@@ -285,16 +259,16 @@ export function CampaignDetailsDrawer({
                 </div>
               )}
 
-              {/* CHANGES REQUESTED (Screenshot 3) */}
               {campaign.status === "changes_requested" && (
                 <div className="space-y-5 w-full">
-                  {/* Alert banner */}
                   <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
                     <div className="w-10 h-10 rounded-full bg-white/90 border border-red-200 flex items-center justify-center shrink-0 shadow-sm">
                       <span className="text-red-500 text-base">⚠️</span>
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-stone-900">&quot;Missed the CTA — please mention the streaming link. Doesn't follow the brief&quot;</h4>
+                      <h4 className="text-xs font-bold text-stone-900">
+                        {campaign.comment || "Please revise the content"}
+                      </h4>
                     </div>
                   </div>
 
@@ -312,22 +286,19 @@ export function CampaignDetailsDrawer({
                 </div>
               )}
 
-              {/* APPROVED - READY TO POST (Screenshot 4) */}
               {campaign.status === "approved_post" && (
                 <div className="space-y-5 w-full">
-                  {/* Alert banner */}
                   <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
                     <div className="w-10 h-10 rounded-full bg-white/90 border border-green-200 flex items-center justify-center shrink-0 shadow-sm">
                       <span className="text-green-500 text-base">📢</span>
                     </div>
                     <div className="space-y-1">
                       <h4 className="text-xs font-bold text-stone-900 leading-snug">
-                        Post this on TikTok, then paste the link below so we can start tracking your views.
+                        Post this on {displayPlatforms.join(", ")}, then paste the link below so we can start tracking your views.
                       </h4>
                     </div>
                   </div>
 
-                  {/* 3 Link Inputs */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     <input
                       type="text"
@@ -366,7 +337,6 @@ export function CampaignDetailsDrawer({
                 </div>
               )}
 
-              {/* LIVE TRACKING & DELIVERED (Screenshot 5) */}
               {(campaign.status === "live_tracking" || campaign.status === "delivered") && (
                 <div className="space-y-4 w-full">
                   {campaign.status === "delivered" && (
@@ -377,142 +347,118 @@ export function CampaignDetailsDrawer({
                       <div className="space-y-1">
                         <h4 className="text-xs font-bold text-stone-900">Delivered</h4>
                         <p className="text-[11px] leading-relaxed text-stone-500 font-medium">
-                          Target reached and verified. ₦60,800 was paid to your wallet
+                          Target reached and verified. ₦{campaign.reward.toLocaleString()} was paid to your wallet
                         </p>
                       </div>
                     </div>
                   )}
-                  <div className="flex gap-4 items-start text-left bg-stone-50 border border-stone-200/60 rounded-2xl p-4">
-                    <div className="w-12 h-12 rounded-xl bg-stone-200 relative flex items-center justify-center overflow-hidden shrink-0">
-                      <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center text-[8px] z-10 font-bold">▶</div>
-                      <div className="absolute inset-0 bg-gradient-to-tr from-purple-200 to-indigo-100 opacity-60"></div>
-                    </div>
-                    <div className="flex-1 space-y-1.5">
-                      <p className="text-xs font-semibold text-stone-900 leading-normal">
-                        New drop from Musta4a is banging!!! This new jam called Pass am is so good #nusound #viral
-                      </p>
-                      <span className="text-[10px] text-stone-500 font-medium">00:34sec</span>
-                    </div>
-                  </div>
 
-                  {/* Platforms views details */}
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 font-bold text-[10px] rounded-full">
-                      🎵 TikTok
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 font-bold text-[10px] rounded-full">
-                      📸 Instagram
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 font-bold text-[10px] rounded-full">
-                      𝕏 X (Twitter)
-                    </span>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="space-y-2 border-t border-stone-100 pt-4">
-                    <div className="flex justify-between text-xs font-semibold font-rethink">
-                      <span className={campaign.status === "delivered" ? "text-teal-600 font-bold" : "text-stone-500"}>
-                        {campaign.status === "delivered" ? "100% Complete" : `${campaign.progress}%`}
-                      </span>
-                      <span className="text-stone-500">
-                        {campaign.currentViews?.toLocaleString()} / {campaign.targetViews?.toLocaleString()} views
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex-1 h-2 bg-stone-100 border border-stone-200/50 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full transition-all duration-500 ${
-                            campaign.status === "delivered" ? "bg-teal-500" : "bg-blue-600"
-                          }`}
-                          style={{ width: campaign.status === "delivered" ? "100%" : `${campaign.progress}%` }}
-                        />
+                  {campaign.videoUrl && (
+                    <div className="flex gap-4 items-start text-left bg-stone-50 border border-stone-200/60 rounded-2xl p-4">
+                      <div className="w-12 h-12 rounded-xl bg-stone-200 relative flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center text-[8px] z-10 font-bold">▶</div>
+                        <div className="absolute inset-0 bg-gradient-to-tr from-purple-200 to-indigo-100 opacity-60"></div>
                       </div>
-                      <a
-                        href="#"
-                        onClick={(e) => { e.preventDefault(); alert("Simulating link redirection"); }}
-                        className="text-blue-600 text-xs font-bold shrink-0 hover:underline flex items-center gap-1"
-                      >
-                        🔗 View post
-                      </a>
+                      <div className="flex-1 space-y-1.5">
+                        <p className="text-xs font-semibold text-stone-900 leading-normal truncate">
+                          {campaign.videoUrl}
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {campaign.postedPlatforms && campaign.postedPlatforms.length > 0 && (
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {campaign.postedPlatforms.map((p) => (
+                        <span key={p} className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 font-bold text-[10px] rounded-full">
+                          {platformLabels[p] || p}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {(campaign.currentViews !== undefined || campaign.progress !== undefined) && (
+                    <div className="space-y-2 border-t border-stone-100 pt-4">
+                      <div className="flex justify-between text-xs font-semibold font-rethink">
+                        <span className={campaign.status === "delivered" ? "text-teal-600 font-bold" : "text-stone-500"}>
+                          {campaign.status === "delivered" ? "100% Complete" : `${campaign.progress || 0}%`}
+                        </span>
+                        <span className="text-stone-500">
+                          {(campaign.currentViews || 0).toLocaleString()} / {(campaign.targetViews || 0).toLocaleString()} views
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 h-2 bg-stone-100 border border-stone-200/50 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              campaign.status === "delivered" ? "bg-teal-500" : "bg-blue-600"
+                            }`}
+                            style={{ width: campaign.status === "delivered" ? "100%" : `${campaign.progress || 0}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
             </div>
           </div>
 
-          {/* Slot Details List */}
           <div className="space-y-4">
             <h4 className="font-rethink font-bold text-[15px] text-stone-900 text-left">Slot details</h4>
             <div className="border border-stone-200/80 rounded-2xl bg-white p-5 space-y-3.5 text-xs text-left shadow-sm">
-              <div className="flex justify-between items-center">
-                <span className="font-medium text-stone-500">Campaign by</span>
-                <div className="flex items-center gap-1.5 font-bold text-stone-900">
-                  <div className="w-4 h-4 rounded-full bg-stone-200 overflow-hidden border border-stone-300"></div>
-                  <span>Interscope</span>
-                </div>
-              </div>
               <div className="flex justify-between">
                 <span className="font-medium text-stone-500">Target</span>
-                <span className="font-bold text-stone-900">100,000 views</span>
+                <span className="font-bold text-stone-900">{(campaign.targetViews || 0).toLocaleString()} views</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-stone-500">Reward</span>
-                <span className="font-bold text-stone-900">₦60,800</span>
+                <span className="font-bold text-stone-900">₦{campaign.reward.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="font-medium text-stone-500">Platform</span>
-                <span className="font-bold text-stone-900">TikTok, Instagram</span>
+                <span className="font-medium text-stone-500">Platforms</span>
+                <span className="font-bold text-stone-900">{displayPlatforms.join(", ")}</span>
               </div>
-              <div className="flex justify-between">
-                <span className="font-medium text-stone-500">Deadline</span>
-                <span className="font-bold text-stone-900">Jul 24, 2026</span>
-              </div>
+              {campaign.viewTarget && (
+                <div className="flex justify-between">
+                  <span className="font-medium text-stone-500">View Target</span>
+                  <span className="font-bold text-stone-900">{campaign.viewTarget.toLocaleString()} views</span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* The Brief accordion block */}
-          <div className="bg-stone-50 border border-stone-200 rounded-3xl p-6 text-left shadow-sm space-y-4">
-            <h4 className="font-rethink font-bold text-[15px] text-stone-900">The brief</h4>
-            
-            <p className="text-xs leading-relaxed text-stone-600 font-medium">
-              We want you to bring your unique style to this track, but here is the core energy and theme of the song to guide your content:
-            </p>
-
-            <ul className="space-y-3 text-xs leading-relaxed text-stone-600 font-medium list-disc pl-4">
-              <li><strong>Song Vibe:</strong> High-energy, upbeat, nostalgic summer vibes.</li>
-              <li>
-                <strong>The &quot;Hero&quot; Segment:</strong> Please use the official audio snippet from 0:45 to 1:00 (the main chorus). This is the most infectious part of the track.
-              </li>
-              {(briefExpanded || briefExpanded === undefined) && (
-                <li>
-                  <strong>Content Prompts (Pick One or Modify):</strong>
-                  <ul className="list-circle pl-4 mt-1.5 space-y-1">
-                    <li>Option A (Lifestyle/Transition): A &quot;Get Ready With Me&quot; (GRWM) or Outfit of the Day (OOTD) styling video matching the rhythm.</li>
-                    <li>Option B (Dance/Choreography): Recreate the chorus visual transition step.</li>
-                  </ul>
-                </li>
+          {(campaign.contentBrief || campaign.keyMessageCta || campaign.whatToAvoid) && (
+            <div className="bg-stone-50 border border-stone-200 rounded-3xl p-6 text-left shadow-sm space-y-4">
+              <h4 className="font-rethink font-bold text-[15px] text-stone-900">The brief</h4>
+              
+              {campaign.contentBrief && (
+                <p className="text-xs leading-relaxed text-stone-600 font-medium">
+                  {campaign.contentBrief}
+                </p>
               )}
-            </ul>
 
-            <button
-              onClick={() => setBriefExpanded(!briefExpanded)}
-              className="text-stone-500 hover:text-stone-950 font-bold text-xs flex items-center gap-1 mt-2 transition-colors"
-            >
-              <span>{briefExpanded ? "Read less" : "Read more"}</span>
-              <svg 
-                className={`w-3.5 h-3.5 transition-transform ${briefExpanded ? "rotate-180" : ""}`} 
-                fill="none" 
-                viewBox="0 0 24 24" 
-                stroke="currentColor"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+              {campaign.keyMessageCta && (
+                <div className="text-xs leading-relaxed text-stone-600 font-medium">
+                  <strong>Key Message / CTA:</strong> {campaign.keyMessageCta}
+                </div>
+              )}
 
-          {/* Activity Section */}
+              {campaign.whatToAvoid && (
+                <div className="text-xs leading-relaxed text-stone-600 font-medium">
+                  <strong>What to Avoid:</strong> {campaign.whatToAvoid}
+                </div>
+              )}
+
+              {campaign.contentStyle && (
+                <div className="text-xs leading-relaxed text-stone-600 font-medium">
+                  <strong>Content Style:</strong> {campaign.contentStyle}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-5">
             <h4 className="font-rethink font-bold text-[15px] text-stone-900 text-left">Activity</h4>
             <div className="space-y-5 border border-stone-200/80 rounded-2xl bg-white p-5 shadow-sm">
@@ -528,12 +474,10 @@ export function CampaignDetailsDrawer({
 
         </div>
       </div>
-
     </div>
   );
 }
 
-// Subcomponents
 function StatusDetailsBadge({ status }: { status: CampaignItem["status"] }) {
   const badges: Record<
     CampaignItem["status"],

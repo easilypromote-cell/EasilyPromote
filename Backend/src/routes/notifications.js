@@ -6,7 +6,14 @@ const router = express.Router();
 
 router.get("/", protect, async (req, res, next) => {
   try {
-    const notifications = await Notification.find({ businessId: req.user._id })
+    const filter = {
+      $or: [
+        { businessId: req.user._id },
+        { creatorId: req.user._id },
+      ],
+    };
+
+    const notifications = await Notification.find(filter)
       .sort({ createdAt: -1 })
       .limit(50);
 
@@ -16,9 +23,42 @@ router.get("/", protect, async (req, res, next) => {
       title: n.title,
       body: n.body,
       read: n.read,
+      campaignId: n.campaignId,
+      createdAt: n.createdAt,
     }));
 
     res.json(response);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/unread-count", protect, async (req, res, next) => {
+  try {
+    const count = await Notification.countDocuments({
+      $or: [
+        { businessId: req.user._id, read: false },
+        { creatorId: req.user._id, read: false },
+      ],
+    });
+    res.json({ count });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/read-all", protect, async (req, res, next) => {
+  try {
+    await Notification.updateMany(
+      {
+        $or: [
+          { businessId: req.user._id, read: false },
+          { creatorId: req.user._id, read: false },
+        ],
+      },
+      { $set: { read: true } }
+    );
+    res.json({ message: "All notifications marked as read" });
   } catch (error) {
     next(error);
   }
@@ -30,7 +70,9 @@ router.patch("/:id/read", protect, async (req, res, next) => {
     if (!notification) {
       return res.status(404).json({ error: "Notification not found" });
     }
-    if (notification.businessId.toString() !== req.user._id.toString()) {
+
+    const ownerId = notification.businessId || notification.creatorId;
+    if (ownerId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not authorized" });
     }
 

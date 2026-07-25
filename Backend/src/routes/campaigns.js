@@ -9,6 +9,14 @@ const { initializeTransaction, verifyTransaction } = require("../services/paysta
 
 const router = express.Router();
 
+router.get("/pricing", (req, res) => {
+  const { COST_PER_VIEW } = require("../config/pricing");
+  res.json({
+    default: COST_PER_VIEW.default,
+    categories: COST_PER_VIEW.categories,
+  });
+});
+
 router.get("/", protect, async (req, res, next) => {
   try {
     const { status } = req.query;
@@ -35,22 +43,20 @@ router.get("/", protect, async (req, res, next) => {
           ? Math.min(Math.round((c.viewsDelivered / c.targetViews) * 100), 100)
           : 0;
 
-      const deliveryDays =
-        c.startDate && c.endDate
-          ? Math.ceil((new Date(c.endDate) - new Date(c.startDate)) / (1000 * 60 * 60 * 24))
-          : null;
-
       return {
         id: c._id,
         name: c.name,
         coverImageUrl: c.coverImageUrl,
         category: c.category,
-        deliveryDays,
         status: c.status,
         reviewNeeded: c.status === "live" && c.viewsDelivered < c.targetViews,
         targetViews: c.targetViews,
         viewsDelivered: c.viewsDelivered,
+        budget: c.budget,
+        costPerView: c.costPerView,
         progressPercent,
+        startDate: c.startDate,
+        endDate: c.endDate,
       };
     });
 
@@ -62,21 +68,27 @@ router.get("/", protect, async (req, res, next) => {
 
 router.post("/", protect, authorizeRoles("business"), async (req, res, next) => {
   try {
-    const { coverImageUrl, name, category, startDate, endDate, targetViews } = req.body;
+    const { coverImageUrl, name, category, targetViews, contentBrief, keyMessageCta, whatToAvoid, platforms, contentStyle, scriptUrl, scriptFileName } = req.body;
 
     const costPerView = getCostPerView(category);
     const budget = targetViews * costPerView;
 
     const campaign = await Campaign.create({
       businessId: req.user._id,
-      coverImageUrl,
+      coverImageUrl: coverImageUrl || null,
       name,
       category,
-      startDate,
-      endDate,
       targetViews,
       costPerView,
       budget,
+      contentBrief: contentBrief || null,
+      keyMessageCta: keyMessageCta || null,
+      whatToAvoid: whatToAvoid || null,
+      platforms: platforms || [],
+      contentStyle: contentStyle ? (Array.isArray(contentStyle) ? contentStyle : contentStyle.split(",").map(s => s.trim()).filter(Boolean)) : [],
+      scriptUrl: scriptUrl || null,
+      scriptFileName: scriptFileName || null,
+      status: "draft",
     });
 
     res.status(201).json({
@@ -84,6 +96,108 @@ router.post("/", protect, authorizeRoles("business"), async (req, res, next) => 
       status: campaign.status,
       budget: campaign.budget,
       costPerView: campaign.costPerView,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:id/pay", protect, authorizeRoles("business"), async (req, res, next) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign) {
+      return res.status(404).json({ error: "Campaign not found" });
+    }
+    if (campaign.businessId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    if (campaign.status !== "draft") {
+      return res.status(400).json({ error: "Campaign is not in draft status" });
+    }
+
+    const reference = `ep_${campaign._id}_${Date.now()}`;
+
+    const origin = req.headers.origin || process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3002";
+    const callback_url = `${origin.replace(/\/$/, "")}/create-campaign?payment=success&campaignId=${campaign._id}&reference=${reference}`;
+
+    const paymentData = await initializeTransaction({
+      email: req.user.email,
+      amount: campaign.budget,
+      reference,
+      metadata: {
+        campaignId: campaign._id.toString(),
+        businessId: req.user._id.toString(),
+        campaignName: campaign.name,
+      },
+      callback_url,
+    });
+
+    campaign.status = "pending_payment";
+    campaign.paymentReference = reference;
+    await campaign.save();
+
+    res.json({
+      authorization_url: paymentData.authorization_url,
+      access_code: paymentData.access_code,
+      reference,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/:id/payment-status", protect, async (req, res, next) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign) {
+      return res.status(404).json({ error: "Campaign not found" });
+    }
+    if (campaign.businessId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    if (campaign.status === "pending_payment") {
+      const transaction = await Transaction.findOne({
+        campaignId: campaign._id,
+        type: "escrow_deposit",
+      });
+
+      if (transaction) {
+        campaign.status = "under_review";
+        await campaign.save();
+      } else if (campaign.paymentReference) {
+        try {
+          const paystackData = await verifyTransaction(campaign.paymentReference);
+          if (paystackData.status === "success") {
+            campaign.status = "under_review";
+            await campaign.save();
+
+            await Transaction.create({
+              campaignId: campaign._id,
+              type: "escrow_deposit",
+              amount: campaign.budget,
+              status: "escrow_deposit",
+              reference: campaign.paymentReference,
+              date: new Date(),
+            });
+
+            await Notification.create({
+              businessId: campaign.businessId,
+              campaignId: campaign._id,
+              type: "under_review",
+              title: "Under review",
+              body: "We're reviewing your campaign. It'll go live within 2 hours.",
+            });
+          }
+        } catch {
+          // paystack verification failed, status stays pending
+        }
+      }
+    }
+
+    res.json({
+      status: campaign.status,
+      isPaid: ["under_review", "live", "completed", "paused"].includes(campaign.status),
     });
   } catch (error) {
     next(error);
@@ -104,9 +218,17 @@ router.patch("/:id", protect, async (req, res, next) => {
     }
 
     const allowedFields = [
+      "coverImageUrl",
+      "name",
+      "category",
+      "startDate",
+      "endDate",
+      "targetViews",
       "contentBrief",
       "keyMessageCta",
       "whatToAvoid",
+      "scriptUrl",
+      "scriptFileName",
       "platforms",
       "contentStyle",
     ];
@@ -154,6 +276,8 @@ router.patch("/:id/save-and-close", protect, async (req, res, next) => {
         updates.targetViews = data.targetViews;
         updates.costPerView = getCostPerView(data.category || campaign.category);
       }
+      if (data.scriptUrl !== undefined) updates.scriptUrl = data.scriptUrl;
+      if (data.scriptFileName !== undefined) updates.scriptFileName = data.scriptFileName;
     } else if (step === 2) {
       if (data.contentBrief !== undefined) updates.contentBrief = data.contentBrief;
       if (data.keyMessageCta !== undefined) updates.keyMessageCta = data.keyMessageCta;
@@ -190,6 +314,7 @@ router.get("/:id/review", protect, async (req, res, next) => {
       budget: campaign.budget,
       platforms: campaign.platforms,
       contentBrief: campaign.contentBrief,
+      scriptUrl: campaign.scriptUrl,
       startDate: campaign.startDate,
       endDate: campaign.endDate,
     });
@@ -293,27 +418,6 @@ router.patch("/:id/topup", protect, async (req, res, next) => {
   }
 });
 
-router.patch("/:id/extend-deadline", protect, async (req, res, next) => {
-  try {
-    const { newEndDate } = req.body;
-
-    const campaign = await Campaign.findById(req.params.id);
-    if (!campaign) {
-      return res.status(404).json({ error: "Campaign not found" });
-    }
-    if (campaign.businessId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
-
-    campaign.endDate = newEndDate;
-    await campaign.save();
-
-    res.json({ endDate: campaign.endDate });
-  } catch (error) {
-    next(error);
-  }
-});
-
 router.patch("/:id/pause", protect, async (req, res, next) => {
   try {
     const campaign = await Campaign.findById(req.params.id);
@@ -411,13 +515,6 @@ router.get("/:id", protect, async (req, res, next) => {
         ? Math.min(Math.round((campaign.viewsDelivered / campaign.targetViews) * 100), 100)
         : 0;
 
-    const deliveryDays =
-      campaign.startDate && campaign.endDate
-        ? Math.ceil(
-            (new Date(campaign.endDate) - new Date(campaign.startDate)) / (1000 * 60 * 60 * 24)
-          )
-        : null;
-
     const submissionsReceived = await Submission.countDocuments({
       campaignId: campaign._id,
     });
@@ -434,18 +531,49 @@ router.get("/:id", protect, async (req, res, next) => {
       id: campaign._id,
       name: campaign.name,
       category: campaign.category,
-      deliveryDays,
+      coverImageUrl: campaign.coverImageUrl,
       targetViews: campaign.targetViews,
       budget: campaign.budget,
+      costPerView: campaign.costPerView,
       startDate: campaign.startDate,
       endDate: campaign.endDate,
       status: campaign.status,
       viewsDelivered: campaign.viewsDelivered,
       progressPercent,
+      contentBrief: campaign.contentBrief,
+      keyMessageCta: campaign.keyMessageCta,
+      whatToAvoid: campaign.whatToAvoid,
+      scriptUrl: campaign.scriptUrl,
+      scriptFileName: campaign.scriptFileName,
+      platforms: campaign.platforms,
+      contentStyle: campaign.contentStyle,
+      platformFeePercent: campaign.platformFeePercent,
+      platformFee: campaign.platformFee,
+      creatorPool: campaign.creatorPool,
       submissionsReceived,
       submissionsApproved,
       submissionsAwaitingReview,
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete("/:id", protect, authorizeRoles("business"), async (req, res, next) => {
+  try {
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign) {
+      return res.status(404).json({ error: "Campaign not found" });
+    }
+    if (campaign.businessId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+    if (!["draft", "pending_payment"].includes(campaign.status)) {
+      return res.status(400).json({ error: "Can only delete draft or pending payment campaigns" });
+    }
+
+    await Campaign.findByIdAndDelete(req.params.id);
+    res.json({ message: "Campaign deleted" });
   } catch (error) {
     next(error);
   }

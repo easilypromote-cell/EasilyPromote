@@ -8,7 +8,7 @@ import { RoleSelectStep } from "../../components/auth/role-select-step";
 import { RegisterStep } from "../../components/auth/register-step";
 import { OtpStep } from "../../components/auth/otp-step";
 import type { UserRole, AuthFormState } from "../../components/auth/types";
-import { saveAuth } from "../../lib/auth";
+import { apiRequest, saveAuth } from "../../lib/api";
 import { useReveal } from "../../hooks/use-reveal";
 
 type CreateAccountStep = "role-select" | "register" | "otp";
@@ -17,6 +17,8 @@ export default function CreateAccountPage() {
   const router = useRouter();
   const [step, setStep] = useState<CreateAccountStep>("role-select");
   const [role, setRole] = useState<UserRole>("business");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useReveal(step);
 
@@ -44,9 +46,9 @@ export default function CreateAccountPage() {
   };
 
   const handleOtpChange = (index: number, value: string) => {
-    const numericVal = value.replace(/\D/g, "").slice(-1);
+    const char = value.replace(/[^a-zA-Z0-9]/g, "").slice(-1).toUpperCase();
     const newOtp = [...form.otpValues];
-    newOtp[index] = numericVal;
+    newOtp[index] = char;
     setField("otpValues", newOtp);
   };
 
@@ -61,23 +63,60 @@ export default function CreateAccountPage() {
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.agreed) return;
-    setStep("otp");
+    setError("");
+    setLoading(true);
+
+    try {
+      await apiRequest("/auth/register", {
+        method: "POST",
+        body: JSON.stringify({
+          name: form.businessName,
+          businessName: form.businessName,
+          email: form.email,
+          phone: form.phone,
+          industry: form.industry,
+          password: form.password,
+          role: "business",
+        }),
+      });
+
+      await apiRequest("/auth/send-otp", {
+        method: "POST",
+        body: JSON.stringify({ email: form.email, purpose: "registration" }),
+      });
+
+      setStep("otp");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    saveAuth("dummy-jwt-token", {
-      id: crypto.randomUUID(),
-      name: form.businessName || "Acme Inc.",
-      email: form.email,
-      role: "business",
-      industry: form.industry,
-      phone: form.phone,
-    });
-    router.push("/?state=active");
+    setError("");
+    setLoading(true);
+
+    try {
+      const code = form.otpValues.join("");
+      if (code.length !== 6) throw new Error("Enter all 6 digits");
+
+      const data = await apiRequest<{ token: string; user: { id: string; name: string; email: string; role: string } }>("/auth/verify-otp", {
+        method: "POST",
+        body: JSON.stringify({ email: form.email, otp: code, purpose: "registration" }),
+      });
+
+      saveAuth(data.token, data.user);
+      router.push("/");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "OTP verification failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const actions = { setField, goToStep: () => {} };
@@ -87,6 +126,12 @@ export default function CreateAccountPage() {
       <LeftPanel />
 
       <div className="col-span-1 md:col-span-7 flex items-center justify-center p-10 h-screen overflow-y-auto bg-stone-100">
+        {error && (
+          <div className="fixed top-4 right-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-md p-3 z-50">
+            {error}
+          </div>
+        )}
+
         {step === "role-select" && (
           <RoleSelectStep role={role} onSelectRole={setRole} onContinue={handleRoleContinue} />
         )}
@@ -101,6 +146,14 @@ export default function CreateAccountPage() {
             otpValues={form.otpValues}
             onOtpChange={handleOtpChange}
             onSubmit={handleVerifyOtp}
+            onResend={async () => {
+              try {
+                await apiRequest("/auth/send-otp", {
+                  method: "POST",
+                  body: JSON.stringify({ email: form.email, purpose: "registration" }),
+                });
+              } catch {}
+            }}
           />
         )}
 
@@ -112,6 +165,12 @@ export default function CreateAccountPage() {
                 Sign in
               </Link>
             </span>
+          </div>
+        )}
+
+        {loading && (
+          <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <span className="text-sm font-semibold text-stone-500">Loading...</span>
           </div>
         )}
       </div>

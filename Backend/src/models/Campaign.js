@@ -33,6 +33,18 @@ const campaignSchema = new mongoose.Schema(
       type: String,
       maxlength: 500,
     },
+    scriptUrl: {
+      type: String,
+      default: null,
+    },
+    scriptFileName: {
+      type: String,
+      default: null,
+    },
+    paymentReference: {
+      type: String,
+      default: null,
+    },
     platforms: {
       type: [String],
       default: [],
