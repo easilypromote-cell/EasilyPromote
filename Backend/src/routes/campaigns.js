@@ -57,6 +57,7 @@ router.get("/", protect, async (req, res, next) => {
         progressPercent,
         startDate: c.startDate,
         endDate: c.endDate,
+        contentBrief: c.contentBrief,
       };
     });
 

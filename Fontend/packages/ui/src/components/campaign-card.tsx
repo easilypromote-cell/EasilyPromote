@@ -12,6 +12,7 @@ export interface CampaignCardProps {
   progress?: number;
   currentViews?: string;
   targetViews?: string;
+  contentBrief?: string;
   onResume?: () => void;
   onClick?: () => void;
   className?: string;
@@ -26,6 +27,7 @@ export function CampaignCard({
   progress = 68,
   currentViews = "170,000",
   targetViews = "250,000",
+  contentBrief,
   onResume,
   onClick,
   className,
@@ -115,9 +117,17 @@ export function CampaignCard({
         </div>
 
         {/* Campaign Title */}
-        <h3 className="font-rethink font-medium tracking-tight text-base text-stone-900 mb-5 line-clamp-2">
+        <h3 className="font-rethink font-medium tracking-tight text-base text-stone-900 mb-2 line-clamp-2">
           {title}
         </h3>
+
+        {/* Content Brief – 1 line, trimmed */}
+        {contentBrief && (
+          <p className="font-rethink text-xs text-stone-400 font-medium line-clamp-1 mb-5">
+            {contentBrief}
+          </p>
+        )}
+        {!contentBrief && <div className="mb-5" />}
       </div>
 
       {status === "draft" ? (

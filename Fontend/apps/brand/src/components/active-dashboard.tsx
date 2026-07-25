@@ -17,6 +17,7 @@ export interface BrandCampaign {
   budget: number;
   progressPercent: number;
   coverImageUrl?: string;
+  contentBrief?: string;
 }
 
 interface ActiveDashboardProps {
@@ -128,6 +129,7 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
               status={mapStatus(camp.status)}
               category={camp.category}
               imageSrc={camp.coverImageUrl}
+              contentBrief={camp.contentBrief}
               progress={camp.progressPercent}
               currentViews={camp.viewsDelivered.toLocaleString()}
               targetViews={camp.targetViews.toLocaleString()}
