@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { EyeIcon, EyeOffIcon } from "@hugeicons/core-free-icons";
+import { LoaderIcon } from "lucide-react";
 import type { AuthFormActions } from "./types";
 
 interface ResetPasswordStepProps {
@@ -12,6 +13,7 @@ interface ResetPasswordStepProps {
   onSubmit: (e: React.FormEvent) => void;
   actions: AuthFormActions;
   onBackToLogin?: () => void;
+  loading?: boolean;
 }
 
 export function ResetPasswordStep({
@@ -24,6 +26,7 @@ export function ResetPasswordStep({
   onSubmit,
   actions,
   onBackToLogin,
+  loading,
 }: ResetPasswordStepProps) {
   return (
     <div className="w-[350px] space-y-8">
@@ -89,10 +92,10 @@ export function ResetPasswordStep({
         <button
           data-reveal
           type="submit"
-          disabled={!newPassword || newPassword !== confirmPassword}
-          className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-300 text-stone-900 font-semibold text-sm rounded-full font-rethink"
+          disabled={!newPassword || newPassword !== confirmPassword || loading}
+          className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-300 text-stone-900 font-semibold text-sm rounded-full font-rethink disabled:cursor-not-allowed flex items-center justify-center"
         >
-          Reset password
+          {loading ? <LoaderIcon role="status" aria-label="Loading" className="size-4 animate-spin" /> : "Reset password"}
         </button>
       </form>
 

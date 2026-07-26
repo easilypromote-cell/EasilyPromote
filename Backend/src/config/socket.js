@@ -7,7 +7,7 @@ const onlineUsers = new Map();
 function initSocket(server) {
   io = new Server(server, {
     cors: {
-      origin: ["http://localhost:3000", "http://localhost:3001", "http://localhost:3002", "http://localhost:3003"],
+      origin: (process.env.CLIENT_URL || "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003").split(",").map((o) => o.trim()),
       credentials: true,
     },
   });

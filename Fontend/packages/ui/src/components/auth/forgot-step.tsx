@@ -1,3 +1,4 @@
+import { LoaderIcon } from "lucide-react";
 import type { AuthFormActions } from "./types";
 
 interface ForgotStepProps {
@@ -6,9 +7,10 @@ interface ForgotStepProps {
   onSubmit: (e: React.FormEvent) => void;
   actions: AuthFormActions;
   onBackToLogin?: () => void;
+  loading?: boolean;
 }
 
-export function ForgotStep({ email, setEmail, onSubmit, actions, onBackToLogin }: ForgotStepProps) {
+export function ForgotStep({ email, setEmail, onSubmit, actions, onBackToLogin, loading }: ForgotStepProps) {
   const handleBack = onBackToLogin ?? (() => actions.goToStep("login"));
 
   return (
@@ -40,9 +42,10 @@ export function ForgotStep({ email, setEmail, onSubmit, actions, onBackToLogin }
         <button
           data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink"
+          disabled={loading}
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          Send reset code
+          {loading ? <LoaderIcon role="status" aria-label="Loading" className="size-4 animate-spin" /> : "Send reset code"}
         </button>
       </form>
 

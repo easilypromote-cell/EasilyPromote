@@ -111,7 +111,7 @@ export default function ForgotPasswordPage() {
         )}
 
         {step === "forgot" && (
-          <ForgotStep email={email} setEmail={setEmail} onSubmit={handleSendCode} actions={actions} onBackToLogin={() => router.push("/login")} />
+          <ForgotStep email={email} setEmail={setEmail} onSubmit={handleSendCode} actions={actions} onBackToLogin={() => router.push("/login")} loading={loading} />
         )}
         {step === "otp" && (
           <OtpStep
@@ -119,6 +119,7 @@ export default function ForgotPasswordPage() {
             otpValues={otpValues}
             onOtpChange={handleOtpChange}
             onSubmit={handleVerifyOtp}
+            loading={loading}
             onResend={async () => {
               try {
                 await apiRequest("/auth/forgot-password", {
@@ -140,13 +141,8 @@ export default function ForgotPasswordPage() {
             onSubmit={handleResetPassword}
             actions={actions}
             onBackToLogin={() => router.push("/login")}
+            loading={loading}
           />
-        )}
-
-        {loading && (
-          <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <span className="text-sm font-semibold text-stone-500">Loading...</span>
-          </div>
         )}
       </div>
     </div>

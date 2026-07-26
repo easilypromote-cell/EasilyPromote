@@ -120,6 +120,7 @@ export default function LoginPage() {
             onSubmit={handleLogin}
             onForgotPassword={() => router.push("/forgot-password")}
             onCreateAccount={() => router.push("/create-account")}
+            loading={loading}
           />
         )}
 
@@ -129,6 +130,7 @@ export default function LoginPage() {
             otpValues={form.otpValues}
             onOtpChange={handleOtpChange}
             onSubmit={handleVerifyOtp}
+            loading={loading}
             onResend={async () => {
               try {
                 await apiRequest("/auth/send-otp", {
@@ -138,14 +140,6 @@ export default function LoginPage() {
               } catch {}
             }}
           />
-        )}
-
-        {loading && (
-          <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <span className="text-sm font-semibold text-stone-500">
-              {step === "otp" ? "Verifying..." : "Signing in..."}
-            </span>
-          </div>
         )}
       </div>
     </div>

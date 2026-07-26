@@ -6,6 +6,7 @@ import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowRight01Icon, FolderOpenIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@ep/ui/lib/utils";
+import { Skeleton } from "./ui/skeleton";
 import { useReveal } from "../hooks/use-reveal";
 import { apiRequest, getToken } from "../lib/api";
 
@@ -140,8 +141,22 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <span className="text-stone-400 font-rethink text-sm">Loading campaign...</span>
+      <div className="flex h-full bg-white">
+        <div className="w-56 flex flex-col pt-28 gap-3 pl-16 pr-4 flex-shrink-0">
+          <Skeleton className="h-9 w-full rounded-xl" />
+          <Skeleton className="h-9 w-full rounded-xl" />
+          <Skeleton className="h-9 w-full rounded-xl" />
+        </div>
+        <div className="flex-1 p-12 space-y-6">
+          <Skeleton className="h-6 w-48" />
+          <div className="grid grid-cols-3 gap-4">
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+            <Skeleton className="h-24 rounded-2xl" />
+          </div>
+          <Skeleton className="h-32 rounded-2xl" />
+          <Skeleton className="h-32 rounded-2xl" />
+        </div>
       </div>
     );
   }

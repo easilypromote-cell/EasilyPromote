@@ -137,7 +137,7 @@ export default function CreateAccountPage() {
         )}
 
         {step === "register" && (
-          <RegisterStep form={form} actions={actions} onSubmit={handleRegister} />
+          <RegisterStep form={form} actions={actions} onSubmit={handleRegister} loading={loading} />
         )}
 
         {step === "otp" && (
@@ -146,6 +146,7 @@ export default function CreateAccountPage() {
             otpValues={form.otpValues}
             onOtpChange={handleOtpChange}
             onSubmit={handleVerifyOtp}
+            loading={loading}
             onResend={async () => {
               try {
                 await apiRequest("/auth/send-otp", {
@@ -165,12 +166,6 @@ export default function CreateAccountPage() {
                 Sign in
               </Link>
             </span>
-          </div>
-        )}
-
-        {loading && (
-          <div className="fixed inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-50">
-            <span className="text-sm font-semibold text-stone-500">Loading...</span>
           </div>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { EyeIcon, EyeOffIcon, ChevronDownIcon, CheckIcon } from "@hugeicons/core-free-icons";
+import { LoaderIcon } from "lucide-react";
 import { cn } from "../../lib/utils";
 import type { AuthFormState, AuthFormActions } from "./types";
 
@@ -7,9 +8,10 @@ interface RegisterStepProps {
   form: Pick<AuthFormState, "businessName" | "industry" | "email" | "phone" | "password" | "showPassword" | "agreed">;
   actions: AuthFormActions;
   onSubmit: (e: React.FormEvent) => void;
+  loading?: boolean;
 }
 
-export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
+export function RegisterStep({ form, actions, onSubmit, loading }: RegisterStepProps) {
   return (
     <div className="w-[350px] space-y-10">
       <div className="space-y-1.5">
@@ -141,10 +143,10 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
 
           <button
             type="submit"
-            disabled={!form.agreed}
-            className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 text-stone-900 disabled:text-stone-300 font-semibold text-sm rounded-full disabled:cursor-not-allowed font-rethink"
+            disabled={!form.agreed || loading}
+            className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 text-stone-900 disabled:text-stone-300 font-semibold text-sm rounded-full disabled:cursor-not-allowed font-rethink flex items-center justify-center"
           >
-            Continue
+            {loading ? <LoaderIcon role="status" aria-label="Loading" className="size-4 animate-spin" /> : "Continue"}
           </button>
         </div>
       </form>

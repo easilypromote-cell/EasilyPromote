@@ -1,5 +1,6 @@
 import { HugeiconsIcon } from "@hugeicons/react";
 import { EyeIcon, EyeOffIcon } from "@hugeicons/core-free-icons";
+import { LoaderIcon } from "lucide-react";
 import type { AuthFormState, AuthFormActions } from "./types";
 
 interface LoginStepProps {
@@ -8,9 +9,10 @@ interface LoginStepProps {
   onSubmit: (e: React.FormEvent) => void;
   onForgotPassword?: () => void;
   onCreateAccount?: () => void;
+  loading?: boolean;
 }
 
-export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateAccount }: LoginStepProps) {
+export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateAccount, loading }: LoginStepProps) {
   const handleForgot = onForgotPassword ?? (() => actions.goToStep("forgot"));
   const handleCreate = onCreateAccount ?? (() => actions.goToStep("role-select"));
 
@@ -75,9 +77,10 @@ export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateA
         <button
           data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink mt-2"
+          disabled={loading}
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink mt-2 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          Sign in
+          {loading ? <LoaderIcon role="status" aria-label="Loading" className="size-4 animate-spin" /> : "Sign in"}
         </button>
       </form>
 

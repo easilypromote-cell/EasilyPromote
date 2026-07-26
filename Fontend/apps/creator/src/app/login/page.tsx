@@ -51,7 +51,7 @@ export default function LoginPage() {
       setStep("register");
     } else {
       alert("Brand flows are on the brand dashboard. Redirecting...");
-      window.location.href = "http://localhost:3002/login";
+      window.location.href = `${window.location.protocol}//${window.location.hostname}:3002/login`;
     }
   };
 

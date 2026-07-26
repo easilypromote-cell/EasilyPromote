@@ -42,16 +42,20 @@ function CreateCampaignContent() {
     if (user?.name) setUserName(user.name);
   }, []);
 
+  useEffect(() => {
+    history.pushState(null, "", location.href);
+    const handlePopState = () => router.push("/");
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const handleClose = () => router.push("/");
   const handleSuccess = () => router.push("/");
 
   if (isMobile) {
     return (
-      <div className="h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
-        <header className="flex items-center justify-center h-14 px-4 border-b border-stone-200 bg-white flex-shrink-0 relative">
-          <button onClick={handleClose} className="absolute left-4 text-sm font-semibold text-stone-900 font-rethink">
-            &larr; Back
-          </button>
+      <div className="h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
+        <header className="flex items-center justify-center h-14 px-4 border-b border-stone-200 bg-white flex-shrink-0">
           <h3 className="font-rethink font-semibold tracking-tight text-xl text-stone-900">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
         </header>
         <div className="flex-1 overflow-hidden">

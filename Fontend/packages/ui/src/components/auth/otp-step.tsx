@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import { LoaderIcon } from "lucide-react";
 
 interface OtpStepProps {
   email: string;
@@ -6,9 +7,10 @@ interface OtpStepProps {
   onOtpChange: (index: number, value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
   onResend?: () => void;
+  loading?: boolean;
 }
 
-export function OtpStep({ email, otpValues, onOtpChange, onSubmit, onResend }: OtpStepProps) {
+export function OtpStep({ email, otpValues, onOtpChange, onSubmit, onResend, loading }: OtpStepProps) {
   const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
   const [secondsLeft, setSecondsLeft] = useState(30);
 
@@ -84,9 +86,10 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit, onResend }: O
         <button
           data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink"
+          disabled={loading}
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
         >
-          Verify
+          {loading ? <LoaderIcon role="status" aria-label="Loading" className="size-4 animate-spin" /> : "Verify"}
         </button>
       </form>
     </div>

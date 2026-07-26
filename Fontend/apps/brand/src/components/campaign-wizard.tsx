@@ -5,8 +5,8 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { ChevronDownIcon, CheckIcon, Cancel01Icon, CloudUploadIcon, File01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@ep/ui/lib/utils";
 import { TYPOGRAPHY } from "@ep/ui/lib/constants";
+import { MobileDrawer } from "@ep/ui/components/mobile-drawer";
 import { useReveal } from "../hooks/use-reveal";
-import { ViewsSlider } from "./views-slider";
 import { apiRequest, getToken } from "../lib/api";
 
 // Assets imports
@@ -105,8 +105,44 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageProgress, setImageProgress] = useState(0);
   const [customStyleInput, setCustomStyleInput] = useState("");
+  const [categoryDrawerOpen, setCategoryDrawerOpen] = useState(false);
+  const [platformDrawerOpen, setPlatformDrawerOpen] = useState(false);
   const scriptInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const [viewsInput, setViewsInput] = useState(() => campaign.views.toLocaleString());
+
+  const formatViewsString = (val: number) => val.toLocaleString();
+
+  const parseViewsInput = (raw: string): number | null => {
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (!digits) return null;
+    const num = parseInt(digits, 10);
+    if (num < 100000) return null;
+    return Math.min(num, 3000000);
+  };
+
+  const handleViewsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const num = parseViewsInput(raw);
+    if (num !== null) {
+      setViewsInput(formatViewsString(num));
+      handleViewsChange(num);
+    } else {
+      setViewsInput(raw.replace(/[^0-9,]/g, ""));
+    }
+  };
+
+  const handleViewsInputBlur = () => {
+    setViewsInput(formatViewsString(campaign.views));
+  };
+
+  const PRESET_VIEWS = [500000, 1000000, 2000000, 3000000] as const;
+
+  const formatCompact = (value: number): string => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+    return `${Math.round(value / 1000)}K`;
+  };
 
   const handleViewsChange = (val: number) => {
     const rate = getRate(campaign.category);
@@ -287,7 +323,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
     )}>
         {/* Mobile Stepper Bar */}
         {isMobile && createStep !== 4 && (
-          <div className="flex items-center justify-center gap-0 px-6 py-4 bg-[#FBFBFA] border-b border-stone-100 flex-shrink-0">
+          <div className="flex items-center justify-center gap-0 px-6 py-4 bg-stone-100 border-b border-stone-100 flex-shrink-0">
             {/* Step 1 */}
             <button
               onClick={() => createStep >= 1 && setCreateStep(1)}
@@ -316,7 +352,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
 
         {/* Desktop Left Sidebar Progress Indicator */}
         {!isMobile && createStep !== 4 && (
-          <div className="w-80 border-r border-stone-100 bg-[#FBFBFA] p-8 flex flex-col justify-between h-full">
+          <div className="w-80 border-r border-stone-100 bg-stone-100 p-8 flex flex-col justify-between h-full">
             <div>
               <button
                 onClick={campaign.name ? handleSaveDraft : onClose}
@@ -435,20 +471,17 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
         )}>
           {/* Header */}
           {!isMobile && createStep !== 4 && (
-              <div className="text-center mb-8 relative">
+              <div className="text-center mb-8">
               <h3 className="font-rethink font-semibold tracking-tight text-xl text-stone-900">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
-              <button onClick={onClose} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 p-1">
-                <HugeiconsIcon icon={Cancel01Icon} size={16} />
-              </button>
             </div>
           )}
 
           {/* Wizard Step 1: Set up campaign */}
           {createStep === 1 && (
-            <div data-reveal className={cn("space-y-8 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
+            <div data-reveal className={cn("space-y-10 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
               {/* Campaign Cover */}
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-stone-200 rounded-xl overflow-hidden flex items-center justify-center">
+                <div className="w-20 h-20 bg-stone-200 rounded-xl overflow-hidden flex items-center justify-center">
                   {campaign.coverImageUrl ? (
                     <img src={campaign.coverImageUrl} alt="Campaign cover" className="w-full h-full object-cover" />
                   ) : (
@@ -500,38 +533,97 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
               {/* Promotion category */}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-stone-500 block">What are you promoting?</label>
-                <div className="relative">
-                  <select
-                    value={campaign.category}
-                    onChange={(e) => handleCategoryChange(e.target.value)}
-                    className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight appearance-none placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
-                  >
-                    {Object.keys(pricingRates).length > 0
-                      ? Object.keys(pricingRates).map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))
-                      : ["Music", "Fashion", "Tech", "Food", "Travel", "Fitness", "Beauty", "Gaming"].map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))
-                    }
-                  </select>
-                  <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                {isMobile ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryDrawerOpen(true)}
+                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight text-left flex items-center justify-between"
+                    >
+                      <span>{campaign.category}</span>
+                      <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400" />
+                    </button>
+                    <MobileDrawer open={categoryDrawerOpen} onOpenChange={setCategoryDrawerOpen}>
+                      {(Object.keys(pricingRates).length > 0
+                        ? Object.keys(pricingRates)
+                        : ["Music", "Fashion", "Tech", "Food", "Travel", "Fitness", "Beauty", "Gaming"]
+                      ).map((cat) => (
+                        <button
+                          key={cat}
+                          type="button"
+                          onClick={() => {
+                            handleCategoryChange(cat);
+                            setCategoryDrawerOpen(false);
+                          }}
+                          className={cn(
+                            "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium font-rethink",
+                            campaign.category === cat ? "bg-stone-100 text-stone-900" : "text-stone-600"
+                          )}
+                        >
+                          <span>{cat}</span>
+                          {campaign.category === cat && <HugeiconsIcon icon={CheckIcon} size={16} className="text-stone-900" />}
+                        </button>
+                      ))}
+                    </MobileDrawer>
+                  </>
+                ) : (
+                  <div className="relative">
+                    <select
+                      value={campaign.category}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
+                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight appearance-none placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+                    >
+                      {Object.keys(pricingRates).length > 0
+                        ? Object.keys(pricingRates).map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))
+                        : ["Music", "Fashion", "Tech", "Food", "Travel", "Fitness", "Beauty", "Gaming"].map((cat) => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))
+                      }
+                    </select>
+                    <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                )}
                 <span className="text-[10px] text-stone-400 font-medium">
                   ₦{getRate(campaign.category).toFixed(3)} per view — Budget calculated automatically
                 </span>
               </div>
 
-              {/* Campaign Views Slider */}
+              {/* Campaign Views Input */}
               <div className="space-y-4">
                 <label className="text-xs font-medium text-stone-500 block">How many views do you want?</label>
-                <ViewsSlider
-                  value={campaign.views}
-                  onChange={handleViewsChange}
-                  min={100000}
-                  max={3000000}
-                  steps={[100000, 500000, 1000000, 1500000, 2000000, 3000000]}
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={viewsInput}
+                  onChange={handleViewsInputChange}
+                  onBlur={handleViewsInputBlur}
+                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
                 />
+                <div className="flex gap-2">
+                  {PRESET_VIEWS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => {
+                        setViewsInput(formatViewsString(preset));
+                        handleViewsChange(preset);
+                      }}
+                      className={cn(
+                        "flex-1 py-2 rounded-full text-xs font-medium font-rethink transition-colors",
+                        campaign.views === preset
+                          ? "bg-stone-900 text-white"
+                          : "bg-stone-100 text-stone-600"
+                      )}
+                    >
+                      {formatCompact(preset)}
+                    </button>
+                  ))}
+                </div>
+                <span className="text-[10px] text-stone-400 font-medium">
+                  Minimum 100,000 views — Budget calculated automatically
+                </span>
               </div>
 
               {/* Campaign Budget Display */}
@@ -555,31 +647,128 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
 
           {/* Wizard Step 2: Campaign Brief */}
           {createStep === 2 && (
-            <div data-reveal className={cn("space-y-6 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
+            <div data-reveal className={cn("space-y-8 flex-1", isMobile ? "w-full" : "w-[350px] mx-auto")}>
+              {/* Content Brief */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-stone-500 block">Content brief</label>
+                <textarea
+                  placeholder="Describe what you want creators to promote..."
+                  value={campaign.brief}
+                  onChange={(e) => setCampaign(prev => ({ ...prev, brief: e.target.value }))}
+                  rows={4}
+                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-2xl text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 resize-none min-h-[100px]"
+                />
+                <input
+                  ref={scriptInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={handleScriptUpload}
+                  className="hidden"
+                />
+                {campaign.scriptFileName ? (
+                  <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-stone-100 rounded-full">
+                    <HugeiconsIcon icon={File01Icon} size={14} className="text-stone-500" />
+                    <span className="text-xs font-medium text-stone-600 font-rethink">{campaign.scriptFileName}</span>
+                    <button onClick={handleRemoveScript} className="text-stone-400 ml-0.5">
+                      <HugeiconsIcon icon={Delete01Icon} size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => scriptInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-stone-200 rounded-full text-xs font-medium text-stone-500 font-rethink"
+                  >
+                    <HugeiconsIcon icon={CloudUploadIcon} size={14} />
+                    Attach file
+                  </button>
+                )}
+              </div>
+
+              {/* Key Message / CTA */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-stone-500 block">Key message / CTA</label>
+                <input
+                  type="text"
+                  placeholder="What's the main message or call to action?"
+                  value={campaign.keyMessage}
+                  onChange={(e) => setCampaign(prev => ({ ...prev, keyMessage: e.target.value }))}
+                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+                />
+              </div>
+
+              {/* What to Avoid */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-stone-500 block">What to avoid</label>
+                <input
+                  type="text"
+                  placeholder="Anything creators should avoid mentioning?"
+                  value={campaign.avoid}
+                  onChange={(e) => setCampaign(prev => ({ ...prev, avoid: e.target.value }))}
+                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+                />
+              </div>
+
               {/* Platform Selection */}
               <div className="space-y-2">
                 <label className="text-xs font-medium text-stone-500 block">Which platforms?</label>
-                <div className="relative">
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const selected = e.target.value;
-                      if (selected && !campaign.platforms.includes(selected)) {
-                        setCampaign(prev => ({
-                          ...prev,
-                          platforms: [...prev.platforms, selected],
-                        }));
-                      }
-                    }}
-                    className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight appearance-none placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
-                  >
-                    <option value="" disabled>{campaign.platforms.length === 0 ? "Select platforms" : "Add another platform"}</option>
-                    {PLATFORM_OPTIONS.filter(p => !campaign.platforms.includes(p)).map((platform) => (
-                      <option key={platform} value={platform}>{platform}</option>
-                    ))}
-                  </select>
-                  <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                {isMobile ? (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => setPlatformDrawerOpen(true)}
+                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight text-left flex items-center justify-between"
+                    >
+                      <span>{campaign.platforms.length === 0 ? "Select platforms" : `${campaign.platforms.length} platform${campaign.platforms.length > 1 ? "s" : ""} selected`}</span>
+                      <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400" />
+                    </button>
+                    <MobileDrawer open={platformDrawerOpen} onOpenChange={setPlatformDrawerOpen}>
+                      {PLATFORM_OPTIONS.map((platform) => (
+                        <button
+                          key={platform}
+                          type="button"
+                          onClick={() => {
+                            setCampaign(prev => ({
+                              ...prev,
+                              platforms: prev.platforms.includes(platform)
+                                ? prev.platforms.filter(p => p !== platform)
+                                : [...prev.platforms, platform],
+                            }));
+                          }}
+                          className={cn(
+                            "w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium font-rethink",
+                            campaign.platforms.includes(platform) ? "bg-stone-100 text-stone-900" : "text-stone-600"
+                          )}
+                        >
+                          <span>{platform}</span>
+                          {campaign.platforms.includes(platform) && <HugeiconsIcon icon={CheckIcon} size={16} className="text-stone-900" />}
+                        </button>
+                      ))}
+                    </MobileDrawer>
+                  </>
+                ) : (
+                  <div className="relative">
+                    <select
+                      value=""
+                      onChange={(e) => {
+                        const selected = e.target.value;
+                        if (selected && !campaign.platforms.includes(selected)) {
+                          setCampaign(prev => ({
+                            ...prev,
+                            platforms: [...prev.platforms, selected],
+                          }));
+                        }
+                      }}
+                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight appearance-none placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+                    >
+                      <option value="" disabled>{campaign.platforms.length === 0 ? "Select platforms" : "Add another platform"}</option>
+                      {PLATFORM_OPTIONS.filter(p => !campaign.platforms.includes(p)).map((platform) => (
+                        <option key={platform} value={platform}>{platform}</option>
+                      ))}
+                    </select>
+                    <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                )}
                 {campaign.platforms.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
                     {campaign.platforms.map((p) => (
@@ -591,29 +780,45 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                           >
                             <HugeiconsIcon icon={Cancel01Icon} size={12} />
                           </button>
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Custom style chips + input */}
-                {campaign.contentStyle.filter(s => !["Fun & Energetic", "Lifestyle", "Comedy", "Trend/Challenge"].includes(s)).length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {campaign.contentStyle.filter(s => !["Fun & Energetic", "Lifestyle", "Comedy", "Trend/Challenge"].includes(s)).map((style) => (
-                      <span key={style} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stone-900 text-white text-[11px] font-medium font-rethink">
-                        {style}
-                        <button
-                          onClick={() => setCampaign(prev => ({ ...prev, contentStyle: prev.contentStyle.filter(s => s !== style) }))}
-                          className="ml-0.5"
-                        >
-                          <HugeiconsIcon icon={Cancel01Icon} size={12} />
-                        </button>
                       </span>
                     ))}
                   </div>
                 )}
+              </div>
 
+                {/* Preferred Content Style */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-stone-500 block">Preferred content style</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Fun & Energetic", "Lifestyle", "Comedy", "Trend/Challenge"].map((style) => {
+                      const isSelected = campaign.contentStyle.includes(style);
+                      return (
+                        <button
+                          key={style}
+                          type="button"
+                          onClick={() => {
+                            setCampaign(prev => ({
+                              ...prev,
+                              contentStyle: isSelected
+                                ? prev.contentStyle.filter(s => s !== style)
+                                : [...prev.contentStyle, style],
+                            }));
+                          }}
+                          className={cn(
+                            "px-3 py-1.5 rounded-full text-xs font-medium font-rethink transition-colors",
+                            isSelected
+                              ? "bg-stone-900 text-white"
+                              : "bg-stone-100 text-stone-600"
+                          )}
+                        >
+                          {style}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Custom style input */}
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -651,6 +856,23 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                   </button>
                 </div>
 
+                {/* All selected styles */}
+                {campaign.contentStyle.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {campaign.contentStyle.map((style) => (
+                      <span key={style} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stone-900 text-white text-[11px] font-medium font-rethink">
+                        {style}
+                        <button
+                          onClick={() => setCampaign(prev => ({ ...prev, contentStyle: prev.contentStyle.filter(s => s !== style) }))}
+                          className="ml-0.5"
+                        >
+                          <HugeiconsIcon icon={Cancel01Icon} size={12} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
               {/* Bottom Navigation */}
               <div className="flex gap-4 pt-6">
                 <button
@@ -677,7 +899,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
               <div className="space-y-4">
                 {/* Image */}
                 <div>
-                  <div className="w-[70px] h-[70px] bg-purple-100 rounded-2xl overflow-hidden flex items-center justify-center border border-purple-200">
+                  <div className="w-[90px] h-[90px] bg-purple-100 rounded-2xl overflow-hidden flex items-center justify-center border border-purple-200">
                     {campaign.coverImageUrl ? (
                       <img src={campaign.coverImageUrl} alt="Campaign cover" className="w-full h-full object-cover" />
                     ) : (
