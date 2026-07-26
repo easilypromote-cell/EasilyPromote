@@ -164,13 +164,13 @@ router.get("/:id/payment-status", protect, async (req, res, next) => {
       });
 
       if (transaction) {
-        campaign.status = "live";
+        campaign.status = "under_review";
         await campaign.save();
       } else if (campaign.paymentReference) {
         try {
           const paystackData = await verifyTransaction(campaign.paymentReference);
           if (paystackData.status === "success") {
-            campaign.status = "live";
+            campaign.status = "under_review";
             await campaign.save();
 
             await Transaction.create({
@@ -185,9 +185,9 @@ router.get("/:id/payment-status", protect, async (req, res, next) => {
             await Notification.create({
               businessId: campaign.businessId,
               campaignId: campaign._id,
-              type: "campaign_live",
-              title: "Campaign is Live!",
-              body: "Your campaign is funded and live. Creators can now claim slots.",
+              type: "under_review",
+              title: "Under review",
+              body: "We're reviewing your campaign. It'll go live within 2 hours.",
             });
           }
         } catch {
@@ -346,7 +346,7 @@ router.post("/:id/launch", protect, async (req, res, next) => {
       }
     }
 
-    campaign.status = "live";
+    campaign.status = "under_review";
     await campaign.save();
 
     await Transaction.create({
@@ -360,15 +360,15 @@ router.post("/:id/launch", protect, async (req, res, next) => {
     await Notification.create({
       businessId: req.user._id,
       campaignId: campaign._id,
-      type: "campaign_live",
-      title: "Campaign is Live!",
-      body: "Your campaign is funded and live. Creators can now claim slots.",
+      type: "under_review",
+      title: "Under review",
+      body: "We're reviewing your campaign. It'll go live within 2 hours.",
     });
 
     res.json({
       id: campaign._id,
       status: campaign.status,
-      message: "Your campaign is funded and live. Creators can now claim slots.",
+      message: "We're reviewing your campaign. It'll go live within 2 hours.",
       escrow: {
         totalEscrowed: campaign.budget,
         platformFee: campaign.platformFee,
