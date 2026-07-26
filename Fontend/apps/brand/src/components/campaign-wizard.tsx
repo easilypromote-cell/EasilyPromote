@@ -650,7 +650,6 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                     Add+
                   </button>
                 </div>
-              </div>
 
               {/* Bottom Navigation */}
               <div className="flex gap-4 pt-6">
