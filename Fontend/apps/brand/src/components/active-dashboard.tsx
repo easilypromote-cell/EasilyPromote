@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Filter, ChevronDown, Plus } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { FilterIcon, ChevronDownIcon, Add01Icon } from "@hugeicons/core-free-icons";
 import { CampaignCard } from "@ep/ui/components/campaign-card";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
@@ -85,13 +86,14 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center justify-center gap-2 bg-white border border-stone-200 rounded-full p-3 md:px-4 md:py-2.5 cursor-pointer"
             >
-              <Filter className="w-5 h-5 md:w-4 md:h-4 text-stone-500" />
+              <HugeiconsIcon icon={FilterIcon} size={20} className="md:hidden text-stone-500" />
+              <HugeiconsIcon icon={FilterIcon} size={16} className="hidden md:block text-stone-500" />
               <span className="hidden md:inline text-sm font-medium text-stone-900">{selectedFilter}</span>
-              <ChevronDown className="w-4 h-4 hidden md:block text-stone-400" />
+              <HugeiconsIcon icon={ChevronDownIcon} size={16} className="hidden md:block text-stone-400" />
             </button>
 
             {isFilterOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl py-1 z-50 shadow-lg">
+              <div className="absolute top-full right-0 mt-2 w-48 bg-white border border-stone-200 rounded-xl py-1 z-50">
                 {FILTER_OPTIONS.map((option) => (
                   <button
                     key={option}
@@ -115,7 +117,7 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
             onClick={onCreateCampaign}
             className="flex items-center justify-center gap-2 p-3 md:px-6 md:py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-semibold text-sm rounded-full border border-stone-100"
           >
-            <Plus className="w-5 h-5 md:hidden" />
+            <HugeiconsIcon icon={Add01Icon} size={20} className="md:hidden" />
             <span className="hidden md:inline">Create Campaign</span>
           </button>
         </div>
@@ -129,7 +131,6 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
               status={mapStatus(camp.status)}
               category={camp.category}
               imageSrc={camp.coverImageUrl}
-              contentBrief={camp.contentBrief}
               progress={camp.progressPercent}
               currentViews={camp.viewsDelivered.toLocaleString()}
               targetViews={camp.targetViews.toLocaleString()}

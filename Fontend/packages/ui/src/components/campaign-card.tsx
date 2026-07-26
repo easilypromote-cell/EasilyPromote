@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Music, Clock } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MusicNote01Icon, Clock01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "../lib/utils";
 import { TYPOGRAPHY } from "../lib/constants";
 
@@ -12,7 +13,6 @@ export interface CampaignCardProps {
   progress?: number;
   currentViews?: string;
   targetViews?: string;
-  contentBrief?: string;
   onResume?: () => void;
   onClick?: () => void;
   className?: string;
@@ -27,7 +27,6 @@ export function CampaignCard({
   progress = 68,
   currentViews = "170,000",
   targetViews = "250,000",
-  contentBrief,
   onResume,
   onClick,
   className,
@@ -37,50 +36,32 @@ export function CampaignCard({
     switch (status) {
       case "review_needed":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-green-600" /> Live Campaigns
+          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-[#176448]" /> Live Campaigns
           </span>
         );
       case "live":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-green-600" /> Live Campaigns
+          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-[#176448]" /> Live Campaigns
           </span>
         );
       case "draft":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-stone-400" /> Draft
-          </span>
-        );
-      case "paused":
-        return (
-          <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-orange-600" /> Campaign Paused
+          <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-stone-500" /> Draft
           </span>
         );
       case "under_review":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-[#6E330C] font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-[#6E330C]" /> Under Review
+          <span className="px-2 py-0.5 rounded-full bg-[#FBDFB1] text-[#693D11] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-[#693D11]" /> Under Review
           </span>
         );
       case "completed":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-800 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-green-600" /> Completed
-          </span>
-        );
-      case "pending_payment":
-        return (
-          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-[#6E330C] font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-[#6E330C]" /> Payment Pending
-          </span>
-        );
-      case "cancelled":
-        return (
-          <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-800 font-medium tracking-tight text-[10px] font-inter flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-red-600" /> Cancelled
+          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+            <span className="w-1 h-1 rounded-full bg-[#176448]" /> Completed
           </span>
         );
       default:
@@ -92,7 +73,7 @@ export function CampaignCard({
     <div
       onClick={onClick}
       className={cn(
-        "bg-stone-50 rounded-3xl border border-stone-100 p-4 flex flex-col justify-between relative overflow-hidden",
+        "bg-stone-50 rounded-3xl border-[0.2px] border-stone-200 md:border md:border-stone-100 p-4 flex flex-col justify-between relative overflow-hidden",
         onClick && "cursor-pointer",
         className
       )}
@@ -104,10 +85,10 @@ export function CampaignCard({
             <img
               src={imageSrc}
               alt={title}
-              className="w-[50px] h-[50px] rounded-2xl object-cover border border-stone-200"
+              className="w-[45px] h-[45px] md:w-[50px] md:h-[50px] rounded-2xl object-cover border border-stone-200"
             />
           ) : (
-            <div className="w-[50px] h-[50px] rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200">
+            <div className="w-[45px] h-[45px] md:w-[50px] md:h-[50px] rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200">
               <svg className="w-6 h-6 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
               </svg>
@@ -117,17 +98,9 @@ export function CampaignCard({
         </div>
 
         {/* Campaign Title */}
-        <h3 className="font-rethink font-medium tracking-tight text-base text-stone-900 mb-2 line-clamp-2">
+        <h3 className="font-rethink font-medium tracking-tight text-[16px] text-stone-900 mb-5 line-clamp-2">
           {title}
         </h3>
-
-        {/* Content Brief – 1 line, trimmed */}
-        {contentBrief && (
-          <p className="font-rethink text-xs text-stone-400 font-medium line-clamp-1 mb-5">
-            {contentBrief}
-          </p>
-        )}
-        {!contentBrief && <div className="mb-5" />}
       </div>
 
       {status === "draft" ? (
@@ -137,7 +110,7 @@ export function CampaignCard({
             e.stopPropagation();
             if (onResume) onResume();
           }}
-          className="w-full mt-auto h-12 bg-white border border-stone-100 text-stone-900 rounded-full font-rethink font-medium tracking-tight text-sm"
+          className="w-full mt-auto h-12 bg-white border border-stone-100 text-stone-900 rounded-full font-rethink font-semibold tracking-tight text-sm"
         >
           Resume
         </button>
@@ -145,16 +118,14 @@ export function CampaignCard({
         /* Category, Duration, and Progress for Active/Paused */
         <div className="mt-auto">
           <div className="flex gap-2 mb-5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C2D6FF] text-[#162664] font-medium tracking-tight text-[10px]">
-              <Music className="w-3 h-3 text-[#162664]" />
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
+              <HugeiconsIcon icon={MusicNote01Icon} size={12} className="text-stone-500" />
               {category}
             </span>
-            {delivery && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
-                <Clock className="w-3 h-3" />
-                {delivery}
-              </span>
-            )}
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
+              <HugeiconsIcon icon={Clock01Icon} size={12} />
+              {delivery}
+            </span>
           </div>
 
           <div className="flex items-center gap-3">

@@ -3,11 +3,8 @@
 import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import {
-  ArrowRight,
-  FolderOpen,
-  MoreHorizontal,
-} from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowRight01Icon, FolderOpenIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
 import { apiRequest, getToken } from "../lib/api";
@@ -194,13 +191,13 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
                   "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium font-rethink tracking-tight transition-all duration-150 text-left",
                   isActive
                     ? "bg-stone-100 text-stone-900"
-                    : "text-stone-400 hover:bg-stone-50 hover:text-stone-600"
+                    : "text-stone-400"
                 )}
               >
                 {value === "Overview" && (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                 )}
-                {value === "Submission" && <FolderOpen className="w-4 h-4 flex-shrink-0" />}
+                {value === "Submission" && <HugeiconsIcon icon={FolderOpenIcon} size={16} className="flex-shrink-0" />}
                 {value === "Payouts" && (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -288,7 +285,7 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
                     Top up budget
                   </button>
                   <button className="px-3.5 py-3 bg-white text-stone-600 rounded-full border border-stone-200">
-                    <MoreHorizontal className="w-5 h-5 text-stone-700" />
+                    <HugeiconsIcon icon={MoreHorizontalIcon} size={20} className="text-stone-700" />
                   </button>
                 </>
               )}
@@ -386,7 +383,7 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
                 <div className="bg-stone-100 rounded-[24px] p-4 space-y-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center">
-                      <FolderOpen className="w-5 h-5 text-stone-600" />
+                      <HugeiconsIcon icon={FolderOpenIcon} size={20} className="text-stone-600" />
                     </div>
                     <div className="flex-1">
                       <h5 className="text-xs font-medium text-stone-500 font-rethink">
@@ -398,7 +395,7 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
                     onClick={() => setActiveTab("Submission")}
                     className="text-xs font-medium text-stone-900 flex items-center gap-1 font-rethink"
                   >
-                    Review now <ArrowRight className="w-3.5 h-3.5" />
+                    Review now <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
                   </button>
                 </div>
               ) : (

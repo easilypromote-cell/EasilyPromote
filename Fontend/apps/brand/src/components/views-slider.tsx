@@ -77,7 +77,7 @@ export function ViewsSlider({
     <div className={cn("relative select-none", className)} data-vaul-no-drag>
       {/* Value bubble */}
       <div className="flex justify-center mb-3">
-        <div className="bg-stone-900 text-white text-sm font-bold font-rethink px-3 py-1 rounded-full">
+        <div className="bg-stone-900 text-white text-sm font-medium font-rethink px-3 py-1 rounded-full">
           {formatFullNumber(value)} views
         </div>
       </div>
@@ -124,7 +124,7 @@ export function ViewsSlider({
 
         {/* Thumb */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-5 h-5 bg-white rounded-full shadow-md border border-stone-200 transition-[left] duration-75"
+          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 w-5 h-5 bg-white rounded-full border border-stone-200 transition-[left] duration-75"
           style={{ left: `${fillPercent}%` }}
         />
       </div>
@@ -141,7 +141,7 @@ export function ViewsSlider({
               type="button"
               onClick={() => onChange(step)}
               className={cn(
-                "text-[10px] font-medium font-rethink tracking-tight transition-colors hover:text-stone-700",
+                "text-[10px] font-medium font-rethink tracking-tight",
                 isClosest ? "text-stone-900" : "text-stone-400"
               )}
               style={{ width: `${100 / steps.length}%` }}

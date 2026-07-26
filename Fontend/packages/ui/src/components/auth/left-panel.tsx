@@ -24,8 +24,8 @@ export function LeftPanel({
       </div>
 
       <div data-reveal-left className="relative w-64 h-64 mx-auto my-10 flex-1 flex items-center justify-center">
-        <div className="absolute w-52 h-52 rounded-[24px] bg-stone-900/10 transform rotate-[-6deg] translate-x-2 translate-y-1 shadow-inner" />
-        <div className="absolute w-52 h-52 rounded-[24px] overflow-hidden border-4 border-white shadow-xl transform rotate-[-3deg] transition-all hover:rotate-0 hover:scale-105 duration-300">
+        <div className="absolute w-52 h-52 rounded-[24px] bg-stone-900/10 transform rotate-[-6deg] translate-x-2 translate-y-1" />
+        <div className="absolute w-52 h-52 rounded-[24px] overflow-hidden border-4 border-white transform rotate-[-3deg]">
           <Image
             src={imagePng}
             alt="Creator smiling in hoodie"
@@ -37,7 +37,7 @@ export function LeftPanel({
       </div>
 
       <div data-reveal-left className="space-y-4 w-[430px]">
-        <h2 className="text-4xl font-bold text-stone-900 font-rethink leading-tight tracking-tighter">
+        <h2 className="text-4xl font-medium text-stone-900 font-rethink leading-tight tracking-tighter">
           {title}
         </h2>
         <p className="text-sm font-medium text-stone-900/80 leading-relaxed font-rethink tracking-tight">

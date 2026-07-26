@@ -33,8 +33,8 @@ export const TYPOGRAPHY = {
   // "EasilyPromote" - Raleway 600 14px 20px #0A0D14
   brandLogo: "font-raleway font-semibold text-sm leading-[20px] text-[#0A0D14]",
   
-  // "Acme Inc." - Inter 500 14px 20px #0A0D14
-  userProfile: "font-inter font-medium text-sm leading-[20px] text-[#0A0D14]",
+  // "Acme Inc." - Rethink Sans 500 14px 20px #0C0A09
+  userProfile: "font-rethink font-medium text-sm leading-[20px] text-stone-950",
   
   // "Welcome, Acme Inc." - Motterdam 400 33px 42.67px #1C1917
   welcomeHeader: "font-motterdam font-normal text-[33px] leading-[42.67px] text-stone-900",

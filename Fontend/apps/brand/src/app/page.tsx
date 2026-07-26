@@ -144,9 +144,9 @@ function BrandDashboardContent() {
       ) : (
         <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto px-6 py-12">
           <div className="text-center max-w-md bg-white border border-stone-200 rounded-2xl p-8">
-            <h2 className="text-2xl font-bold mb-3">Wallet & Billing</h2>
+            <h2 className="text-2xl font-medium mb-3">Wallet & Billing</h2>
             <p className="text-stone-500 mb-6">Manage your escrow transactions, campaign budgets, and wallet status.</p>
-            <div className="text-3xl font-bold text-stone-900 mb-2">₦0.00</div>
+            <div className="text-3xl font-medium text-stone-900 mb-2">₦0.00</div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-stone-100 rounded-full text-stone-600">Balance Locked</span>
           </div>
         </main>

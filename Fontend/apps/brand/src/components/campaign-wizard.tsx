@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useState, useRef } from "react";
 import Image from "next/image";
-import { ChevronDown, Check, X, Upload, FileText, Trash2 } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ChevronDownIcon, CheckIcon, Cancel01Icon, CloudUploadIcon, File01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@ep/ui/lib/utils";
 import { TYPOGRAPHY } from "@ep/ui/lib/constants";
 import { useReveal } from "../hooks/use-reveal";
@@ -290,23 +291,23 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
             {/* Step 1 */}
             <button
               onClick={() => createStep >= 1 && setCreateStep(1)}
-              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold flex-shrink-0", getStepClasses(1))}
+              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold flex-shrink-0", getStepClasses(1))}
             >
-              {createStep > 1 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "1"}
+              {createStep > 1 ? <HugeiconsIcon icon={CheckIcon} size={14} /> : "1"}
             </button>
             <div className={cn("flex-1 h-[1px] mx-2", createStep > 1 ? "bg-green-600" : "bg-stone-200")} />
             {/* Step 2 */}
             <button
               onClick={() => createStep >= 2 && setCreateStep(2)}
-              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold flex-shrink-0", getStepClasses(2))}
+              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold flex-shrink-0", getStepClasses(2))}
             >
-              {createStep > 2 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "2"}
+              {createStep > 2 ? <HugeiconsIcon icon={CheckIcon} size={14} /> : "2"}
             </button>
             <div className={cn("flex-1 h-[1px] mx-2", createStep > 2 ? "bg-green-600" : "bg-stone-200")} />
             {/* Step 3 */}
             <button
               onClick={() => createStep >= 3 && setCreateStep(3)}
-              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold flex-shrink-0", getStepClasses(3))}
+              className={cn("w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold flex-shrink-0", getStepClasses(3))}
             >
               3
             </button>
@@ -335,11 +336,11 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                 >
                   <div
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold",
+                      "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold",
                       getStepClasses(1)
                     )}
                   >
-                    {createStep > 1 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "1"}
+                    {createStep > 1 ? <HugeiconsIcon icon={CheckIcon} size={14} /> : "1"}
                   </div>
                   <span
                     className={cn(
@@ -361,11 +362,11 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                 >
                   <div
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold",
+                      "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold",
                       getStepClasses(2)
                     )}
                   >
-                    {createStep > 2 ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : "2"}
+                    {createStep > 2 ? <HugeiconsIcon icon={CheckIcon} size={14} /> : "2"}
                   </div>
                   <span
                     className={cn(
@@ -387,7 +388,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                 >
                   <div
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-bold",
+                      "w-6 h-6 rounded-full flex items-center justify-center border text-xs font-semibold",
                       getStepClasses(3)
                     )}
                   >
@@ -419,7 +420,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                     alert("Failed to delete draft");
                   }
                 }}
-                className="mt-3 text-xs font-medium text-red-500 hover:text-red-600 font-rethink"
+                className="mt-3 text-xs font-medium text-red-500 font-rethink"
               >
                 Delete draft
               </button>
@@ -437,7 +438,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
               <div className="text-center mb-8 relative">
               <h3 className="font-rethink font-semibold tracking-tight text-xl text-stone-900">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
               <button onClick={onClose} className="absolute right-0 top-1/2 -translate-y-1/2 text-stone-400 p-1">
-                <X className="w-4 h-4" />
+                <HugeiconsIcon icon={Cancel01Icon} size={16} />
               </button>
             </div>
           )}
@@ -455,7 +456,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                   )}
                 </div>
                 <div className="flex-1 space-y-1">
-                  <h4 className="text-xs font-bold text-stone-900">Campaign cover</h4>
+                  <h4 className="text-xs font-semibold text-stone-900">Campaign cover</h4>
                   <input
                     ref={coverInputRef}
                     type="file"
@@ -476,7 +477,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                   ) : (
                     <button
                       onClick={() => coverInputRef.current?.click()}
-                      className="px-4 py-1.5 bg-white rounded-full text-xs font-medium text-stone-600 font-rethink hover:bg-stone-50 transition-colors"
+                      className="px-4 py-1.5 bg-white rounded-full text-xs font-medium text-stone-600 font-rethink"
                     >
                       {campaign.coverImageUrl ? "Change image" : "Upload image"}
                     </button>
@@ -514,7 +515,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                         ))
                     }
                   </select>
-                  <ChevronDown className="w-4 h-4 text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
                 <span className="text-[10px] text-stone-400 font-medium">
                   ₦{getRate(campaign.category).toFixed(3)} per view — Budget calculated automatically
@@ -545,7 +546,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
               <button
                 onClick={handleNextStep}
                 disabled={!campaign.name}
-                className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed text-[#1C1917] font-bold text-sm rounded-full border border-stone-100 font-rethink"
+                className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed text-[#1C1917] font-semibold text-sm rounded-full border border-stone-100 font-rethink"
               >
                 Continue
               </button>
@@ -577,7 +578,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                       <option key={platform} value={platform}>{platform}</option>
                     ))}
                   </select>
-                  <ChevronDown className="w-4 h-4 text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                 </div>
                 {campaign.platforms.length > 0 && (
                   <div className="flex flex-wrap gap-2 mt-2">
@@ -586,100 +587,14 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                         {p}
                         <button
                           onClick={() => setCampaign(prev => ({ ...prev, platforms: prev.platforms.filter(pl => pl !== p) }))}
-                          className="ml-0.5 hover:text-stone-300"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Content Brief */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-stone-500 block">Content brief</label>
-                <textarea
-                  placeholder="Describe what you want creators to do..."
-                  value={campaign.brief}
-                  onChange={(e) => setCampaign({ ...campaign, brief: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
-                />
-              </div>
-
-              {/* Script / Document Upload */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-stone-500 block">Upload script (optional)</label>
-                <input
-                  ref={scriptInputRef}
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  onChange={handleScriptUpload}
-                  className="hidden"
-                />
-                {campaign.scriptFileName ? (
-                  <div className="flex items-center gap-3 px-4 py-3 bg-white border border-stone-200 rounded-xl">
-                    <FileText className="w-5 h-5 text-stone-500 flex-shrink-0" />
-                    <span className="text-sm font-rethink font-medium text-stone-900 truncate flex-1">
-                      {campaign.scriptFileName}
-                    </span>
-                    <button
-                      onClick={handleRemoveScript}
-                      className="text-stone-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => scriptInputRef.current?.click()}
-                    disabled={uploadingScript}
-                    className="w-full px-4 py-3 bg-white border border-dashed border-stone-300 rounded-xl text-sm font-rethink font-medium text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Upload className="w-4 h-4" />
-                    {uploadingScript ? "Uploading..." : "Upload PDF or DOC"}
-                  </button>
-                )}
-              </div>
-
-              {/* Key Message */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-stone-500 block">Key message / CTA</label>
-                <textarea
-                  placeholder="What should the creators say or direct viewers to do..."
-                  value={campaign.keyMessage}
-                  onChange={(e) => setCampaign({ ...campaign, keyMessage: e.target.value })}
-                  rows={3}
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-xl text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
-                />
-              </div>
-
-              {/* Preferred Style selection */}
-              <div className="space-y-3">
-                <label className="text-xs font-medium text-stone-500 block">Preferred content style</label>
-                <div className="flex flex-wrap gap-2">
-                  {["Fun & Energetic", "Lifestyle", "Comedy", "Trend/Challenge"].map((style) => (
-                    <button
-                      key={style}
-                      onClick={() => {
-                        setCampaign(prev => ({
-                          ...prev,
-                          contentStyle: prev.contentStyle.includes(style)
-                            ? prev.contentStyle.filter(s => s !== style)
-                            : [...prev.contentStyle, style],
-                        }));
-                      }}
-                      className={cn(
-                        "px-4 py-2 rounded-full border text-xs font-medium tracking-tight font-rethink transition-colors",
-                        campaign.contentStyle.includes(style)
-                          ? "bg-stone-900 border-stone-900 text-white"
-                          : "bg-white border-stone-200 text-stone-600"
-                      )}
-                    >
-                      {style}
-                    </button>
-                  ))}
+                          className="ml-0.5"
+                          >
+                            <HugeiconsIcon icon={Cancel01Icon} size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Custom style chips + input */}
@@ -690,9 +605,9 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                         {style}
                         <button
                           onClick={() => setCampaign(prev => ({ ...prev, contentStyle: prev.contentStyle.filter(s => s !== style) }))}
-                          className="ml-0.5 hover:text-stone-300"
+                          className="ml-0.5"
                         >
-                          <X className="w-3 h-3" />
+                          <HugeiconsIcon icon={Cancel01Icon} size={12} />
                         </button>
                       </span>
                     ))}
@@ -730,7 +645,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                       }
                     }}
                     disabled={!customStyleInput.trim()}
-                    className="px-4 py-2.5 bg-stone-900 text-white text-xs font-bold font-rethink rounded-full disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="px-4 py-2.5 bg-stone-900 text-white text-xs font-semibold font-rethink rounded-full disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     Add+
                   </button>
@@ -748,7 +663,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
                 <button
                   onClick={handleNextStep}
                   disabled={!campaign.brief || !campaign.keyMessage}
-                  className="flex-1 py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed text-[#1C1917] font-bold text-sm rounded-full border border-stone-100 font-rethink"
+                  className="flex-1 py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-400 disabled:cursor-not-allowed text-[#1C1917] font-semibold text-sm rounded-full border border-stone-100 font-rethink"
                 >
                   Continue
                 </button>
@@ -827,14 +742,14 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
               <div className="flex gap-4 pt-4">
                 <button
                   onClick={handleBackStep}
-                  className="flex-1 py-4 bg-white text-stone-900 font-bold text-sm rounded-full border border-stone-200 font-rethink"
+                  className="flex-1 py-4 bg-white text-stone-900 font-semibold text-sm rounded-full border border-stone-200 font-rethink"
                 >
                   Back
                 </button>
                 <button
                   onClick={handleNextStep}
                   disabled={launching}
-                  className="flex-1 py-4 bg-[#FEB604] text-[#1C1917] font-bold text-sm rounded-full border border-stone-100 font-rethink disabled:opacity-50"
+                  className="flex-1 py-4 bg-[#FEB604] text-[#1C1917] font-semibold text-sm rounded-full border border-stone-100 font-rethink disabled:opacity-50"
                 >
                   {launching ? "Launching..." : "Pay and Launch Campaign"}
                 </button>
@@ -864,7 +779,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, initialStep, isMob
               {/* View Dashboard Button */}
               <button
                 onClick={onSuccess}
-                className="w-full py-4 bg-[#FEB604] text-[#1C1917] font-bold text-sm rounded-full border border-stone-100 font-rethink"
+                className="w-full py-4 bg-[#FEB604] text-[#1C1917] font-semibold text-sm rounded-full border border-stone-100 font-rethink"
               >
                 View Campaign Dashboard
               </button>

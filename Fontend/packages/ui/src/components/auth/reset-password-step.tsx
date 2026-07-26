@@ -1,4 +1,5 @@
-import { Eye, EyeOff } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { EyeIcon, EyeOffIcon } from "@hugeicons/core-free-icons";
 import type { AuthFormActions } from "./types";
 
 interface ResetPasswordStepProps {
@@ -54,7 +55,7 @@ export function ResetPasswordStep({
               onClick={() => setShowPassword(!showPassword)}
               className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2"
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <HugeiconsIcon icon={EyeOffIcon} size={16} /> : <HugeiconsIcon icon={EyeIcon} size={16} />}
             </button>
           </div>
           <span className="text-xs font-medium text-stone-400 block font-rethink">
@@ -80,7 +81,7 @@ export function ResetPasswordStep({
               onClick={() => setShowPassword(!showPassword)}
               className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2"
             >
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {showPassword ? <HugeiconsIcon icon={EyeOffIcon} size={16} /> : <HugeiconsIcon icon={EyeIcon} size={16} />}
             </button>
           </div>
         </div>
@@ -89,7 +90,7 @@ export function ResetPasswordStep({
           data-reveal
           type="submit"
           disabled={!newPassword || newPassword !== confirmPassword}
-          className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-300 text-stone-900 font-bold text-sm rounded-full shadow-sm transition-all font-rethink"
+          className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 disabled:text-stone-300 text-stone-900 font-semibold text-sm rounded-full font-rethink"
         >
           Reset password
         </button>
@@ -99,7 +100,7 @@ export function ResetPasswordStep({
         <div data-reveal className="text-center">
           <button
             onClick={onBackToLogin}
-            className="text-sm font-bold text-stone-900 font-rethink"
+            className="text-sm font-medium text-stone-900 font-rethink"
           >
             Back to sign in
           </button>

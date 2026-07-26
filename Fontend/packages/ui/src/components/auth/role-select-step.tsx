@@ -64,7 +64,7 @@ export function RoleSelectStep({ role, onSelectRole, onContinue }: RoleSelectSte
       <div data-reveal className="flex justify-center">
         <button
           onClick={onContinue}
-          className="w-[300px] max-w-full py-4 bg-[#FEB604] text-stone-900 font-bold text-sm rounded-full shadow-sm font-rethink"
+          className="w-[300px] max-w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink"
         >
           Continue
         </button>

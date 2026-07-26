@@ -285,6 +285,7 @@ All status badges: `px-2 py-0.5 rounded-full font-medium tracking-tight text-[10
 | Live Campaigns | `bg-[#CBF5E5]` | `text-[#176448]` | `bg-[#176448]` | Live Campaigns |
 | Completed | `bg-[#CBF5E5]` | `text-[#176448]` | `bg-[#176448]` | Completed |
 | Draft | `bg-stone-200` | `text-stone-600` | `bg-stone-500` | Draft |
+| Pending Payment | `bg-[#FBDFB1]` | `text-[#693D11]` | `bg-[#693D11]` | Payment Pending |
 
 ### Campaign Card Category Pills
 
@@ -382,7 +383,7 @@ All indicators are clickable `<button>` elements — navigate back to that step.
 |----------|-------|
 | Layout | `flex items-center gap-4` (no bg/border/padding wrapper) |
 | Image container | `w-16 h-16 bg-stone-200 rounded-xl` |
-| Title | `text-xs font-semibold text-stone-900` |
+| Title | `text-xs font-medium text-stone-900` |
 
 ## Campaign Budget Display (Step 1)
 
@@ -436,13 +437,29 @@ All indicators are clickable `<button>` elements — navigate back to that step.
 
 ## Icons
 
-| Icon | Size | Color | Source |
-|------|------|-------|--------|
-| Eye / EyeOff | `w-4 h-4` (16px) | `text-stone-400` | lucide-react |
-| ChevronDown | `w-4 h-4` / `w-3.5 h-3.5` | `text-stone-400` | lucide-react |
-| Check | `w-3 h-3` (12px) | `text-white` | lucide-react |
-| X (close) | `w-4 h-4` | `text-stone-400` | lucide-react |
-| Logo | 40x40 | — | next/image |
+**Library**: `@hugeicons/core-free-icons` + `@hugeicons/react` (`HugeiconsIcon` renderer)
+
+| Icon Component | Huge Icons Name | Size (mobile / desktop) | Color |
+|----------------|-----------------|------------------------|-------|
+| Eye / EyeOff | `EyeIcon` / `EyeOffIcon` | 16px | `text-stone-400` |
+| ChevronDown | `ChevronDownIcon` | 16px / 14px | `text-stone-400` |
+| Check | `CheckIcon` | 12px–14px | inherits |
+| Cancel (close) | `Cancel01Icon` | 12px–16px | inherits |
+| Filter | `FilterIcon` | 20px (mobile) / 16px (desktop) | `text-stone-500` |
+| Add (Plus) | `Add01Icon` | 20px | inherits |
+| ArrowRight | `ArrowRight01Icon` | 14px | inherits |
+| FolderOpen | `FolderOpenIcon` | 16px–20px | inherits |
+| MoreHorizontal | `MoreHorizontalIcon` | 20px | `text-stone-700` |
+| Upload | `CloudUploadIcon` | 16px | inherits |
+| File (document) | `File01Icon` | 20px | `text-stone-500` |
+| Delete (trash) | `Delete01Icon` | 16px | inherits |
+| Music | `MusicNote01Icon` | 12px | `text-stone-500` |
+| Clock | `Clock01Icon` | 12px | inherits |
+| Logo | — | 40×40 | SVG |
+
+**Usage pattern**: `<HugeiconsIcon icon={IconName} size={N} className="..." />`
+
+**Mobile responsive icons**: Use two `HugeiconsIcon` elements with `md:hidden` / `hidden md:block` classes and different sizes (Huge Icons `size` prop sets inline styles, so CSS responsive classes on a single element won't override it).
 
 ## Components
 
@@ -468,7 +485,12 @@ All indicators are clickable `<button>` elements — navigate back to that step.
 
 ## Shadows
 
-| Token | Usage |
-|-------|-------|
-| `shadow-xl` | Left panel photo card |
-| `shadow-inner` | Left panel decorative box |
+> **Rule**: No shadows anywhere in the app. All `shadow-*` classes removed.
+
+## Hover Effects
+
+> **Rule**: No hover effects on any buttons or interactive elements. All `hover:*` classes removed from buttons.
+
+## Font Weights
+
+> **Rule**: `font-bold` is never used. Buttons use `font-semibold`. All other text uses `font-medium`.

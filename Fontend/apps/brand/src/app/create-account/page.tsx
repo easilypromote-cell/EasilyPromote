@@ -161,7 +161,7 @@ export default function CreateAccountPage() {
           <div className="absolute bottom-8 left-0 right-0 text-center md:hidden">
             <span className="text-sm font-semibold text-stone-400 font-rethink">
               Already have an account?{" "}
-              <Link href="/login" className="text-stone-900 hover:underline font-bold">
+              <Link href="/login" className="text-stone-900 font-medium">
                 Sign in
               </Link>
             </span>

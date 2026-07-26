@@ -1,4 +1,5 @@
-import { Eye, EyeOff, ChevronDown, Check } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { EyeIcon, EyeOffIcon, ChevronDownIcon, CheckIcon } from "@hugeicons/core-free-icons";
 import { cn } from "../../lib/utils";
 import type { AuthFormState, AuthFormActions } from "./types";
 
@@ -12,7 +13,7 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
   return (
     <div className="w-[350px] space-y-10">
       <div className="space-y-1.5">
-        <h1 data-reveal className="text-2xl font-bold font-rethink text-stone-900 tracking-tighter">
+        <h1 data-reveal className="text-2xl font-medium font-rethink text-stone-900 tracking-tighter">
           Create your business account
         </h1>
         <p data-reveal className="text-xs text-stone-400 font-medium font-rethink tracking-tight">
@@ -51,7 +52,7 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
               <option value="E-commerce">E-commerce</option>
               <option value="Food & Beverages">Food & Beverages</option>
             </select>
-            <ChevronDown className="w-4 h-4 text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
         </div>
 
@@ -80,7 +81,7 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
                 <option value="+1">+1</option>
                 <option value="+44">+44</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <HugeiconsIcon icon={ChevronDownIcon} size={14} className="text-stone-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
             <input
               type="tel"
@@ -111,7 +112,7 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
               onClick={() => actions.setField("showPassword", !form.showPassword)}
               className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2"
             >
-              {form.showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {form.showPassword ? <HugeiconsIcon icon={EyeOffIcon} size={16} /> : <HugeiconsIcon icon={EyeIcon} size={16} />}
             </button>
           </div>
           <span className="text-xs font-medium text-stone-400 block font-rethink">
@@ -131,7 +132,7 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
                   : "border-stone-300 bg-white"
               )}
             >
-              {form.agreed && <Check className="w-3 h-3" />}
+              {form.agreed && <HugeiconsIcon icon={CheckIcon} size={12} />}
             </button>
             <span className="text-xs font-medium text-stone-500 font-rethink">
               I agree to the Terms of Service and Privacy Policy
@@ -141,7 +142,7 @@ export function RegisterStep({ form, actions, onSubmit }: RegisterStepProps) {
           <button
             type="submit"
             disabled={!form.agreed}
-            className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 text-stone-900 disabled:text-stone-300 font-medium text-sm rounded-full shadow-sm disabled:cursor-not-allowed transition-colors font-rethink"
+            className="w-full py-4 bg-[#FEB604] disabled:bg-stone-100 text-stone-900 disabled:text-stone-300 font-semibold text-sm rounded-full disabled:cursor-not-allowed font-rethink"
           >
             Continue
           </button>

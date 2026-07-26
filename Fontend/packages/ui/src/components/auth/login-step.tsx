@@ -1,4 +1,5 @@
-import { Eye, EyeOff } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { EyeIcon, EyeOffIcon } from "@hugeicons/core-free-icons";
 import type { AuthFormState, AuthFormActions } from "./types";
 
 interface LoginStepProps {
@@ -59,13 +60,13 @@ export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateA
               onClick={() => actions.setField("showPassword", !form.showPassword)}
               className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2"
             >
-              {form.showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              {form.showPassword ? <HugeiconsIcon icon={EyeOffIcon} size={16} /> : <HugeiconsIcon icon={EyeIcon} size={16} />}
             </button>
           </div>
           <button
             type="button"
             onClick={handleForgot}
-            className="text-sm font-bold text-stone-900 block pt-1 font-rethink"
+            className="text-sm font-medium text-stone-900 block pt-1 font-rethink"
           >
             Forgot password?
           </button>
@@ -74,7 +75,7 @@ export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateA
         <button
           data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] text-stone-900 font-bold text-sm rounded-full shadow-sm font-rethink mt-2"
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink mt-2"
         >
           Sign in
         </button>
@@ -86,7 +87,7 @@ export function LoginStep({ form, actions, onSubmit, onForgotPassword, onCreateA
           <button
             type="button"
             onClick={handleCreate}
-            className="text-stone-900 font-bold"
+            className="text-stone-900 font-medium"
           >
             Create an account
           </button>

@@ -40,7 +40,7 @@ export function ForgotStep({ email, setEmail, onSubmit, actions, onBackToLogin }
         <button
           data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] text-stone-900 font-bold text-sm rounded-full shadow-sm font-rethink"
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink"
         >
           Send reset code
         </button>
@@ -49,7 +49,7 @@ export function ForgotStep({ email, setEmail, onSubmit, actions, onBackToLogin }
       <div data-reveal className="text-center">
         <button
           onClick={handleBack}
-          className="text-sm font-bold text-stone-900 font-rethink"
+          className="text-sm font-medium text-stone-900 font-rethink"
         >
           Back to sign in
         </button>

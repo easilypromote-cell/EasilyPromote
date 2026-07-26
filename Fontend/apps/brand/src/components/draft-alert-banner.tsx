@@ -1,6 +1,7 @@
 import * as React from "react";
 import Image from "next/image";
-import { X } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import illustration4 from "@ep/ui/assets/illustrations/illustration4.svg";
 
 interface DraftAlertBannerProps {
@@ -21,7 +22,7 @@ export function DraftAlertBanner({ draftCount, onClose }: DraftAlertBannerProps)
         </div>
       </div>
       <button onClick={onClose} className="text-stone-400 p-1 absolute top-2 right-2">
-        <X className="w-4 h-4" />
+        <HugeiconsIcon icon={Cancel01Icon} size={16} />
       </button>
     </div>
   );

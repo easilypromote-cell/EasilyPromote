@@ -63,7 +63,7 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit, onResend }: O
               value={val}
               onChange={(e) => handleChange(index, e.target.value)}
               onKeyDown={(e) => handleKeyDown(index, e)}
-              className="w-12 h-14 border border-stone-200 rounded-xl text-center text-lg font-bold text-stone-900 focus:outline-none focus:border-stone-400 focus:ring-0 bg-[#FBFBFA] font-rethink transition-colors"
+              className="w-12 h-14 border border-stone-200 rounded-xl text-center text-lg font-medium text-stone-900 focus:outline-none focus:border-stone-400 focus:ring-0 bg-[#FBFBFA] font-rethink"
             />
           ))}
         </div>
@@ -84,7 +84,7 @@ export function OtpStep({ email, otpValues, onOtpChange, onSubmit, onResend }: O
         <button
           data-reveal
           type="submit"
-          className="w-full py-4 bg-[#FEB604] text-stone-900 font-bold text-sm rounded-full shadow-sm font-rethink"
+          className="w-full py-4 bg-[#FEB604] text-stone-900 font-semibold text-sm rounded-full font-rethink"
         >
           Verify
         </button>
