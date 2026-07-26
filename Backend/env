@@ -1,0 +1,30 @@
+PORT=5000
+NODE_ENV=development
+
+# MongoDB Atlas
+MONGODB_URI=mongodb+srv://easilypromote_db_user:<db_password>@easilypromote.bvow55f.mongodb.net/?appName=EasilyPromote
+
+# JWT
+JWT_SECRET=your_jwt_secret_here
+JWT_REFRESH_SECRET=your_jwt_refresh_secret_here
+JWT_EXPIRES_IN=24h
+JWT_REFRESH_EXPIRES_IN=7d
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=aqgqhwkd
+CLOUDINARY_API_KEY=459521429748229
+CLOUDINARY_API_SECRET=rENmsmDOai7GD4iNFFW1_EzqSCM
+
+# Paystack
+PAYSTACK_SECRET_KEY=sk_test_f5537f165e45a1460ff99a2ca897721037cbf920
+PAYSTACK_PUBLIC_KEY=pk_test_86888d478092c647effb09f05e9fe846b535e12f
+PAYSTACK_WEBHOOK_SECRET=whsec_xxx
+PAYSTACK_CALLBACK_URL=http://localhost:3002
+
+# Brevo (email)
+BREVO_API_KEY=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
+EMAIL_FROM=easilypromote@gmail.com
+EMAIL_FROM_NAME=EasilyPromote
+
+# Frontend origins (comma-separated)
+CLIENT_URL=http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003
