@@ -14,7 +14,6 @@ const submissionRoutes = require("./routes/submissions");
 const payoutRoutes = require("./routes/payouts");
 const notificationRoutes = require("./routes/notifications");
 const webhookRoutes = require("./routes/webhooks");
-const adminRoutes = require("./routes/admin");
 
 const app = express();
 
@@ -55,7 +54,6 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/payouts", payoutRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/admin", adminRoutes);
 
 app.use(errorHandler);
 
