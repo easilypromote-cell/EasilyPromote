@@ -27,7 +27,7 @@ router.post("/paystack", express.raw({ type: "application/json" }), async (req, 
       if (metadata.campaignId) {
         const campaign = await Campaign.findById(metadata.campaignId);
         if (campaign && campaign.status === "pending_payment") {
-          campaign.status = "under_review";
+          campaign.status = "live";
           await campaign.save();
 
           await Transaction.create({
@@ -41,14 +41,14 @@ router.post("/paystack", express.raw({ type: "application/json" }), async (req, 
           await Notification.create({
             businessId: campaign.businessId,
             campaignId: campaign._id,
-            type: "under_review",
-            title: "Under review",
-            body: "We're reviewing your campaign. It'll go live within 2 hours.",
+            type: "campaign_live",
+            title: "Campaign is Live!",
+            body: "Your campaign is funded and live. Creators can now claim slots.",
           });
 
           emitToUser(campaign.businessId, "payment-success", {
             campaignId: campaign._id,
-            status: "under_review",
+            status: "live",
           });
         }
       }
