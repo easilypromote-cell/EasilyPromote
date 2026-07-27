@@ -44,14 +44,14 @@ export default function CampaignDetailsPage() {
 
   if (isMobile) {
     return (
-      <div className="h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
+      <div className="h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
         <CampaignDetails campaignId={params.id as string} onClose={handleClose} isMobile />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
+    <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
       <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
 
       {/* Campaign Details Drawer Modal (Right-sliding, w-1221px, 24px border-radius) */}

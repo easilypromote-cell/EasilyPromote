@@ -380,6 +380,48 @@ router.post("/:id/launch", protect, async (req, res, next) => {
   }
 });
 
+router.post("/:id/topup-init", protect, authorizeRoles("business"), async (req, res, next) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
+    const campaign = await Campaign.findById(req.params.id);
+    if (!campaign) {
+      return res.status(404).json({ error: "Campaign not found" });
+    }
+    if (campaign.businessId.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: "Not authorized" });
+    }
+
+    const reference = `ep_topup_${campaign._id}_${Date.now()}`;
+
+    const origin = req.headers.origin || process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3002";
+    const callback_url = `${origin.replace(/\/$/, "")}/campaign/${campaign._id}?topup=success&reference=${reference}&amount=${amount}`;
+
+    const paymentData = await initializeTransaction({
+      email: req.user.email,
+      amount,
+      reference,
+      metadata: {
+        campaignId: campaign._id.toString(),
+        businessId: req.user._id.toString(),
+        campaignName: campaign.name,
+        type: "topup",
+      },
+      callback_url,
+    });
+
+    res.json({
+      authorization_url: paymentData.authorization_url,
+      reference,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/:id/topup", protect, async (req, res, next) => {
   try {
     const { amount, paystackReference } = req.body;
@@ -400,6 +442,10 @@ router.patch("/:id/topup", protect, async (req, res, next) => {
     }
 
     campaign.targetViews += Math.round(amount / campaign.costPerView);
+    campaign.budget += amount;
+    const platformFeePercent = campaign.platformFeePercent || 0.3;
+    campaign.platformFee = Math.round(campaign.budget * platformFeePercent);
+    campaign.creatorPool = campaign.budget - campaign.platformFee;
     await campaign.save();
 
     await Transaction.create({

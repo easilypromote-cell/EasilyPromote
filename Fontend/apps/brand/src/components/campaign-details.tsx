@@ -4,16 +4,17 @@ import * as React from "react";
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, FolderOpenIcon, MoreHorizontalIcon } from "@hugeicons/core-free-icons";
+import { FolderOpenIcon, File02Icon, MoneyReceiveFlow02Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@ep/ui/lib/utils";
+import { MobileDrawer } from "@ep/ui/components/mobile-drawer";
 import { Skeleton } from "./ui/skeleton";
 import { useReveal } from "../hooks/use-reveal";
 import { apiRequest, getToken } from "../lib/api";
 
-import illustration1 from "@ep/ui/assets/illustrations/illustration1.svg";
 import illustration3 from "@ep/ui/assets/illustrations/illustration3.svg";
-import illustration4 from "@ep/ui/assets/illustrations/illustration4.svg";
 import illustration7 from "@ep/ui/assets/illustrations/illustration7.svg";
+import submissionsEmpty from "@ep/ui/assets/submissions-empty.png";
+import payoutsEmpty from "@ep/ui/assets/Payouts empty.png";
 
 type TabType = "Overview" | "Submission" | "Payouts";
 
@@ -79,7 +80,7 @@ interface CampaignDetailsProps {
 
 function CreatorAvatar({ seed }: { seed: string }) {
   return (
-    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-200 to-[#FEB604] border border-white flex items-center justify-center text-[10px] font-medium text-stone-950 flex-shrink-0">
+    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-200 to-[#FEB604] border border-white flex items-center justify-center text-[10px] font-medium font-rethink text-stone-950 flex-shrink-0">
       {seed.substring(0, 2).toUpperCase()}
     </div>
   );
@@ -93,6 +94,14 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
   const [counts, setCounts] = useState<SubmissionCounts>({ new: 0, approved: 0, awaitingPost: 0, posted: 0, rejected: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  const [showIncreaseViews, setShowIncreaseViews] = useState(false);
+  const [additionalViews, setAdditionalViews] = useState(0);
+  const [viewsInput, setViewsInput] = useState("");
+  const [pricingRates, setPricingRates] = useState<Record<string, number>>({});
+  const [defaultRate, setDefaultRate] = useState(1.085);
+  const [paying, setPaying] = useState(false);
+  const [topupSuccess, setTopupSuccess] = useState(false);
 
   useReveal(activeTab);
 
@@ -129,6 +138,34 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
     load();
   }, [fetchCampaign, fetchSubmissions]);
 
+  useEffect(() => {
+    apiRequest<{ default: number; categories: Record<string, number> }>("/campaigns/pricing")
+      .then((data) => {
+        setPricingRates(data.categories || {});
+        setDefaultRate(data.default || 1.085);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("topup") === "success" && params.get("reference")) {
+      const reference = params.get("reference")!;
+      const amount = parseInt(params.get("amount") || "0", 10);
+      if (amount > 0) {
+        apiRequest(`/campaigns/${campaignId}/topup`, {
+          method: "PATCH",
+          token: getToken() || undefined,
+          body: JSON.stringify({ amount, paystackReference: reference }),
+        }).then(() => {
+          setTopupSuccess(true);
+          fetchCampaign();
+          window.history.replaceState({}, "", `/campaign/${campaignId}`);
+        }).catch(() => {});
+      }
+    }
+  }, [campaignId, fetchCampaign]);
+
   const handleDeleteDraft = async () => {
     if (!window.confirm("Are you sure you want to delete this campaign? This cannot be undone.")) return;
     try {
@@ -142,7 +179,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
 
   if (loading) {
     return (
-      <div className={cn("flex h-full bg-white", isMobile && "flex-col")}>
+      <div className={cn("flex h-full bg-stone-100", isMobile && "flex-col")}>
         {isMobile ? (
           <>
             <div className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 flex-shrink-0">
@@ -200,17 +237,136 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
   const formattedBudget = `₦${campaign.budget.toLocaleString()}`;
   const formattedTarget = `${campaign.targetViews.toLocaleString()} views`;
 
-  const postedSubmissions = submissions.filter((s) => s.status === "posted");
-  const hasItems = postedSubmissions.length > 0;
-
   const totalEscrowed = campaign.budget;
   const platformFee = campaign.platformFee || Math.round(campaign.budget * (campaign.platformFeePercent || 0.3));
   const creatorPool = campaign.creatorPool || totalEscrowed - platformFee;
   const releasedTotal = submissions.reduce((sum, s) => sum + (s.payoutStatus === "released" ? (s.payoutAmount || 0) : 0), 0);
   const pendingEscrow = creatorPool - releasedTotal;
 
+  const getRate = (category: string) => pricingRates[category] || defaultRate;
+
+  const PRESET_VIEWS = [100000, 500000, 1000000, 2000000, 3000000] as const;
+
+  const formatCompact = (value: number): string => {
+    if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+    return `${Math.round(value / 1000)}K`;
+  };
+
+  const parseViewsInput = (raw: string): number | null => {
+    const digits = raw.replace(/[^0-9]/g, "");
+    if (!digits) return null;
+    const num = parseInt(digits, 10);
+    if (num < 100000) return null;
+    return num;
+  };
+
+  const handleViewsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const num = parseViewsInput(raw);
+    if (num !== null) {
+      setViewsInput(num.toLocaleString());
+      setAdditionalViews(num);
+    } else {
+      setViewsInput(raw.replace(/[^0-9,]/g, ""));
+    }
+  };
+
+  const handleViewsInputBlur = () => {
+    if (additionalViews > 0) {
+      setViewsInput(additionalViews.toLocaleString());
+    } else {
+      setViewsInput("");
+    }
+  };
+
+  const additionalCost = additionalViews > 0 ? Math.round(additionalViews * getRate(campaign.category)) : 0;
+
+  const handlePayTopup = async () => {
+    if (additionalViews === 0) return;
+    setPaying(true);
+    try {
+      const data = await apiRequest<{ authorization_url: string }>(`/campaigns/${campaignId}/topup-init`, {
+        method: "POST",
+        token: getToken() || undefined,
+        body: JSON.stringify({ amount: additionalCost }),
+      });
+      window.location.href = data.authorization_url;
+    } catch (err: any) {
+      alert(err.message || "Failed to initialize payment");
+      setPaying(false);
+    }
+  };
+
+  const IncreaseViewsContent = () => (
+    <div className="space-y-4">
+      <h3 className="font-rethink font-semibold text-base text-stone-900">Increase views</h3>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-stone-500 block">How many additional views do you want?</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={viewsInput}
+            onChange={handleViewsInputChange}
+            onBlur={handleViewsInputBlur}
+            placeholder="100,000"
+            className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+          />
+          <div className="flex gap-2">
+            {PRESET_VIEWS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => {
+                  setViewsInput(preset.toLocaleString());
+                  setAdditionalViews(preset);
+                }}
+                className={cn(
+                  "flex-1 py-2 rounded-full text-xs font-medium font-rethink transition-colors",
+                  additionalViews === preset
+                    ? "bg-stone-900 text-white"
+                    : "bg-stone-100 text-stone-600"
+                )}
+              >
+                {formatCompact(preset)}
+              </button>
+            ))}
+          </div>
+          <span className="text-[10px] text-stone-400 font-medium">
+            ₦{getRate(campaign.category).toFixed(3)} per view
+          </span>
+        </div>
+
+        <div className="border-t border-stone-100 pt-4 space-y-2">
+          <div className="flex justify-between text-sm font-rethink">
+            <span className="text-stone-500 font-medium">Additional views</span>
+            <span className="font-medium text-stone-900">{additionalViews.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between text-sm font-rethink">
+            <span className="text-stone-500 font-medium">Cost</span>
+            <span className="font-medium text-stone-900">₦{additionalCost.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={handlePayTopup}
+          disabled={additionalViews === 0 || paying}
+          className={cn(
+            "w-full py-3 rounded-full text-sm font-semibold font-rethink border transition-colors",
+            additionalViews > 0
+              ? "bg-[#FEB604] text-[#1C1917] border-stone-100"
+              : "bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed"
+          )}
+        >
+          {paying ? "Redirecting..." : `Pay ₦${additionalCost.toLocaleString()}`}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className={cn("h-full bg-stone-50", isMobile ? "flex flex-col" : "flex bg-white")}>
+    <div className={cn("h-full bg-stone-100", isMobile ? "flex flex-col" : "flex")}>
       {/* Mobile Header */}
       {isMobile && (
         <div className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 bg-stone-100 flex-shrink-0">
@@ -250,7 +406,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
 
       {/* Desktop Left Sidebar – tabs */}
       {!isMobile && (
-        <div className="w-56 flex flex-col pt-28 gap-8 flex-shrink-0 bg-white">
+        <div className="w-56 flex flex-col pt-28 gap-8 flex-shrink-0 bg-stone-100">
           <div className="flex flex-col gap-1 pl-16 pr-4">
             {([
               { label: "Overview",    value: "Overview"   as TabType },
@@ -270,13 +426,11 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                   )}
                 >
                   {value === "Overview" && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <HugeiconsIcon icon={File02Icon} size={16} className="flex-shrink-0" />
                   )}
                   {value === "Submission" && <HugeiconsIcon icon={FolderOpenIcon} size={16} className="flex-shrink-0" />}
                   {value === "Payouts" && (
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg>
+                    <HugeiconsIcon icon={MoneyReceiveFlow02Icon} size={16} className="flex-shrink-0" />
                   )}
                   <span>{label}</span>
                 </button>
@@ -306,45 +460,66 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                 )}
               </div>
               <div className="space-y-1.5">
-                <h2 className="font-rethink font-semibold text-xl text-stone-900 leading-tight">
+                <h2 className="font-rethink font-medium text-xl text-stone-900 leading-tight">
                   {campaign.name}
                 </h2>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px] font-rethink">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 font-medium text-[10px] font-rethink">
                   {campaign.category}
                 </span>
               </div>
             </div>
 
+            {/* Action Button */}
+            <div>
+              {(currentStatus === "draft" || currentStatus === "pending_payment") ? (
+                <button onClick={handleDeleteDraft} className="w-full py-3 bg-red-50 text-red-600 font-semibold text-sm rounded-full border border-red-200 font-rethink">
+                  Delete campaign
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowIncreaseViews(!showIncreaseViews)}
+                  className="w-full py-3 bg-[#FEB604] text-[#1C1917] font-semibold text-sm rounded-full border border-stone-100 font-rethink"
+                >
+                  Increase views
+                </button>
+              )}
+            </div>
+
+            {/* Campaign Description */}
+            {campaign.contentBrief && (
+              <p className="font-rethink text-xs text-stone-500 font-medium leading-relaxed">{campaign.contentBrief}</p>
+            )}
+
             {/* Campaign Details Key-Value List */}
-            <div className="space-y-4 pt-6">
+            <div className="space-y-4 pt-2">
               <div className="flex justify-between items-center font-rethink text-sm font-medium">
-                <span className="text-[#78716C]">Target Views</span>
-                <span className="text-[#1C1917] font-medium">{formattedTarget}</span>
+                <span className="text-stone-500">Target Views</span>
+                <span className="text-stone-800">{formattedTarget}</span>
               </div>
               <div className="flex justify-between items-center font-rethink text-sm font-medium">
-                <span className="text-[#78716C]">Budget</span>
-                <span className="text-[#1C1917] font-medium">{formattedBudget}</span>
+                <span className="text-stone-500">Budget</span>
+                <span className="text-stone-800">{formattedBudget}</span>
               </div>
               {campaign.platforms && campaign.platforms.length > 0 && (
                 <div className="flex justify-between items-center font-rethink text-sm font-medium">
-                  <span className="text-[#78716C]">Platforms</span>
-                  <span className="text-[#1C1917] font-medium">{campaign.platforms.join(", ")}</span>
+                  <span className="text-stone-500">Platforms</span>
+                  <span className="text-stone-800">{campaign.platforms.join(", ")}</span>
                 </div>
               )}
               {campaign.contentStyle && campaign.contentStyle.length > 0 && (
                 <div className="flex justify-between items-center font-rethink text-sm font-medium">
-                  <span className="text-[#78716C]">Content style</span>
-                  <span className="text-[#1C1917] font-medium">{Array.isArray(campaign.contentStyle) ? campaign.contentStyle.join(", ") : campaign.contentStyle}</span>
+                  <span className="text-stone-500">Content style</span>
+                  <span className="text-stone-800">{Array.isArray(campaign.contentStyle) ? campaign.contentStyle.join(", ") : campaign.contentStyle}</span>
                 </div>
               )}
               {campaign.scriptUrl && (
                 <div className="flex justify-between items-center font-rethink text-sm font-medium">
-                  <span className="text-[#78716C]">Script</span>
+                  <span className="text-stone-500">Script</span>
                   <a
                     href={campaign.scriptUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 font-medium underline text-[#1C1917]"
+                    className="text-stone-800 underline"
                   >
                     {campaign.scriptFileName || "View document"}
                   </a>
@@ -352,26 +527,36 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
               )}
             </div>
 
-            {/* Action Buttons Row */}
-            <div className="flex items-center gap-3 pt-2">
-              {(currentStatus === "draft" || currentStatus === "pending_payment") ? (
-                <button onClick={handleDeleteDraft} className="flex-1 py-3 bg-red-50 text-red-600 font-semibold text-sm rounded-full border border-red-200">
-                  Delete campaign
+            {/* Desktop inline expansion */}
+            {showIncreaseViews && !isMobile && (
+              <div className="border border-stone-200 rounded-2xl p-5 space-y-4">
+                <IncreaseViewsContent />
+                <button
+                  onClick={() => setShowIncreaseViews(false)}
+                  className="w-full py-2 text-xs font-medium text-stone-500 font-rethink"
+                >
+                  Cancel
                 </button>
-              ) : (
-                <>
-                  <button className="flex-1 py-3 bg-white text-stone-900 font-semibold text-sm rounded-full border border-stone-200">
-                    Top up budget
-                  </button>
-                  <button className="px-3.5 py-3 bg-white text-stone-600 rounded-full border border-stone-200">
-                    <HugeiconsIcon icon={MoreHorizontalIcon} size={20} className="text-stone-700" />
-                  </button>
-                </>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Status Alert Box */}
-            {(currentStatus === "under_review" || currentStatus === "completed" || currentStatus === "cancelled" || currentStatus === "paused") && (
+            {/* Status Alert Box — Under Review (standalone) */}
+            {currentStatus === "under_review" && (
+              <div className="flex items-center gap-4 border border-dashed rounded-[16px] p-2" style={{ backgroundColor: "#FEFCE8", borderColor: "#854D0E", paddingLeft: 0 }}>
+                <div className="w-12 h-12 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                  <img src="/images/under review.png" alt="Under review" className="w-full h-full object-contain" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-rethink font-medium text-sm" style={{ color: "#854D0E" }}>Under review</h4>
+                  <p className="font-rethink text-xs font-medium leading-normal" style={{ color: "#854D0E" }}>
+                    We&apos;re reviewing your campaign. It&apos;ll go live within 2 hours.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Status Alert Box — Completed / Paused / Cancelled */}
+            {(currentStatus === "completed" || currentStatus === "cancelled" || currentStatus === "paused") && (
               <div className={cn(
                 "flex items-start gap-4 border border-dashed rounded-[20px] p-4 relative overflow-hidden",
                 currentStatus === "cancelled" ? "bg-red-50 border-red-200" : "bg-[#EBF3FF] border-blue-200"
@@ -380,14 +565,6 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                   <Image src={illustration3} alt="Status" width={48} height={48} />
                 </div>
                 <div className="space-y-1 mt-0.5">
-                  {currentStatus === "under_review" && (
-                    <>
-                      <h4 className="font-rethink font-medium text-sm text-[#6E330C]">Under review</h4>
-                      <p className="font-rethink text-xs text-stone-600 font-medium leading-normal">
-                        We&apos;re reviewing your campaign. It&apos;ll go live within 2 hours.
-                      </p>
-                    </>
-                  )}
                   {currentStatus === "completed" && (
                     <>
                       <h4 className="font-rethink font-medium text-sm text-green-800">Completed</h4>
@@ -416,80 +593,34 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
               </div>
             )}
 
-            <div className="space-y-4">
-              {/* Campaign Progress Card */}
-              <div className="bg-stone-100 rounded-[24px] p-4 space-y-4">
+            <div className="border border-dashed border-stone-200 rounded-2xl p-4 space-y-4">
+              {/* Campaign Progress */}
+              <div className="space-y-2">
                 <span className="text-xs font-medium text-stone-500 block">Campaign progress</span>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-semibold tracking-tight text-stone-900 font-rethink">
-                    {campaign.viewsDelivered.toLocaleString()} / {campaign.targetViews.toLocaleString()}
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <div className="relative w-7 h-7">
-                      <svg className="w-full h-full transform -rotate-90">
-                        <circle cx="14" cy="14" r="11" className="stroke-stone-200" strokeWidth="3.5" fill="transparent" />
-                        <circle cx="14" cy="14" r="11" className="stroke-[#FEB604]" strokeWidth="3.5" fill="transparent"
-                          strokeDasharray={2 * Math.PI * 11}
-                          strokeDashoffset={2 * Math.PI * 11 * (1 - campaign.progressPercent / 100)}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                    </div>
-                    <span className="text-xs font-semibold tracking-tight text-stone-700">{campaign.progressPercent}%</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-blue-600 rounded-full transition-all"
+                      style={{ width: `${campaign.progressPercent}%` }}
+                    />
                   </div>
+                  <span className="text-xs font-medium text-stone-500 font-rethink">{campaign.progressPercent}%</span>
                 </div>
+                <span className="text-xs text-stone-500 font-medium font-rethink">
+                  {campaign.viewsDelivered.toLocaleString()} / {campaign.targetViews.toLocaleString()} views
+                </span>
               </div>
 
-              {/* Stats */}
-              <div className="bg-stone-100 rounded-[24px] p-4 space-y-4">
-                <div className={cn("gap-4", isMobile ? "grid grid-cols-2" : "grid grid-cols-3")}>
-                  <div>
-                    <span className="text-[10px] font-medium text-stone-500 block">Submissions</span>
-                    <span className="text-base font-medium text-stone-900 mt-1 block">{campaign.submissionsReceived} received</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-medium text-stone-500 block">Approved</span>
-                    <span className="text-base font-medium text-stone-900 mt-1 block">{campaign.submissionsApproved}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-medium text-stone-500 block">Views delivered</span>
-                    <span className="text-base font-medium text-stone-900 mt-1 block">{campaign.viewsDelivered.toLocaleString()}</span>
-                  </div>
-                </div>
-              </div>
+              {/* Divider */}
+              <div className="border-t border-dashed border-stone-200" />
 
-              {hasItems ? (
-                <div className="bg-stone-100 rounded-[24px] p-4 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-stone-50 border border-stone-200 flex items-center justify-center">
-                      <HugeiconsIcon icon={FolderOpenIcon} size={20} className="text-stone-600" />
-                    </div>
-                    <div className="flex-1">
-                      <h5 className="text-xs font-medium text-stone-500 font-rethink">
-                        {campaign.submissionsAwaitingReview} submissions are waiting for your review
-                      </h5>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab("Submission")}
-                    className="text-xs font-medium text-stone-900 flex items-center gap-1 font-rethink"
-                  >
-                    Review now <HugeiconsIcon icon={ArrowRight01Icon} size={14} />
-                  </button>
-                </div>
-              ) : (
-                <div className="border border-stone-200/80 rounded-2xl p-10 text-center space-y-4 flex flex-col items-center justify-center">
-                  <div className="w-32 h-32 flex items-center justify-center bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden relative">
-                    <Image src={illustration4} alt="No submissions" width={96} height={96} />
-                  </div>
-                  <div className="space-y-1.5 max-w-sm mx-auto">
-                    <h4 className="font-rethink font-medium text-base text-stone-900">No submissions yet</h4>
-                    <p className="font-rethink text-xs text-stone-500 font-medium leading-relaxed">
-                      Your campaign just went live — creators are claiming slots. We&apos;ll notify you the moment content starts coming in.
-                    </p>
-                  </div>
-                </div>
-              )}
+              {/* Creators on Campaign */}
+              <div className="space-y-1">
+                <span className="text-xs font-medium text-stone-500 block">Creators on campaign</span>
+                <span className="text-base font-medium text-stone-900 block font-rethink">
+                  {new Set(submissions.map(s => s.creatorId)).size} creator{new Set(submissions.map(s => s.creatorId)).size !== 1 ? "s" : ""}
+                </span>
+              </div>
             </div>
           </div>
         )}
@@ -497,9 +628,6 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
         {/* ================= TAB 2: SUBMISSION ================= */}
         {activeTab === "Submission" && (
           <div className={cn("space-y-6 pb-10", isMobile ? "w-full" : "w-[350px] mx-auto")}>
-            <h2 className="font-rethink font-semibold text-xl text-stone-900">{campaign.name}</h2>
-            <p className="font-rethink text-xs text-stone-500">Posted content from creators. Brand view-only.</p>
-
             {submissions.filter(s => s.status === "posted").length > 0 ? (
               <div className="space-y-4">
                 {submissions.filter(s => s.status === "posted").map((sub) => (
@@ -508,11 +636,11 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                       <span className="font-rethink font-medium text-sm text-stone-900">@{sub.creatorHandle}</span>
                       <CreatorAvatar seed={sub.creatorHandle} />
                     </div>
-                    {sub.caption && <p className="font-rethink text-xs text-stone-500">{sub.caption}</p>}
+                    {sub.caption && <p className="font-rethink text-xs text-stone-500 font-medium">{sub.caption}</p>}
                     {sub.postedPlatforms && sub.postedPlatforms.length > 0 && (
                       <div className="flex gap-2 text-[10px] text-stone-400">
                         {sub.postedPlatforms.map((p, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-stone-100 rounded-full">{p.platform}: {p.views.toLocaleString()} views</span>
+                          <span key={i} className="font-rethink px-2 py-0.5 bg-stone-100 rounded-full">{p.platform}: {p.views.toLocaleString()} views</span>
                         ))}
                       </div>
                     )}
@@ -520,9 +648,10 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 space-y-4">
-                <Image src={illustration7} alt="Nothing yet" width={120} height={120} />
-                <p className="font-rethink text-sm text-stone-500">No posted content yet.</p>
+              <div className="text-center py-12 space-y-4 flex flex-col items-center">
+                <Image src={submissionsEmpty} alt="Nothing yet" width={120} height={120} />
+                <h3 className="font-rethink font-semibold tracking-tight md:text-2xl text-xl text-stone-900">Nothing waiting on you</h3>
+                <p className="font-rethink text-xs text-stone-500 font-medium">New content will show up here as creators upload on their platforms</p>
               </div>
             )}
           </div>
@@ -530,50 +659,65 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
 
         {/* ================= TAB 3: PAYOUTS ================= */}
         {activeTab === "Payouts" && (
-          <div className={cn("space-y-10 pb-10", isMobile ? "w-full" : "w-[350px] mx-auto")}>
-            <h2 className="font-rethink font-semibold text-xl text-stone-900">{campaign.name}</h2>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white border border-stone-100 rounded-xl p-5 space-y-3">
+          <div className={cn("space-y-10 pb-10", isMobile ? "w-full" : "w-[520px] mx-auto")}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white border border-stone-200 rounded-2xl p-4 space-y-2">
                 <span className="text-[10px] font-medium text-stone-500 block">Total escrowed</span>
                 <span className="font-rethink font-medium text-xl text-stone-900 block">₦{totalEscrowed.toLocaleString()}</span>
               </div>
-              <div className="bg-white border border-stone-100 rounded-xl p-5 space-y-3">
-                <span className="text-[10px] font-medium text-stone-500 block">Released</span>
+              <div className="bg-white border border-stone-200 rounded-2xl p-4 space-y-2">
+                <span className="text-[10px] font-medium text-stone-500 block">Creator pool</span>
+                <span className="font-rethink font-medium text-xl text-stone-900 block">₦{creatorPool.toLocaleString()}</span>
+              </div>
+              <div className="bg-white border border-stone-200 rounded-2xl p-4 space-y-2">
+                <span className="text-[10px] font-medium text-stone-500 block">Paid</span>
                 <span className="font-rethink font-medium text-xl text-stone-900 block">₦{releasedTotal.toLocaleString()}</span>
+              </div>
+              <div className="bg-white border border-stone-200 rounded-2xl p-4 space-y-2">
+                <span className="text-[10px] font-medium text-stone-500 block">Pending in escrow</span>
+                <span className="font-rethink font-medium text-xl text-stone-900 block">₦{pendingEscrow.toLocaleString()}</span>
               </div>
             </div>
 
-            {submissions.filter(s => s.payoutStatus).length > 0 ? (
-              <div className="space-y-2">
-                <h3 className="font-rethink font-semibold text-sm text-stone-900">Transaction ledger</h3>
-                <div className="divide-y divide-stone-100">
-                  {submissions.filter(s => s.payoutStatus).map((sub) => (
-                    <div key={sub.id} className="flex justify-between py-3 text-sm">
-                      <span className="text-stone-600">@{sub.creatorHandle}</span>
-                      <span className="font-medium text-stone-900">₦{(sub.payoutAmount || 0).toLocaleString()}</span>
-                      <span className={cn(
-                        "text-[10px] px-2 py-0.5 rounded",
-                        sub.payoutStatus === "released" ? "bg-green-100 text-green-700" : "bg-stone-100 text-stone-500"
-                      )}>
-                        {sub.payoutStatus === "released" ? "Released" : "Pending"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="pt-16 pb-12 text-center flex flex-col items-center justify-center">
-                <Image src={illustration7} alt="Empty payouts" className="w-32 h-auto mb-6" />
-                <h3 className="font-rethink font-medium text-xl text-stone-900 mb-2">Nothing to show yet</h3>
-                <p className="text-sm text-stone-500 font-rethink font-medium max-w-sm mx-auto">
-                  Your first transaction will appear here once slots start delivering.
-                </p>
+            {/* Platform fee note */}
+            <div className="space-y-0.5">
+              <span className="text-[10px] font-medium text-stone-500 block">Platform fee</span>
+              <p className="text-[10px] text-stone-400 font-rethink font-medium leading-relaxed">
+                {Math.round((campaign.platformFeePercent || 0.3) * 100)}% of funded budget (₦{platformFee.toLocaleString()}), already deducted from your total.
+              </p>
+            </div>
+
+            {submissions.filter(s => s.payoutStatus).length === 0 && (
+              <div className="text-center py-12 space-y-4 flex flex-col items-center">
+                <Image src={payoutsEmpty} alt="Nothing yet" width={120} height={120} />
+                <h3 className="font-rethink font-semibold tracking-tight md:text-2xl text-xl text-stone-900">Nothing to show yet</h3>
+                <p className="font-rethink text-xs text-stone-500 font-medium">Your first transaction will appear here once slots start delivering.</p>
               </div>
             )}
           </div>
         )}
       </div>
+
+      {/* Mobile bottom sheet for Increase views */}
+      <MobileDrawer open={showIncreaseViews} onOpenChange={setShowIncreaseViews}>
+        <IncreaseViewsContent />
+      </MobileDrawer>
+
+      {/* Topup success banner */}
+      {topupSuccess && (
+        <div className="fixed top-4 left-4 right-4 z-50 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div className="space-y-1">
+            <p className="font-rethink font-medium text-sm text-green-800">Views topped up!</p>
+            <p className="font-rethink text-xs text-green-600 font-medium">Your campaign budget and views have been updated.</p>
+          </div>
+          <button onClick={() => setTopupSuccess(false)} className="text-green-400 ml-auto">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
