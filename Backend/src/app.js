@@ -21,10 +21,12 @@ const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:3000,http://
   .split(",")
   .map((o) => o.trim());
 
+const isDev = process.env.NODE_ENV === "development";
+
 app.use(helmet());
 app.use(
   cors({
-    origin(origin, callback) {
+    origin: isDev ? true : (origin, callback) => {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {

@@ -1,15 +1,12 @@
 import * as React from "react";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { MusicNote01Icon, Clock01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "../lib/utils";
-import { TYPOGRAPHY } from "../lib/constants";
 
 export interface CampaignCardProps {
   title: string;
   status: "review_needed" | "live" | "draft" | "paused" | "under_review" | "completed" | "cancelled" | "pending_payment";
   imageSrc?: string;
   category?: string;
-  delivery?: string;
+  description?: string;
   progress?: number;
   currentViews?: string;
   targetViews?: string;
@@ -23,7 +20,7 @@ export function CampaignCard({
   status,
   imageSrc,
   category = "Music",
-  delivery = "7 Day Delivery",
+  description,
   progress = 68,
   currentViews = "170,000",
   targetViews = "250,000",
@@ -94,13 +91,25 @@ export function CampaignCard({
               </svg>
             </div>
           )}
-          {getBadges()}
+          <div className="flex items-center gap-1.5">
+            {status !== "draft" && category && (
+              <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
+                {category}
+              </span>
+            )}
+            {getBadges()}
+          </div>
         </div>
 
         {/* Campaign Title */}
-        <h3 className="font-rethink font-medium tracking-tight text-[16px] text-stone-900 mb-5 line-clamp-2">
+        <h3 className="font-rethink font-medium tracking-tight text-[16px] text-stone-900 line-clamp-2">
           {title}
         </h3>
+        {description ? (
+          <p className="font-rethink text-xs text-stone-500 truncate mt-1 mb-5">{description}</p>
+        ) : (
+          <p className="font-rethink text-xs text-stone-500 truncate mt-1 mb-5">Brief description of what the campaign is about goes here...</p>
+        )}
       </div>
 
       {status === "draft" ? (
@@ -115,19 +124,8 @@ export function CampaignCard({
           Resume
         </button>
       ) : (
-        /* Category, Duration, and Progress for Active/Paused */
+        /* Progress for Active/Completed cards */
         <div className="mt-auto">
-          <div className="flex gap-2 mb-5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
-              <HugeiconsIcon icon={MusicNote01Icon} size={12} className="text-stone-500" />
-              {category}
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
-              <HugeiconsIcon icon={Clock01Icon} size={12} />
-              {delivery}
-            </span>
-          </div>
-
           <div className="flex items-center gap-3">
             <div className="w-24 h-1.5 bg-stone-200 rounded-full overflow-hidden">
               <div

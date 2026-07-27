@@ -74,6 +74,7 @@ interface SubmissionCounts {
 interface CampaignDetailsProps {
   campaignId: string;
   onClose?: () => void;
+  isMobile?: boolean;
 }
 
 function CreatorAvatar({ seed }: { seed: string }) {
@@ -84,7 +85,7 @@ function CreatorAvatar({ seed }: { seed: string }) {
   );
 }
 
-export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
+export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetailsProps) {
   const [activeTab, setActiveTab] = useState<TabType>("Overview");
 
   const [campaign, setCampaign] = useState<CampaignData | null>(null);
@@ -141,22 +142,43 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
 
   if (loading) {
     return (
-      <div className="flex h-full bg-white">
-        <div className="w-56 flex flex-col pt-28 gap-3 pl-16 pr-4 flex-shrink-0">
-          <Skeleton className="h-9 w-full rounded-xl" />
-          <Skeleton className="h-9 w-full rounded-xl" />
-          <Skeleton className="h-9 w-full rounded-xl" />
-        </div>
-        <div className="flex-1 p-12 space-y-6">
-          <Skeleton className="h-6 w-48" />
-          <div className="grid grid-cols-3 gap-4">
-            <Skeleton className="h-24 rounded-2xl" />
-            <Skeleton className="h-24 rounded-2xl" />
-            <Skeleton className="h-24 rounded-2xl" />
-          </div>
-          <Skeleton className="h-32 rounded-2xl" />
-          <Skeleton className="h-32 rounded-2xl" />
-        </div>
+      <div className={cn("flex h-full bg-white", isMobile && "flex-col")}>
+        {isMobile ? (
+          <>
+            <div className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 flex-shrink-0">
+              <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
+              <Skeleton className="h-5 w-40 rounded-lg" />
+            </div>
+            <div className="p-5 space-y-6 overflow-y-auto flex-1">
+              <div className="flex gap-3">
+                <Skeleton className="h-9 w-20 rounded-xl" />
+                <Skeleton className="h-9 w-24 rounded-xl" />
+                <Skeleton className="h-9 w-16 rounded-xl" />
+              </div>
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-32 rounded-2xl" />
+              <Skeleton className="h-32 rounded-2xl" />
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="w-56 flex flex-col pt-28 gap-3 pl-16 pr-4 flex-shrink-0">
+              <Skeleton className="h-9 w-full rounded-xl" />
+              <Skeleton className="h-9 w-full rounded-xl" />
+              <Skeleton className="h-9 w-full rounded-xl" />
+            </div>
+            <div className="flex-1 p-12 space-y-6">
+              <Skeleton className="h-6 w-48" />
+              <div className="grid grid-cols-3 gap-4">
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+                <Skeleton className="h-24 rounded-2xl" />
+              </div>
+              <Skeleton className="h-32 rounded-2xl" />
+              <Skeleton className="h-32 rounded-2xl" />
+            </div>
+          </>
+        )}
       </div>
     );
   }
@@ -188,10 +210,20 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
   const pendingEscrow = creatorPool - releasedTotal;
 
   return (
-    <div className="flex h-full bg-white">
-      {/* Left sidebar – tabs */}
-      <div className="w-56 flex flex-col pt-28 gap-8 flex-shrink-0 bg-white">
-        <div className="flex flex-col gap-1 pl-16 pr-4">
+    <div className={cn("h-full bg-stone-50", isMobile ? "flex flex-col" : "flex bg-white")}>
+      {/* Mobile Header */}
+      {isMobile && (
+        <div className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 bg-white flex-shrink-0">
+          <button onClick={onClose} className="flex items-center justify-center w-8 h-8 rounded-full bg-stone-100">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <h3 className="font-rethink font-semibold text-base text-stone-900 truncate flex-1">{campaign.name}</h3>
+        </div>
+      )}
+
+      {/* Mobile Horizontal Tabs */}
+      {isMobile && (
+        <div className="flex gap-3 px-5 py-3 bg-white border-b border-stone-200 flex-shrink-0 overflow-x-auto">
           {([
             { label: "Overview",    value: "Overview"   as TabType },
             { label: "Submissions", value: "Submission" as TabType },
@@ -203,33 +235,65 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
                 key={value}
                 onClick={() => setActiveTab(value)}
                 className={cn(
-                  "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium font-rethink tracking-tight transition-all duration-150 text-left",
+                  "px-4 py-2 rounded-full text-sm font-medium font-rethink tracking-tight whitespace-nowrap flex-shrink-0",
                   isActive
-                    ? "bg-stone-100 text-stone-900"
-                    : "text-stone-400"
+                    ? "bg-stone-900 text-white"
+                    : "bg-stone-100 text-stone-500"
                 )}
               >
-                {value === "Overview" && (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                )}
-                {value === "Submission" && <HugeiconsIcon icon={FolderOpenIcon} size={16} className="flex-shrink-0" />}
-                {value === "Payouts" && (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                  </svg>
-                )}
-                <span>{label}</span>
+                {label}
               </button>
             );
           })}
         </div>
-      </div>
+      )}
+
+      {/* Desktop Left Sidebar – tabs */}
+      {!isMobile && (
+        <div className="w-56 flex flex-col pt-28 gap-8 flex-shrink-0 bg-white">
+          <div className="flex flex-col gap-1 pl-16 pr-4">
+            {([
+              { label: "Overview",    value: "Overview"   as TabType },
+              { label: "Submissions", value: "Submission" as TabType },
+              { label: "Payouts",     value: "Payouts"    as TabType },
+            ]).map(({ label, value }) => {
+              const isActive = activeTab === value;
+              return (
+                <button
+                  key={value}
+                  onClick={() => setActiveTab(value)}
+                  className={cn(
+                    "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium font-rethink tracking-tight transition-all duration-150 text-left",
+                    isActive
+                      ? "bg-stone-100 text-stone-900"
+                      : "text-stone-400"
+                  )}
+                >
+                  {value === "Overview" && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  )}
+                  {value === "Submission" && <HugeiconsIcon icon={FolderOpenIcon} size={16} className="flex-shrink-0" />}
+                  {value === "Payouts" && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                  )}
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Right Dashboard Area */}
-      <div className="flex-1 pt-16 pb-12 px-10 overflow-y-auto h-full" data-lenis-prevent>
+      <div className={cn(
+        "flex-1 overflow-y-auto h-full",
+        isMobile ? "p-5 pb-[env(safe-area-inset-bottom)]" : "pt-16 pb-12 px-10"
+      )} data-lenis-prevent>
         {/* ================= TAB 1: OVERVIEW ================= */}
         {activeTab === "Overview" && (
-          <div className="w-[350px] mx-auto space-y-8 pb-10">
+          <div className={cn("space-y-8 pb-10", isMobile ? "w-full" : "w-[350px] mx-auto")}>
             {/* Header Section */}
             <div className="flex items-start gap-4">
               <div className="w-16 h-16 rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200 flex-shrink-0 overflow-hidden">
@@ -378,7 +442,7 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
 
               {/* Stats */}
               <div className="bg-stone-100 rounded-[24px] p-4 space-y-4">
-                <div className="grid grid-cols-3 gap-4">
+                <div className={cn("gap-4", isMobile ? "grid grid-cols-2" : "grid grid-cols-3")}>
                   <div>
                     <span className="text-[10px] font-medium text-stone-500 block">Submissions</span>
                     <span className="text-base font-medium text-stone-900 mt-1 block">{campaign.submissionsReceived} received</span>
@@ -432,7 +496,7 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
 
         {/* ================= TAB 2: SUBMISSION ================= */}
         {activeTab === "Submission" && (
-          <div className="w-[350px] mx-auto space-y-6 pb-10">
+          <div className={cn("space-y-6 pb-10", isMobile ? "w-full" : "w-[350px] mx-auto")}>
             <h2 className="font-rethink font-semibold text-xl text-stone-900">{campaign.name}</h2>
             <p className="font-rethink text-xs text-stone-500">Posted content from creators. Brand view-only.</p>
 
@@ -466,7 +530,7 @@ export function CampaignDetails({ campaignId, onClose }: CampaignDetailsProps) {
 
         {/* ================= TAB 3: PAYOUTS ================= */}
         {activeTab === "Payouts" && (
-          <div className="w-[350px] mx-auto space-y-10 pb-10">
+          <div className={cn("space-y-10 pb-10", isMobile ? "w-full" : "w-[350px] mx-auto")}>
             <h2 className="font-rethink font-semibold text-xl text-stone-900">{campaign.name}</h2>
 
             <div className="grid grid-cols-2 gap-4">

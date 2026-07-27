@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { CampaignWizard } from "../../components/campaign-wizard";
+import { CampaignSuccess } from "../../components/campaign-success";
 import { NavBar } from "@ep/ui/components/nav-bar";
 import { Drawer, DrawerContent } from "../../components/ui/drawer";
 import { getUser, isAuthenticated } from "../../lib/api";
@@ -29,7 +30,6 @@ function CreateCampaignContent() {
   const paymentCampaignId = searchParams.get("campaignId") || undefined;
 
   const draftId = paymentCampaignId || searchParams.get("id") || undefined;
-  const initialStep: 1 | 2 | 3 | 4 = paymentSuccess ? 4 : 1;
 
   const [userName, setUserName] = useState("User");
 
@@ -42,24 +42,21 @@ function CreateCampaignContent() {
     if (user?.name) setUserName(user.name);
   }, []);
 
-  useEffect(() => {
-    history.pushState(null, "", location.href);
-    const handlePopState = () => router.push("/");
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
   const handleClose = () => router.push("/");
   const handleSuccess = () => router.push("/");
+
+  // Payment success — show standalone success screen (not part of the wizard)
+  if (paymentSuccess) {
+    return <CampaignSuccess onClose={handleSuccess} isMobile={isMobile} />;
+  }
+
+  // Wizard page — popstate navigates to home
 
   if (isMobile) {
     return (
       <div className="h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
-        <header className="flex items-center justify-center h-14 px-4 border-b border-stone-200 bg-white flex-shrink-0">
-          <h3 className="font-rethink font-semibold tracking-tight text-xl text-stone-900">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
-        </header>
-        <div className="flex-1 overflow-hidden">
-          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} initialStep={initialStep} isMobile />
+        <div className="flex-1 overflow-y-auto">
+          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} isMobile />
         </div>
       </div>
     );
@@ -69,8 +66,8 @@ function CreateCampaignContent() {
     <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
       <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
-        <DrawerContent className="overflow-hidden">
-          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} initialStep={initialStep} />
+        <DrawerContent className="overflow-hidden bg-stone-100">
+          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} />
         </DrawerContent>
       </Drawer>
     </div>
