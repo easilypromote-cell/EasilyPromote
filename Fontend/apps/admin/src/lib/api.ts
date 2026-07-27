@@ -12,8 +12,9 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
     ...(options.headers as Record<string, string>),
   };
 
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+  const authToken = token || getToken();
+  if (authToken) {
+    headers["Authorization"] = `Bearer ${authToken}`;
   }
 
   const res = await fetch(`${API_URL}${endpoint}`, { ...fetchOptions, headers });
@@ -35,4 +36,20 @@ export function getUser(): { id: string; name: string; email: string; role: stri
   if (typeof window === "undefined") return null;
   const stored = localStorage.getItem("user");
   return stored ? JSON.parse(stored) : null;
+}
+
+export function isAuthenticated(): boolean {
+  return !!getToken();
+}
+
+export function saveAuth(token: string, user: { id: string; name: string; email: string; role: string }) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("token", token);
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+export function clearAuth() {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem("token");
+  localStorage.removeItem("user");
 }

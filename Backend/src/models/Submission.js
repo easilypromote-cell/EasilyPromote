@@ -56,11 +56,21 @@ const submissionSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "approved", "rejected", "awaiting_post", "posted"],
+      enum: ["new", "approved", "rejected", "awaiting_post", "posted", "verifying", "appealed"],
       default: "new",
     },
     rejectionReason: {
       type: String,
+    },
+    appealReason: {
+      type: String,
+    },
+    adminNotes: {
+      type: String,
+    },
+    confidenceScore: {
+      type: Number,
+      default: 100,
     },
     postedPlatforms: {
       type: [postedPlatformSchema],
