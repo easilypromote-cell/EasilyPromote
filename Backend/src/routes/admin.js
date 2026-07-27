@@ -450,6 +450,43 @@ router.patch("/users/:id/rank", adminGuard, async (req, res, next) => {
   }
 });
 
+// ─── POST /api/admin/create-admin ─────────────────────────────────────────────
+router.post("/create-admin", [protect, authorizeRoles("super_admin")], async (req, res, next) => {
+  try {
+    const { name, email, password, role = "admin" } = req.body;
+    const allowedRoles = ["admin", "finance_admin", "support", "super_admin"];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ error: "Invalid admin role" });
+    }
+
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
+
+    const newAdmin = await User.create({
+      name,
+      email,
+      password,
+      role,
+      emailVerified: true,
+      isActive: true,
+    });
+
+    res.status(201).json({
+      success: true,
+      user: {
+        id: newAdmin._id,
+        name: newAdmin.name,
+        email: newAdmin.email,
+        role: newAdmin.role,
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── GET /api/admin/payouts ───────────────────────────────────────────────────
 router.get("/payouts", adminGuard, async (req, res, next) => {
   try {
