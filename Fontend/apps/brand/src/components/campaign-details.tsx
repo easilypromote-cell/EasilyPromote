@@ -213,8 +213,8 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
     <div className={cn("h-full bg-stone-50", isMobile ? "flex flex-col" : "flex bg-white")}>
       {/* Mobile Header */}
       {isMobile && (
-        <div className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 bg-white flex-shrink-0">
-          <button onClick={onClose} className="flex items-center justify-center w-8 h-8 rounded-full bg-stone-100">
+        <div className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 bg-stone-100 flex-shrink-0">
+          <button onClick={onClose} className="flex items-center justify-center w-8 h-8 rounded-full bg-stone-200">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
           <h3 className="font-rethink font-semibold text-base text-stone-900 truncate flex-1">{campaign.name}</h3>
@@ -223,7 +223,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
 
       {/* Mobile Horizontal Tabs */}
       {isMobile && (
-        <div className="flex gap-3 px-5 py-3 bg-white border-b border-stone-200 flex-shrink-0 overflow-x-auto">
+        <div className="flex gap-3 px-5 py-3 bg-stone-100 border-b border-stone-200 flex-shrink-0 overflow-x-auto">
           {([
             { label: "Overview",    value: "Overview"   as TabType },
             { label: "Submissions", value: "Submission" as TabType },
@@ -235,7 +235,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                 key={value}
                 onClick={() => setActiveTab(value)}
                 className={cn(
-                  "px-4 py-2 rounded-full text-sm font-medium font-rethink tracking-tight whitespace-nowrap flex-shrink-0",
+                  "px-4 py-2 rounded-full text-sm font-medium font-rethink whitespace-nowrap flex-shrink-0",
                   isActive
                     ? "bg-stone-900 text-white"
                     : "bg-stone-100 text-stone-500"
@@ -263,7 +263,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
                   key={value}
                   onClick={() => setActiveTab(value)}
                   className={cn(
-                    "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium font-rethink tracking-tight transition-all duration-150 text-left",
+                    "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-medium font-rethink transition-all duration-150 text-left",
                     isActive
                       ? "bg-stone-100 text-stone-900"
                       : "text-stone-400"

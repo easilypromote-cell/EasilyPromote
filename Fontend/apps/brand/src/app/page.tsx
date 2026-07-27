@@ -123,7 +123,7 @@ function BrandDashboardContent() {
       <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName={userName} onLogout={handleLogout} />
 
       {showAlert && activeTab === "home" && draftCount > 0 && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 z-50">
           <DraftAlertBanner draftCount={draftCount} onClose={() => setShowAlert(false)} />
         </div>
       )}

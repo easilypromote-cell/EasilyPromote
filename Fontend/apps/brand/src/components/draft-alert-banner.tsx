@@ -11,7 +11,7 @@ interface DraftAlertBannerProps {
 
 export function DraftAlertBanner({ draftCount, onClose }: DraftAlertBannerProps) {
   return (
-    <div className="flex items-center justify-between bg-[#EBF3FF] border border-dashed border-blue-200 rounded-[20px] p-2 relative overflow-hidden w-fit">
+    <div className="flex items-center justify-between bg-[#EBF3FF] border border-dashed border-blue-200 rounded-[20px] p-2 relative overflow-hidden w-full md:w-fit">
       <div className="flex items-center gap-4">
         <div className="flex-shrink-0">
           <Image src={illustration4} alt="Unfinished business" width={52} height={52} />
