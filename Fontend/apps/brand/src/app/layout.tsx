@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Rethink_Sans, Inter, Raleway } from "next/font/google";
 import localFont from "next/font/local";
 import { LenisProvider } from "../components/lenis-provider";
+import { Providers } from "../components/providers";
 import "./globals.css";
 
 const rethinkSans = Rethink_Sans({
@@ -37,7 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${rethinkSans.variable} ${inter.variable} ${raleway.variable} ${motterdam.variable} min-h-screen antialiased bg-stone-50 text-stone-900 font-rethink`}>
-        <LenisProvider>{children}</LenisProvider>
+        <Providers><LenisProvider>{children}</LenisProvider></Providers>
       </body>
     </html>
   );

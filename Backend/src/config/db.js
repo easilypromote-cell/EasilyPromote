@@ -8,7 +8,7 @@ if (dns.setDefaultResultOrder) {
 
 // Use reliable public DNS resolvers (Google / Cloudflare) to prevent local router/ISP DNS SRV refusal
 try {
-  dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]);
+  // Use system DNS — school/office networks often block external resolvers
 } catch (err) {
   console.warn("[MongoDB] Warning: Could not set custom DNS servers:", err.message);
 }

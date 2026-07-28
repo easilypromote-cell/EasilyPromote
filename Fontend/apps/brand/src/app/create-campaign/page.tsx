@@ -6,19 +6,9 @@ import { Suspense } from "react";
 import { CampaignWizard } from "../../components/campaign-wizard";
 import { CampaignSuccess } from "../../components/campaign-success";
 import { NavBar } from "@ep/ui/components/nav-bar";
+import { useIsMobile } from "@ep/ui/hooks/use-is-mobile";
 import { Drawer, DrawerContent } from "../../components/ui/drawer";
 import { getUser, isAuthenticated } from "../../lib/api";
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  return isMobile;
-}
 
 function CreateCampaignContent() {
   const router = useRouter();

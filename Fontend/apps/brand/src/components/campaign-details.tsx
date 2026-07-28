@@ -12,11 +12,116 @@ import { useReveal } from "../hooks/use-reveal";
 import { apiRequest, getToken } from "../lib/api";
 
 import illustration3 from "@ep/ui/assets/illustrations/illustration3.svg";
-import illustration7 from "@ep/ui/assets/illustrations/illustration7.svg";
 import submissionsEmpty from "@ep/ui/assets/submissions-empty.png";
 import payoutsEmpty from "@ep/ui/assets/Payouts empty.png";
 
 type TabType = "Overview" | "Submission" | "Payouts";
+
+const PRESET_VIEWS = [100000, 500000, 1000000, 2000000, 3000000] as const;
+
+function formatCompact(value: number): string {
+  if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+  return `${Math.round(value / 1000)}K`;
+}
+
+function parseViewsInput(raw: string): number | null {
+  const digits = raw.replace(/[^0-9]/g, "");
+  if (!digits) return null;
+  const num = parseInt(digits, 10);
+  if (num < 100000) return null;
+  return num;
+}
+
+interface IncreaseViewsContentProps {
+  viewsInput: string;
+  additionalViews: number;
+  additionalCost: number;
+  rate: number;
+  paying: boolean;
+  onViewsInputChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onViewsInputBlur: () => void;
+  onPresetClick: (preset: number) => void;
+  onPay: () => void;
+}
+
+function IncreaseViewsContent({
+  viewsInput,
+  additionalViews,
+  additionalCost,
+  rate,
+  paying,
+  onViewsInputChange,
+  onViewsInputBlur,
+  onPresetClick,
+  onPay,
+}: IncreaseViewsContentProps) {
+  return (
+    <div className="space-y-4">
+      <h3 className="font-rethink font-semibold text-base text-stone-900">Increase views</h3>
+
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-xs font-medium text-stone-500 block">How many additional views do you want?</label>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={viewsInput}
+            onChange={onViewsInputChange}
+            onBlur={onViewsInputBlur}
+            placeholder="100,000"
+            disabled={paying}
+            className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 disabled:opacity-50 disabled:cursor-not-allowed"
+          />
+          <div className="flex gap-2">
+            {PRESET_VIEWS.map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                onClick={() => onPresetClick(preset)}
+                disabled={paying}
+                className={cn(
+                  "flex-1 py-2 rounded-full text-xs font-medium font-rethink transition-colors disabled:opacity-50 disabled:cursor-not-allowed",
+                  additionalViews === preset
+                    ? "bg-stone-900 text-white"
+                    : "bg-stone-100 text-stone-600"
+                )}
+              >
+                {formatCompact(preset)}
+              </button>
+            ))}
+          </div>
+          <span className="text-[10px] text-stone-400 font-medium">
+            ₦{rate.toFixed(3)} per view
+          </span>
+        </div>
+
+        <div className="border-t border-stone-100 pt-4 space-y-2">
+          <div className="flex justify-between text-sm font-rethink">
+            <span className="text-stone-500 font-medium">Additional views</span>
+            <span className="font-medium text-stone-900">{additionalViews.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between text-sm font-rethink">
+            <span className="text-stone-500 font-medium">Cost</span>
+            <span className="font-medium text-stone-900">₦{additionalCost.toLocaleString()}</span>
+          </div>
+        </div>
+
+        <button
+          onClick={onPay}
+          disabled={additionalViews === 0 || paying}
+          className={cn(
+            "w-full py-3 rounded-full text-sm font-semibold font-rethink border transition-colors",
+            additionalViews > 0
+              ? "bg-[#FEB604] text-[#1C1917] border-stone-100"
+              : "bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed"
+          )}
+        >
+          {paying ? "Redirecting..." : `Pay ₦${additionalCost.toLocaleString()}`}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 interface CampaignData {
   id: string;
@@ -94,6 +199,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
   const [counts, setCounts] = useState<SubmissionCounts>({ new: 0, approved: 0, awaitingPost: 0, posted: 0, rejected: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [submissionsError, setSubmissionsError] = useState("");
 
   const [showIncreaseViews, setShowIncreaseViews] = useState(false);
   const [additionalViews, setAdditionalViews] = useState(0);
@@ -102,6 +208,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
   const [defaultRate, setDefaultRate] = useState(1.085);
   const [paying, setPaying] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState(false);
+  const [topupError, setTopupError] = useState("");
 
   useReveal(activeTab);
 
@@ -110,12 +217,13 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
       const token = getToken();
       const data = await apiRequest<CampaignData>(`/campaigns/${campaignId}`, { token: token || undefined });
       setCampaign(data);
-    } catch (err: any) {
-      setError(err.message || "Failed to load campaign");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load campaign");
     }
   }, [campaignId]);
 
   const fetchSubmissions = useCallback(async () => {
+    setSubmissionsError("");
     try {
       const token = getToken();
       const data = await apiRequest<{ counts: SubmissionCounts; submissions: SubmissionData[] }>(
@@ -125,7 +233,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
       setSubmissions(data.submissions || []);
       setCounts(data.counts || { new: 0, approved: 0, awaitingPost: 0, posted: 0, rejected: 0 });
     } catch {
-      // submissions may not exist yet
+      setSubmissionsError("Failed to load submissions");
     }
   }, [campaignId]);
 
@@ -161,10 +269,24 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
           setTopupSuccess(true);
           fetchCampaign();
           window.history.replaceState({}, "", `/campaign/${campaignId}`);
-        }).catch(() => {});
+        }).catch((err: unknown) => {
+          setTopupError(err instanceof Error ? err.message : "Failed to verify payment. Please contact support.");
+        });
       }
     }
   }, [campaignId, fetchCampaign]);
+
+  useEffect(() => {
+    if (!topupSuccess) return;
+    const timer = setTimeout(() => setTopupSuccess(false), 5000);
+    return () => clearTimeout(timer);
+  }, [topupSuccess]);
+
+  useEffect(() => {
+    if (!topupError) return;
+    const timer = setTimeout(() => setTopupError(""), 5000);
+    return () => clearTimeout(timer);
+  }, [topupError]);
 
   const handleDeleteDraft = async () => {
     if (!window.confirm("Are you sure you want to delete this campaign? This cannot be undone.")) return;
@@ -172,10 +294,54 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
       const token = getToken();
       await apiRequest(`/campaigns/${campaignId}`, { method: "DELETE", token: token || undefined });
       onClose?.();
-    } catch (err: any) {
-      alert(err.message || "Failed to delete campaign");
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to delete campaign");
     }
   };
+
+  const getRate = useCallback((category: string) => pricingRates[category] || defaultRate, [pricingRates, defaultRate]);
+
+  const handleViewsInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const num = parseViewsInput(raw);
+    if (num !== null) {
+      setViewsInput(num.toLocaleString());
+      setAdditionalViews(num);
+    } else {
+      setViewsInput(raw.replace(/[^0-9,]/g, ""));
+    }
+  }, []);
+
+  const handleViewsInputBlur = useCallback(() => {
+    if (additionalViews > 0) {
+      setViewsInput(additionalViews.toLocaleString());
+    } else {
+      setViewsInput("");
+    }
+  }, [additionalViews]);
+
+  const handlePresetClick = useCallback((preset: number) => {
+    setViewsInput(preset.toLocaleString());
+    setAdditionalViews(preset);
+  }, []);
+
+  const additionalCost = additionalViews > 0 ? Math.round(additionalViews * getRate(campaign?.category || "")) : 0;
+
+  const handlePayTopup = useCallback(async () => {
+    if (additionalViews === 0) return;
+    setPaying(true);
+    try {
+      const data = await apiRequest<{ authorization_url: string }>(`/campaigns/${campaignId}/topup-init`, {
+        method: "POST",
+        token: getToken() || undefined,
+        body: JSON.stringify({ amount: additionalCost }),
+      });
+      window.location.href = data.authorization_url;
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to initialize payment");
+      setPaying(false);
+    }
+  }, [campaignId, additionalViews, additionalCost]);
 
   if (loading) {
     return (
@@ -241,129 +407,9 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
   const platformFee = campaign.platformFee || Math.round(campaign.budget * (campaign.platformFeePercent || 0.3));
   const creatorPool = campaign.creatorPool || totalEscrowed - platformFee;
   const releasedTotal = submissions.reduce((sum, s) => sum + (s.payoutStatus === "released" ? (s.payoutAmount || 0) : 0), 0);
-  const pendingEscrow = creatorPool - releasedTotal;
+  const pendingEscrow = Math.max(0, creatorPool - releasedTotal);
 
-  const getRate = (category: string) => pricingRates[category] || defaultRate;
-
-  const PRESET_VIEWS = [100000, 500000, 1000000, 2000000, 3000000] as const;
-
-  const formatCompact = (value: number): string => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
-    return `${Math.round(value / 1000)}K`;
-  };
-
-  const parseViewsInput = (raw: string): number | null => {
-    const digits = raw.replace(/[^0-9]/g, "");
-    if (!digits) return null;
-    const num = parseInt(digits, 10);
-    if (num < 100000) return null;
-    return num;
-  };
-
-  const handleViewsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value;
-    const num = parseViewsInput(raw);
-    if (num !== null) {
-      setViewsInput(num.toLocaleString());
-      setAdditionalViews(num);
-    } else {
-      setViewsInput(raw.replace(/[^0-9,]/g, ""));
-    }
-  };
-
-  const handleViewsInputBlur = () => {
-    if (additionalViews > 0) {
-      setViewsInput(additionalViews.toLocaleString());
-    } else {
-      setViewsInput("");
-    }
-  };
-
-  const additionalCost = additionalViews > 0 ? Math.round(additionalViews * getRate(campaign.category)) : 0;
-
-  const handlePayTopup = async () => {
-    if (additionalViews === 0) return;
-    setPaying(true);
-    try {
-      const data = await apiRequest<{ authorization_url: string }>(`/campaigns/${campaignId}/topup-init`, {
-        method: "POST",
-        token: getToken() || undefined,
-        body: JSON.stringify({ amount: additionalCost }),
-      });
-      window.location.href = data.authorization_url;
-    } catch (err: any) {
-      alert(err.message || "Failed to initialize payment");
-      setPaying(false);
-    }
-  };
-
-  const IncreaseViewsContent = () => (
-    <div className="space-y-4">
-      <h3 className="font-rethink font-semibold text-base text-stone-900">Increase views</h3>
-
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-stone-500 block">How many additional views do you want?</label>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={viewsInput}
-            onChange={handleViewsInputChange}
-            onBlur={handleViewsInputBlur}
-            placeholder="100,000"
-            className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
-          />
-          <div className="flex gap-2">
-            {PRESET_VIEWS.map((preset) => (
-              <button
-                key={preset}
-                type="button"
-                onClick={() => {
-                  setViewsInput(preset.toLocaleString());
-                  setAdditionalViews(preset);
-                }}
-                className={cn(
-                  "flex-1 py-2 rounded-full text-xs font-medium font-rethink transition-colors",
-                  additionalViews === preset
-                    ? "bg-stone-900 text-white"
-                    : "bg-stone-100 text-stone-600"
-                )}
-              >
-                {formatCompact(preset)}
-              </button>
-            ))}
-          </div>
-          <span className="text-[10px] text-stone-400 font-medium">
-            ₦{getRate(campaign.category).toFixed(3)} per view
-          </span>
-        </div>
-
-        <div className="border-t border-stone-100 pt-4 space-y-2">
-          <div className="flex justify-between text-sm font-rethink">
-            <span className="text-stone-500 font-medium">Additional views</span>
-            <span className="font-medium text-stone-900">{additionalViews.toLocaleString()}</span>
-          </div>
-          <div className="flex justify-between text-sm font-rethink">
-            <span className="text-stone-500 font-medium">Cost</span>
-            <span className="font-medium text-stone-900">₦{additionalCost.toLocaleString()}</span>
-          </div>
-        </div>
-
-        <button
-          onClick={handlePayTopup}
-          disabled={additionalViews === 0 || paying}
-          className={cn(
-            "w-full py-3 rounded-full text-sm font-semibold font-rethink border transition-colors",
-            additionalViews > 0
-              ? "bg-[#FEB604] text-[#1C1917] border-stone-100"
-              : "bg-stone-100 text-stone-400 border-stone-200 cursor-not-allowed"
-          )}
-        >
-          {paying ? "Redirecting..." : `Pay ₦${additionalCost.toLocaleString()}`}
-        </button>
-      </div>
-    </div>
-  );
+  const uniqueCreatorCount = new Set(submissions.map(s => s.creatorId)).size;
 
   return (
     <div className={cn("h-full bg-stone-100", isMobile ? "flex flex-col" : "flex")}>
@@ -530,7 +576,17 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
             {/* Desktop inline expansion */}
             {showIncreaseViews && !isMobile && (
               <div className="border border-stone-200 rounded-2xl p-5 space-y-4">
-                <IncreaseViewsContent />
+                <IncreaseViewsContent
+                  viewsInput={viewsInput}
+                  additionalViews={additionalViews}
+                  additionalCost={additionalCost}
+                  rate={getRate(campaign.category)}
+                  paying={paying}
+                  onViewsInputChange={handleViewsInputChange}
+                  onViewsInputBlur={handleViewsInputBlur}
+                  onPresetClick={handlePresetClick}
+                  onPay={handlePayTopup}
+                />
                 <button
                   onClick={() => setShowIncreaseViews(false)}
                   className="w-full py-2 text-xs font-medium text-stone-500 font-rethink"
@@ -618,7 +674,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
               <div className="space-y-1">
                 <span className="text-xs font-medium text-stone-500 block">Creators on campaign</span>
                 <span className="text-base font-medium text-stone-900 block font-rethink">
-                  {new Set(submissions.map(s => s.creatorId)).size} creator{new Set(submissions.map(s => s.creatorId)).size !== 1 ? "s" : ""}
+                  {uniqueCreatorCount} creator{uniqueCreatorCount !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>
@@ -628,7 +684,23 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
         {/* ================= TAB 2: SUBMISSION ================= */}
         {activeTab === "Submission" && (
           <div className={cn("space-y-6 pb-10", isMobile ? "w-full" : "w-[350px] mx-auto")}>
-            {submissions.filter(s => s.status === "posted").length > 0 ? (
+            {submissionsError ? (
+              <div className="text-center py-12 space-y-4 flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                </div>
+                <h3 className="font-rethink font-medium text-lg text-stone-900">Failed to load</h3>
+                <p className="font-rethink text-xs text-stone-500 font-medium">{submissionsError}</p>
+                <button
+                  onClick={() => fetchSubmissions()}
+                  className="px-6 py-2.5 bg-stone-900 text-white text-sm font-medium font-rethink rounded-full"
+                >
+                  Try again
+                </button>
+              </div>
+            ) : submissions.filter(s => s.status === "posted").length > 0 ? (
               <div className="space-y-4">
                 {submissions.filter(s => s.status === "posted").map((sub) => (
                   <div key={sub.id} className="bg-white border border-stone-200 rounded-2xl p-4 space-y-2">
@@ -700,12 +772,22 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
 
       {/* Mobile bottom sheet for Increase views */}
       <MobileDrawer open={showIncreaseViews} onOpenChange={setShowIncreaseViews}>
-        <IncreaseViewsContent />
+        <IncreaseViewsContent
+          viewsInput={viewsInput}
+          additionalViews={additionalViews}
+          additionalCost={additionalCost}
+          rate={getRate(campaign.category)}
+          paying={paying}
+          onViewsInputChange={handleViewsInputChange}
+          onViewsInputBlur={handleViewsInputBlur}
+          onPresetClick={handlePresetClick}
+          onPay={handlePayTopup}
+        />
       </MobileDrawer>
 
       {/* Topup success banner */}
       {topupSuccess && (
-        <div className="fixed top-4 left-4 right-4 z-50 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
+        <div className="fixed top-4 left-4 right-4 z-[60] bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
           <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-green-600"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
@@ -714,6 +796,22 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
             <p className="font-rethink text-xs text-green-600 font-medium">Your campaign budget and views have been updated.</p>
           </div>
           <button onClick={() => setTopupSuccess(false)} className="text-green-400 ml-auto">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
+
+      {/* Topup error banner */}
+      {topupError && (
+        <div className="fixed top-4 left-4 right-4 z-[60] bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
+          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-red-600"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+          </div>
+          <div className="space-y-1">
+            <p className="font-rethink font-medium text-sm text-red-800">Payment verification failed</p>
+            <p className="font-rethink text-xs text-red-600 font-medium">{topupError}</p>
+          </div>
+          <button onClick={() => setTopupError("")} className="text-red-400 ml-auto">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>

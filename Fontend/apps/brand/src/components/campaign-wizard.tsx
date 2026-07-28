@@ -1,10 +1,13 @@
+"use client";
+
 import * as React from "react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ChevronDownIcon, CheckIcon, Cancel01Icon, CloudUploadIcon, File01Icon, Delete01Icon, CircleDashedIcon } from "@hugeicons/core-free-icons";
 import { cn } from "@ep/ui/lib/utils";
 import { MobileDrawer } from "@ep/ui/components/mobile-drawer";
+import { useToast } from "@ep/ui/components/toast";
 import { useReveal } from "../hooks/use-reveal";
 import { apiRequest, getToken, API_URL } from "../lib/api";
 import { Spinner } from "./ui/spinner";
@@ -37,26 +40,32 @@ interface CampaignWizardProps {
 
 const PLATFORM_OPTIONS = ["TikTok", "Instagram", "X (Twitter)", "Facebook", "YouTube"];
 
+const DRAFT_STORAGE_KEY = "ep-draft-autosave";
+
 export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: CampaignWizardProps) {
   const [createStep, setCreateStep] = useState<1 | 2 | 3>(1);
   const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState("");
   const [pricingRates, setPricingRates] = useState<Record<string, number>>({});
   const [defaultRate, setDefaultRate] = useState(1.085);
+  const [touchedStep, setTouchedStep] = useState<{ step1: boolean; step2: boolean }>({ step1: false, step2: false });
+  const [saving, setSaving] = useState(false);
+  const isModified = useRef(false);
+  const { toast } = useToast();
   useReveal(createStep);
 
-  React.useEffect(() => {
+  useEffect(() => {
     apiRequest<{ default: number; categories: Record<string, number> }>("/campaigns/pricing")
       .then((data) => {
         setPricingRates(data.categories || {});
         setDefaultRate(data.default || 1.085);
       })
-      .catch(() => {});
+      .catch((err: unknown) => console.error("Failed to load pricing:", err));
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!draftId) return;
-    apiRequest<any>(`/campaigns/${draftId}`, { token: getToken() || undefined })
+    apiRequest<{ name: string; category: string; targetViews: number; budget: number; contentBrief: string; keyMessageCta: string; whatToAvoid: string; platforms: string[]; contentStyle: string[] | string; scriptUrl: string; scriptFileName: string; coverImageUrl: string }>(`/campaigns/${draftId}`, { token: getToken() || undefined })
       .then((data) => {
         setCampaign({
           name: data.name || "",
@@ -78,10 +87,13 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
 
         setViewsInput((data.targetViews || 1000000).toLocaleString());
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        console.error("Failed to load draft:", err);
+        setLaunchError("Failed to load draft data.");
+      });
   }, [draftId]);
 
-  const getRate = (category: string) => pricingRates[category] || defaultRate;
+  const getRate = useCallback((category: string) => pricingRates[category] || defaultRate, [pricingRates, defaultRate]);
 
   // Campaign Form State
   const [campaign, setCampaign] = useState<CampaignData>({
@@ -109,6 +121,59 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
 
   const [viewsInput, setViewsInput] = useState(() => campaign.views.toLocaleString());
 
+  // Auto-save to localStorage
+  useEffect(() => {
+    if (!isModified.current) return;
+    const key = draftId ? `${DRAFT_STORAGE_KEY}-${draftId}` : DRAFT_STORAGE_KEY;
+    try {
+      localStorage.setItem(key, JSON.stringify({ campaign, createStep, viewsInput }));
+    } catch {
+      // storage full or unavailable
+    }
+  }, [campaign, createStep, viewsInput, draftId]);
+
+  // Restore from auto-save on mount (no draft from server)
+  useEffect(() => {
+    if (draftId) return;
+    const key = DRAFT_STORAGE_KEY;
+    try {
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.campaign) {
+          setCampaign(parsed.campaign);
+          if (parsed.createStep) setCreateStep(parsed.createStep);
+          if (parsed.viewsInput) setViewsInput(parsed.viewsInput);
+          toast("Draft restored from previous session", "success");
+        }
+      }
+    } catch {
+      // corrupted data
+    }
+  }, []);
+
+  // Clear auto-save on successful operations
+  const clearAutoSave = useCallback(() => {
+    isModified.current = false;
+    try {
+      const key = draftId ? `${DRAFT_STORAGE_KEY}-${draftId}` : DRAFT_STORAGE_KEY;
+      localStorage.removeItem(key);
+    } catch {
+      // ignore
+    }
+  }, [draftId]);
+
+  // beforeunload warning
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isModified.current) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, []);
+
   const formatViewsString = (val: number) => val.toLocaleString();
 
   const parseViewsInput = (raw: string): number | null => {
@@ -120,6 +185,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
   };
 
   const handleViewsInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    isModified.current = true;
     const raw = e.target.value;
     const num = parseViewsInput(raw);
     if (num !== null) {
@@ -152,6 +218,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
   };
 
   const handleCategoryChange = (category: string) => {
+    isModified.current = true;
     const rate = getRate(category);
     const newBudget = Math.round(campaign.views * rate);
     setCampaign(prev => ({
@@ -175,19 +242,21 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
       });
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
+      isModified.current = true;
       setCampaign(prev => ({
         ...prev,
         scriptUrl: data.url,
         scriptFileName: file.name,
       }));
     } catch {
-      alert("Failed to upload document. Please try again.");
+      toast("Failed to upload document. Please try again.", "error");
     } finally {
       if (scriptInputRef.current) scriptInputRef.current.value = "";
     }
   };
 
   const handleRemoveScript = () => {
+    isModified.current = true;
     setCampaign(prev => ({ ...prev, scriptUrl: "", scriptFileName: "" }));
   };
 
@@ -218,9 +287,10 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
         xhr.onerror = () => reject(new Error("Upload failed"));
         xhr.send(formData);
       });
+      isModified.current = true;
       setCampaign(prev => ({ ...prev, coverImageUrl: data.url }));
     } catch {
-      alert("Failed to upload image. Please try again.");
+      toast("Failed to upload image. Please try again.", "error");
     } finally {
       setUploadingImage(false);
       setImageProgress(0);
@@ -243,8 +313,21 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
   });
 
   const handleNextStep = async () => {
-    if (createStep < 3) {
-      setCreateStep((prev) => (prev + 1) as 1 | 2 | 3);
+    if (createStep === 1) {
+      if (!campaign.name || !campaign.coverImageUrl) {
+        setTouchedStep(prev => ({ ...prev, step1: true }));
+        return;
+      }
+      setCreateStep(2);
+      return;
+    }
+
+    if (createStep === 2) {
+      if (!campaign.description || !campaign.scriptUrl || !campaign.keyMessage) {
+        setTouchedStep(prev => ({ ...prev, step2: true }));
+        return;
+      }
+      setCreateStep(3);
       return;
     }
 
@@ -265,6 +348,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
           token: getToken() || undefined,
         });
 
+        clearAutoSave();
         window.location.href = payData.authorization_url;
       } catch (err: unknown) {
         setLaunchError(err instanceof Error ? err.message : "Failed to create campaign");
@@ -276,9 +360,10 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
 
   const handleSaveDraft = async () => {
     if (!campaign.name) {
-      alert("Please enter a campaign name before saving.");
+      toast("Please enter a campaign name before saving.", "error");
       return;
     }
+    setSaving(true);
     try {
       const endpoint = draftId ? `/campaigns/${draftId}` : "/campaigns";
       const method = draftId ? "PATCH" : "POST";
@@ -287,10 +372,14 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
         token: getToken() || undefined,
         body: JSON.stringify(buildPayload()),
       });
+      clearAutoSave();
+      toast("Draft saved!", "success");
       onSuccess();
       onClose();
     } catch {
-      alert("Failed to save draft. Please try again.");
+      toast("Failed to save draft. Please try again.", "error");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -321,6 +410,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
           <header className="flex items-center gap-3 px-5 pt-[env(safe-area-inset-top)] h-14 border-b border-stone-200 bg-stone-100 flex-shrink-0">
             <button
               onClick={createStep === 1 ? onClose : handleBackStep}
+              aria-label="Go back"
               className="flex items-center justify-center w-8 h-8 rounded-full bg-stone-200"
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -463,10 +553,11 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   if (!window.confirm("Delete this draft campaign?")) return;
                   try {
                     await apiRequest(`/campaigns/${draftId}`, { method: "DELETE", token: getToken() || undefined });
+                    clearAutoSave();
                     onSuccess();
                     onClose();
                   } catch {
-                    alert("Failed to delete draft");
+                    toast("Failed to delete draft", "error");
                   }
                 }}
                 className="mt-3 text-xs font-medium text-red-500 font-rethink"
@@ -502,7 +593,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   )}
                 </div>
                 <div className="flex-1 space-y-1">
-                  <h4 className="text-xs font-semibold text-stone-900">Campaign cover</h4>
+                  <h4 className="text-xs font-medium text-stone-900">Campaign cover</h4>
                   <input
                     ref={coverInputRef}
                     type="file"
@@ -528,6 +619,9 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                       {campaign.coverImageUrl ? "Change image" : "Upload image"}
                     </button>
                   )}
+                  {touchedStep.step1 && !campaign.coverImageUrl && (
+                    <p className="text-[10px] text-red-500 font-medium font-rethink">Please upload a cover image</p>
+                  )}
                 </div>
               </div>
 
@@ -538,9 +632,15 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   type="text"
                   placeholder="Campaign name"
                   value={campaign.name}
-                  onChange={(e) => setCampaign({ ...campaign, name: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+                  onChange={(e) => { isModified.current = true; setCampaign({ ...campaign, name: e.target.value }); }}
+                  className={cn(
+                    "w-full px-4 py-3 bg-white border rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0",
+                    touchedStep.step1 && !campaign.name ? "border-red-400" : "border-stone-200"
+                  )}
                 />
+                {touchedStep.step1 && !campaign.name && (
+                  <p className="text-[10px] text-red-500 font-medium font-rethink">Please enter a campaign name</p>
+                )}
               </div>
 
               {/* Promotion category */}
@@ -689,10 +789,16 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                 <textarea
                   placeholder="Describe your campaign..."
                   value={campaign.description}
-                  onChange={(e) => setCampaign(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) => { isModified.current = true; setCampaign(prev => ({ ...prev, description: e.target.value })); }}
                   rows={3}
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-2xl text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 resize-none min-h-[80px]"
+                  className={cn(
+                    "w-full px-4 py-3 bg-white border rounded-2xl text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0 resize-none min-h-[80px]",
+                    touchedStep.step2 && !campaign.description ? "border-red-400" : "border-stone-200"
+                  )}
                 />
+                {touchedStep.step2 && !campaign.description && (
+                  <p className="text-[10px] text-red-500 font-medium font-rethink">Campaign description is required</p>
+                )}
               </div>
 
               {/* Upload brief */}
@@ -709,7 +815,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-stone-100 rounded-full">
                     <HugeiconsIcon icon={File01Icon} size={14} className="text-stone-500" />
                     <span className="text-xs font-medium text-stone-600 font-rethink">{campaign.scriptFileName}</span>
-                    <button onClick={handleRemoveScript} className="text-stone-400 ml-0.5">
+                    <button onClick={handleRemoveScript} aria-label="Remove brief" className="text-stone-400 ml-0.5">
                       <HugeiconsIcon icon={Delete01Icon} size={12} />
                     </button>
                   </div>
@@ -717,11 +823,17 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   <button
                     type="button"
                     onClick={() => scriptInputRef.current?.click()}
-                    className="w-full flex flex-col items-center justify-center gap-2 py-8 bg-white border-2 border-dashed border-stone-300 rounded-2xl text-sm font-medium text-stone-500 font-rethink"
+                    className={cn(
+                      "w-full flex flex-col items-center justify-center gap-2 py-8 bg-white border-2 border-dashed rounded-2xl text-sm font-medium text-stone-500 font-rethink",
+                      touchedStep.step2 && !campaign.scriptUrl ? "border-red-300" : "border-stone-300"
+                    )}
                   >
                     <HugeiconsIcon icon={CloudUploadIcon} size={24} className="text-stone-400" />
                     <span>Attach brief (PDF, DOC, DOCX)</span>
                   </button>
+                )}
+                {touchedStep.step2 && !campaign.scriptUrl && (
+                  <p className="text-[10px] text-red-500 font-medium font-rethink">Please upload a brief document</p>
                 )}
               </div>
 
@@ -732,9 +844,15 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   type="text"
                   placeholder="What's the main message or call to action?"
                   value={campaign.keyMessage}
-                  onChange={(e) => setCampaign(prev => ({ ...prev, keyMessage: e.target.value }))}
-                  className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
+                  onChange={(e) => { isModified.current = true; setCampaign(prev => ({ ...prev, keyMessage: e.target.value })); }}
+                  className={cn(
+                    "w-full px-4 py-3 bg-white border rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0",
+                    touchedStep.step2 && !campaign.keyMessage ? "border-red-400" : "border-stone-200"
+                  )}
                 />
+                {touchedStep.step2 && !campaign.keyMessage && (
+                  <p className="text-[10px] text-red-500 font-medium font-rethink">Key message is required</p>
+                )}
               </div>
 
               {/* What to Avoid */}
@@ -744,7 +862,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   type="text"
                   placeholder="Anything creators should avoid mentioning?"
                   value={campaign.avoid}
-                  onChange={(e) => setCampaign(prev => ({ ...prev, avoid: e.target.value }))}
+                  onChange={(e) => { isModified.current = true; setCampaign(prev => ({ ...prev, avoid: e.target.value })); }}
                   className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
                 />
               </div>
@@ -768,6 +886,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                           key={platform}
                           type="button"
                           onClick={() => {
+                            isModified.current = true;
                             setCampaign(prev => ({
                               ...prev,
                               platforms: prev.platforms.includes(platform)
@@ -787,26 +906,31 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                     </MobileDrawer>
                   </>
                 ) : (
-                  <div className="relative">
-                    <select
-                      value=""
-                      onChange={(e) => {
-                        const selected = e.target.value;
-                        if (selected && !campaign.platforms.includes(selected)) {
+                  <div className="grid grid-cols-2 gap-2">
+                    {PLATFORM_OPTIONS.map((platform) => (
+                      <button
+                        key={platform}
+                        type="button"
+                        onClick={() => {
+                          isModified.current = true;
                           setCampaign(prev => ({
                             ...prev,
-                            platforms: [...prev.platforms, selected],
+                            platforms: prev.platforms.includes(platform)
+                              ? prev.platforms.filter(p => p !== platform)
+                              : [...prev.platforms, platform],
                           }));
-                        }
-                      }}
-                      className="w-full px-4 py-3 bg-white border border-stone-200 rounded-full text-sm font-rethink font-medium tracking-tight appearance-none placeholder-stone-300 focus:outline-none focus:border-stone-400 focus:ring-0"
-                    >
-                      <option value="" disabled>{campaign.platforms.length === 0 ? "Select platforms" : "Add another platform"}</option>
-                      {PLATFORM_OPTIONS.filter(p => !campaign.platforms.includes(p)).map((platform) => (
-                        <option key={platform} value={platform}>{platform}</option>
-                      ))}
-                    </select>
-                    <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        }}
+                        className={cn(
+                          "flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium font-rethink border transition-colors",
+                          campaign.platforms.includes(platform)
+                            ? "bg-stone-900 text-white border-stone-900"
+                            : "bg-white text-stone-600 border-stone-200"
+                        )}
+                      >
+                        <span>{platform}</span>
+                        {campaign.platforms.includes(platform) && <HugeiconsIcon icon={CheckIcon} size={16} />}
+                      </button>
+                    ))}
                   </div>
                 )}
                 {campaign.platforms.length > 0 && (
@@ -815,7 +939,8 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                       <span key={p} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stone-900 text-white text-[11px] font-medium font-rethink">
                         {p}
                         <button
-                          onClick={() => setCampaign(prev => ({ ...prev, platforms: prev.platforms.filter(pl => pl !== p) }))}
+                          onClick={() => { isModified.current = true; setCampaign(prev => ({ ...prev, platforms: prev.platforms.filter(pl => pl !== p) })); }}
+                          aria-label={`Remove ${p}`}
                           className="ml-0.5"
                           >
                             <HugeiconsIcon icon={Cancel01Icon} size={12} />
@@ -841,6 +966,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                         if (e.key === "Enter" && customStyleInput.trim()) {
                           e.preventDefault();
                           if (!campaign.contentStyle.includes(customStyleInput.trim())) {
+                            isModified.current = true;
                             setCampaign(prev => ({
                               ...prev,
                               contentStyle: [...prev.contentStyle, customStyleInput.trim()],
@@ -854,6 +980,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                     <button
                       onClick={() => {
                         if (customStyleInput.trim() && !campaign.contentStyle.includes(customStyleInput.trim())) {
+                          isModified.current = true;
                           setCampaign(prev => ({
                             ...prev,
                             contentStyle: [...prev.contentStyle, customStyleInput.trim()],
@@ -877,6 +1004,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                           key={style}
                           type="button"
                           onClick={() => {
+                            isModified.current = true;
                             setCampaign(prev => ({
                               ...prev,
                               contentStyle: isSelected
@@ -899,7 +1027,8 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                       <span key={style} className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stone-900 text-white text-[11px] font-medium font-rethink">
                         {style}
                         <button
-                          onClick={() => setCampaign(prev => ({ ...prev, contentStyle: prev.contentStyle.filter(s => s !== style) }))}
+                          onClick={() => { isModified.current = true; setCampaign(prev => ({ ...prev, contentStyle: prev.contentStyle.filter(s => s !== style) })); }}
+                          aria-label={`Remove ${style}`}
                           className="ml-0.5"
                         >
                           <HugeiconsIcon icon={Cancel01Icon} size={12} />
@@ -915,7 +1044,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   onClick={isMobile ? handleSaveDraft : handleBackStep}
                   className="flex-1 py-3 bg-white border border-stone-200 text-stone-900 font-semibold text-sm rounded-full font-rethink"
                 >
-                  {isMobile ? "Save and Close" : "Back"}
+                  {isMobile ? (saving ? "Saving..." : "Save and Close") : "Back"}
                 </button>
                 <button
                   onClick={handleNextStep}
@@ -976,16 +1105,16 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
               <div className="bg-stone-100 rounded-[18px] py-4 space-y-6">
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-medium text-stone-500">Platforms</span>
-                  <span className="font-semibold text-stone-800">{campaign.platforms.join(", ")}</span>
+                  <span className="font-medium text-stone-800">{campaign.platforms.join(", ")}</span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
                   <span className="font-medium text-stone-500">Content style</span>
-                  <span className="font-semibold text-stone-800">{campaign.contentStyle.join(", ")}</span>
+                  <span className="font-medium text-stone-800">{campaign.contentStyle.join(", ")}</span>
                 </div>
                 {campaign.scriptFileName && (
                   <div className="flex justify-between items-center text-xs">
                     <span className="font-medium text-stone-500">Script</span>
-                    <span className="font-semibold text-stone-800 truncate ml-4">{campaign.scriptFileName}</span>
+                    <span className="font-medium text-stone-800 truncate ml-4">{campaign.scriptFileName}</span>
                   </div>
                 )}
               </div>
@@ -1006,7 +1135,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
                   onClick={isMobile ? handleSaveDraft : handleBackStep}
                   className="flex-1 py-3 bg-white text-stone-900 font-semibold text-sm rounded-full border border-stone-200 font-rethink"
                 >
-                  {isMobile ? "Save and Close" : "Back"}
+                  {isMobile ? (saving ? "Saving..." : "Save and Close") : "Back"}
                 </button>
                 <button
                   onClick={handleNextStep}

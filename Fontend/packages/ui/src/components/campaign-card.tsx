@@ -105,10 +105,8 @@ export function CampaignCard({
         <h3 className="font-rethink font-medium tracking-tight text-[16px] text-stone-900 line-clamp-2">
           {title}
         </h3>
-        {description ? (
+        {description && (
           <p className="font-rethink text-xs text-stone-500 truncate mt-1 mb-5">{description}</p>
-        ) : (
-          <p className="font-rethink text-xs text-stone-500 truncate mt-1 mb-5">Brief description of what the campaign is about goes here...</p>
         )}
       </div>
 

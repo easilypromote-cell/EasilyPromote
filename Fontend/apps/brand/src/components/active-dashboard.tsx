@@ -76,7 +76,7 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
   return (
     <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 z-10">
       <div data-reveal className="grid grid-cols-[1fr_auto] items-center gap-4 mb-8 md:mb-16">
-        <h2 className="font-motterdam font-normal text-[23px] leading-[28px] text-stone-900 m-0">
+        <h2 className="font-rethink font-normal text-[23px] leading-[28px] text-stone-900 m-0">
           Welcome, {userName.split(" ")[0]}
         </h2>
 

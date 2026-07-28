@@ -48,7 +48,7 @@ npx turbo run lint --filter=@ep/brand
 ### Backend (run from `Backend/`)
 
 ```bash
-npm run dev       # nodemon src/server.js (port 5001)
+npm run dev       # nodemon src/server.js (port 5000)
 npm run start     # node src/server.js
 ```
 
@@ -61,7 +61,7 @@ npm run start     # node src/server.js
 | Brand app | 3002 |
 | Creator app | 3001 |
 | Admin app | 3003 |
-| Backend API | 5001 |
+| Backend API | 5000 |
 
 ## Tech Stack
 

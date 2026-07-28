@@ -3,26 +3,18 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { NavBar } from "@ep/ui/components/nav-bar";
+import { useIsMobile } from "@ep/ui/hooks/use-is-mobile";
 import { Drawer, DrawerContent } from "../../../components/ui/drawer";
 import { CampaignDetails } from "../../../components/campaign-details";
 import { getUser, isAuthenticated } from "../../../lib/api";
-
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768);
-    check();
-    window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
-  }, []);
-  return isMobile;
-}
 
 export default function CampaignDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const isMobile = useIsMobile();
   const [userName, setUserName] = useState("User");
+
+  const campaignId = params.id as string;
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -31,21 +23,29 @@ export default function CampaignDetailsPage() {
     }
     const user = getUser();
     if (user?.name) setUserName(user.name);
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     history.pushState(null, "", location.href);
     const handlePopState = () => router.push("/");
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  }, [router]);
 
   const handleClose = () => router.push("/");
+
+  if (!campaignId) {
+    return (
+      <div className="h-screen bg-stone-100 flex items-center justify-center font-rethink text-stone-500">
+        Invalid campaign
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (
       <div className="h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
-        <CampaignDetails campaignId={params.id as string} onClose={handleClose} isMobile />
+        <CampaignDetails campaignId={campaignId} onClose={handleClose} isMobile />
       </div>
     );
   }
@@ -57,7 +57,7 @@ export default function CampaignDetailsPage() {
       {/* Campaign Details Drawer Modal (Right-sliding, w-1221px, 24px border-radius) */}
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <DrawerContent className="overflow-hidden">
-          <CampaignDetails campaignId={params.id as string} onClose={handleClose} />
+          <CampaignDetails campaignId={campaignId} onClose={handleClose} />
         </DrawerContent>
       </Drawer>
     </div>

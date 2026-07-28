@@ -394,6 +394,9 @@ router.post("/:id/topup-init", protect, authorizeRoles("business"), async (req, 
     if (campaign.businessId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not authorized" });
     }
+    if (!["live", "under_review", "paused"].includes(campaign.status)) {
+      return res.status(400).json({ error: "Can only top up active campaigns" });
+    }
 
     const reference = `ep_topup_${campaign._id}_${Date.now()}`;
 
@@ -422,7 +425,7 @@ router.post("/:id/topup-init", protect, authorizeRoles("business"), async (req, 
   }
 });
 
-router.patch("/:id/topup", protect, async (req, res, next) => {
+router.patch("/:id/topup", protect, authorizeRoles("business"), async (req, res, next) => {
   try {
     const { amount, paystackReference } = req.body;
 
@@ -432,6 +435,9 @@ router.patch("/:id/topup", protect, async (req, res, next) => {
     }
     if (campaign.businessId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not authorized" });
+    }
+    if (!["live", "under_review", "paused"].includes(campaign.status)) {
+      return res.status(400).json({ error: "Can only top up active campaigns" });
     }
 
     if (paystackReference) {

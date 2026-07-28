@@ -9,7 +9,6 @@ import { DraftAlertBanner } from "../components/draft-alert-banner";
 import { Skeleton } from "../components/ui/skeleton";
 import { apiRequest, getUser, clearAuth, isAuthenticated, getToken } from "../lib/api";
 import { useSocket } from "../lib/socket";
-import { useReveal } from "../hooks/use-reveal";
 
 function BrandDashboardContent() {
   const router = useRouter();
@@ -22,8 +21,10 @@ function BrandDashboardContent() {
   const [campaigns, setCampaigns] = useState<BrandCampaign[]>([]);
   const [draftCount, setDraftCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
   const fetchCampaigns = useCallback(async () => {
+    setFetchError("");
     try {
       const data = await apiRequest<{ campaigns: BrandCampaign[]; draftCount: number }>("/campaigns", {
         method: "GET",
@@ -34,24 +35,28 @@ function BrandDashboardContent() {
       setDraftCount(data.draftCount || 0);
 
       const pending = list.filter(c => c.status === "pending_payment");
-      await Promise.allSettled(
-        pending.map(c =>
-          apiRequest(`/campaigns/${c.id}/payment-status`, { token: getToken() || undefined })
-        )
-      );
+      let finalList = list;
 
-      const refreshed = await apiRequest<{ campaigns: BrandCampaign[]; draftCount: number }>("/campaigns", {
-        method: "GET",
-        token: getToken() || undefined,
-      });
+      if (pending.length > 0) {
+        await Promise.allSettled(
+          pending.map(c =>
+            apiRequest(`/campaigns/${c.id}/payment-status`, { token: getToken() || undefined })
+          )
+        );
 
-      const finalList = refreshed.campaigns || list;
-      setDraftCount(refreshed.draftCount || 0);
+        const refreshed = await apiRequest<{ campaigns: BrandCampaign[]; draftCount: number }>("/campaigns", {
+          method: "GET",
+          token: getToken() || undefined,
+        });
+
+        finalList = refreshed.campaigns || list;
+        setDraftCount(refreshed.draftCount || 0);
+      }
       setCampaigns(finalList);
       setDashboardState(finalList.length > 0 ? "active" : "empty");
-    } catch {
-      console.log("Could not load campaigns");
-      setDashboardState("empty");
+    } catch (err: unknown) {
+      console.error("Could not load campaigns:", err);
+      setFetchError(err instanceof Error ? err.message : "Could not load campaigns");
     } finally {
       setLoading(false);
     }
@@ -151,6 +156,24 @@ function BrandDashboardContent() {
                   </div>
                 ))}
               </div>
+            </div>
+          </main>
+        ) : fetchError ? (
+          <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto px-6 py-12">
+            <div className="text-center max-w-sm bg-white border border-stone-200 rounded-2xl p-8 space-y-4">
+              <div className="w-12 h-12 mx-auto rounded-full bg-red-50 flex items-center justify-center">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <h2 className="font-rethink font-medium text-lg text-stone-900">Something went wrong</h2>
+              <p className="font-rethink text-xs text-stone-500 font-medium">{fetchError}</p>
+              <button
+                onClick={() => fetchCampaigns()}
+                className="px-6 py-2.5 bg-stone-900 text-white text-sm font-medium font-rethink rounded-full"
+              >
+                Try again
+              </button>
             </div>
           </main>
         ) : dashboardState === "empty" ? (

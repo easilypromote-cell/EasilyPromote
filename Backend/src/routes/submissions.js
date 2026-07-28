@@ -268,14 +268,35 @@ router.post("/:id/sync-stats", protect, async (req, res, next) => {
       ]);
       campaign.viewsDelivered = totalViews.length > 0 ? totalViews[0].total : 0;
 
+      let shouldComplete = false;
+      let completionReason = "";
+
       if (campaign.viewsDelivered >= campaign.targetViews && campaign.status === "live") {
+        shouldComplete = true;
+        completionReason = "Campaign hit its target — that's a wrap.";
+      }
+
+      if (!shouldComplete && campaign.status === "live") {
+        const Transaction = require("../models/Transaction");
+        const released = await Transaction.aggregate([
+          { $match: { campaignId: campaign._id, status: "released" } },
+          { $group: { _id: null, total: { $sum: "$amount" } } },
+        ]);
+        const totalReleased = released.length > 0 ? released[0].total : 0;
+        if (totalReleased >= campaign.creatorPool) {
+          shouldComplete = true;
+          completionReason = "Campaign escrow has been fully released — that's a wrap.";
+        }
+      }
+
+      if (shouldComplete) {
         campaign.status = "completed";
         await Notification.create({
           businessId: campaign.businessId,
           campaignId: campaign._id,
           type: "completed",
           title: "Completed",
-          body: "Campaign hit its target — that's a wrap.",
+          body: completionReason,
         });
       }
       await campaign.save();

@@ -15,17 +15,11 @@ export function MobileDrawer({ open, onOpenChange, children }: MobileDrawerProps
 
   if (!isMobile) return null;
 
-  const handleOpenChange = (value: boolean | React.ChangeEvent<HTMLDivElement>) => {
-    if (typeof value === "boolean") {
-      onOpenChange(value);
-    }
-  };
-
   return (
-    <DrawerPrimitive.Root open={open} onOpenChange={handleOpenChange} direction="bottom">
+    <DrawerPrimitive.Root open={open} onOpenChange={onOpenChange} direction="bottom">
       <DrawerPrimitive.Portal>
         <DrawerPrimitive.Overlay className="fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-sm" />
-        <DrawerPrimitive.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white px-4 py-6 outline-none max-h-[70vh]">
+        <DrawerPrimitive.Content className="fixed bottom-0 left-0 right-0 z-50 flex flex-col rounded-t-2xl bg-white px-4 py-6 outline-none max-h-[70vh] overflow-y-auto">
           <div className="w-10 h-1 bg-stone-300 rounded-full mx-auto mb-4 flex-shrink-0" />
           <div className="flex flex-col gap-2">
             {children}
