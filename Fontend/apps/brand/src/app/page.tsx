@@ -14,10 +14,11 @@ function BrandDashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<"home" | "wallet">("home");
   const [dashboardState, setDashboardState] = useState<"empty" | "active">("empty");
   const [showAlert, setShowAlert] = useState(true);
   const [userName, setUserName] = useState("User");
+  const [userEmail, setUserEmail] = useState("");
+  const [userAvatarUrl, setUserAvatarUrl] = useState("");
   const [campaigns, setCampaigns] = useState<BrandCampaign[]>([]);
   const [draftCount, setDraftCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -85,6 +86,8 @@ function BrandDashboardContent() {
 
     const user = getUser();
     if (user?.name) setUserName(user.name);
+    if (user?.email) setUserEmail(user.email);
+    if (user?.avatarUrl) setUserAvatarUrl(user.avatarUrl);
 
     apiRequest<{ emailVerified: boolean }>("/auth/me", { token: getToken() || undefined })
       .then((me) => {
@@ -123,18 +126,40 @@ function BrandDashboardContent() {
     router.push("/login");
   }, [router]);
 
+  const handleAvatarUpload = useCallback(async (file: File) => {
+    const token = getToken();
+    if (!token) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"}/upload/image`,
+        { method: "POST", headers: { Authorization: `Bearer ${token}` }, body: formData }
+      );
+      const data = await res.json();
+      if (data.url) setUserAvatarUrl(data.url);
+    } catch (err) {
+      console.error("Avatar upload failed:", err);
+    }
+  }, []);
+
   return (
     <div className="h-screen bg-[#F5F5F4] text-stone-900 flex flex-col font-rethink">
-      <NavBar activeTab={activeTab} onTabChange={setActiveTab} userName={userName} onLogout={handleLogout} />
+      <NavBar
+        userName={userName}
+        userEmail={userEmail}
+        userAvatarUrl={userAvatarUrl}
+        onLogout={handleLogout}
+        onAvatarChange={handleAvatarUpload}
+      />
 
-      {showAlert && activeTab === "home" && draftCount > 0 && (
+      {showAlert && draftCount > 0 && (
         <div className="fixed bottom-6 left-4 right-4 md:left-auto md:right-6 z-50">
           <DraftAlertBanner draftCount={draftCount} onClose={() => setShowAlert(false)} />
         </div>
       )}
 
-      {activeTab === "home" ? (
-        loading ? (
+      {loading ? (
           <main className="flex-1 p-6 md:p-10">
             <div className="max-w-7xl mx-auto space-y-6">
               <Skeleton className="h-8 w-48" />
@@ -183,18 +208,10 @@ function BrandDashboardContent() {
             campaigns={campaigns}
             onCreateCampaign={handleCreateCampaign}
             userName={userName}
+            onLogout={handleLogout}
           />
         )
-      ) : (
-        <main className="flex-1 flex flex-col items-center justify-center max-w-7xl w-full mx-auto px-6 py-12">
-          <div className="text-center max-w-md bg-white border border-stone-200 rounded-2xl p-8">
-            <h2 className="text-2xl font-medium mb-3">Wallet & Billing</h2>
-            <p className="text-stone-500 mb-6">Manage your escrow transactions, campaign budgets, and wallet status.</p>
-            <div className="text-3xl font-medium text-stone-900 mb-2">₦0.00</div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-stone-100 rounded-full text-stone-600">Balance Locked</span>
-          </div>
-        </main>
-      )}
+      }
     </div>
   );
 }

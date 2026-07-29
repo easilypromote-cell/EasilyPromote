@@ -112,8 +112,8 @@ router.post("/:id/pay", protect, authorizeRoles("business"), async (req, res, ne
     if (campaign.businessId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not authorized" });
     }
-    if (campaign.status !== "draft") {
-      return res.status(400).json({ error: "Campaign is not in draft status" });
+    if (!["draft", "pending_payment"].includes(campaign.status)) {
+      return res.status(400).json({ error: "Campaign cannot be paid" });
     }
 
     const reference = `ep_${campaign._id}_${Date.now()}`;
@@ -214,7 +214,7 @@ router.patch("/:id", protect, async (req, res, next) => {
     if (campaign.businessId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not authorized" });
     }
-    if (campaign.status !== "draft") {
+    if (!["draft", "pending_payment"].includes(campaign.status)) {
       return res.status(400).json({ error: "Can only edit draft campaigns" });
     }
 
@@ -260,7 +260,7 @@ router.patch("/:id/save-and-close", protect, async (req, res, next) => {
     if (campaign.businessId.toString() !== req.user._id.toString()) {
       return res.status(403).json({ error: "Not authorized" });
     }
-    if (campaign.status !== "draft") {
+    if (!["draft", "pending_payment"].includes(campaign.status)) {
       return res.status(400).json({ error: "Can only save draft campaigns" });
     }
 

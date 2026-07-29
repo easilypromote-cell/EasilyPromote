@@ -50,6 +50,7 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
   const [defaultRate, setDefaultRate] = useState(1.085);
   const [touchedStep, setTouchedStep] = useState<{ step1: boolean; step2: boolean }>({ step1: false, step2: false });
   const [saving, setSaving] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const isModified = useRef(false);
   const { toast } = useToast();
   useReveal(createStep);
@@ -416,6 +417,15 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <h3 className="font-rethink font-semibold text-base text-stone-900 truncate flex-1">{draftId ? "Edit Draft" : "Create a Campaign"}</h3>
+            {draftId && (
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                aria-label="Delete draft"
+                className="flex items-center justify-center w-8 h-8 rounded-full bg-stone-200 flex-shrink-0"
+              >
+                <HugeiconsIcon icon={Delete01Icon} size={14} className="text-stone-600" />
+              </button>
+            )}
           </header>
         )}
         {/* Mobile Stepper Bar */}
@@ -1152,6 +1162,41 @@ export function CampaignWizard({ onClose, onSuccess, draftId, isMobile }: Campai
           )}
 
       </div>
+
+      {/* Delete confirmation modal (mobile) */}
+      {showDeleteConfirm && isMobile && (
+        <div className="fixed inset-0 z-[100] bg-stone-900/40 backdrop-blur-sm flex items-center justify-center px-6">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-xs space-y-4">
+            <h3 className="font-rethink font-semibold text-base text-stone-900 text-center">Delete this draft?</h3>
+            <p className="font-rethink text-xs text-stone-500 font-medium text-center">This cannot be undone.</p>
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-2.5 bg-stone-100 text-stone-900 font-semibold text-sm rounded-full font-rethink"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!draftId) return;
+                  try {
+                    await apiRequest(`/campaigns/${draftId}`, { method: "DELETE", token: getToken() || undefined });
+                    clearAutoSave();
+                    toast("Draft deleted", "success");
+                    onClose();
+                  } catch {
+                    toast("Failed to delete draft", "error");
+                  }
+                  setShowDeleteConfirm(false);
+                }}
+                className="flex-1 py-2.5 bg-red-50 text-red-600 font-semibold text-sm rounded-full border border-red-200 font-rethink"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

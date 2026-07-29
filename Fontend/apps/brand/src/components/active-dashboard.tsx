@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { FilterIcon, ChevronDownIcon, Add01Icon } from "@hugeicons/core-free-icons";
 import { CampaignCard } from "@ep/ui/components/campaign-card";
+import { MobileDrawer } from "@ep/ui/components/mobile-drawer";
 import { cn } from "@ep/ui/lib/utils";
 import { useReveal } from "../hooks/use-reveal";
 
@@ -25,6 +26,7 @@ interface ActiveDashboardProps {
   campaigns: BrandCampaign[];
   onCreateCampaign: () => void;
   userName: string;
+  onLogout?: () => void;
 }
 
 const FILTER_OPTIONS = ["All Campaigns", "Live", "Draft", "Paused", "Completed"] as const;
@@ -42,11 +44,12 @@ function mapStatus(s: string): "review_needed" | "live" | "draft" | "paused" | "
   }
 }
 
-export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: ActiveDashboardProps) {
+export function ActiveDashboard({ campaigns, onCreateCampaign, userName, onLogout }: ActiveDashboardProps) {
   const router = useRouter();
   useReveal();
 
   const [isFilterOpen, setIsFilterOpen] = React.useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = React.useState(false);
   const [selectedFilter, setSelectedFilter] = React.useState<string>("All Campaigns");
   const filterRef = React.useRef<HTMLDivElement>(null);
 
@@ -61,7 +64,7 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
   }, []);
 
   const handleCardClick = (id: string, status: string) => {
-    if (status === "draft") {
+    if (status === "draft" || status === "pending_payment") {
       router.push(`/create-campaign?id=${id}`);
     } else {
       router.push(`/campaign/${id}`);
@@ -75,21 +78,30 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
 
   return (
     <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 z-10">
+      {/* Header row: Welcome + filter + create campaign */}
       <div data-reveal className="grid grid-cols-[1fr_auto] items-center gap-4 mb-8 md:mb-16">
         <h2 className="font-rethink font-normal text-[23px] leading-[28px] text-stone-900 m-0">
           Welcome, {userName.split(" ")[0]}
         </h2>
 
         <div className="flex items-center gap-3">
-          <div ref={filterRef} className="relative z-[100]">
+          {/* Mobile filter trigger — opens bottom sheet */}
+          <button
+            onClick={() => setIsMobileFilterOpen(true)}
+            className="flex md:hidden items-center justify-center bg-white border border-stone-200 rounded-full p-3"
+          >
+            <HugeiconsIcon icon={FilterIcon} size={20} className="text-stone-500" />
+          </button>
+
+          {/* Desktop filter trigger — opens dropdown */}
+          <div ref={filterRef} className="hidden md:relative md:block z-[100]">
             <button
               onClick={() => setIsFilterOpen(!isFilterOpen)}
-              className="flex items-center justify-center gap-2 bg-white border border-stone-200 rounded-full p-3 md:px-4 md:py-2.5 cursor-pointer"
+              className="hidden md:flex items-center justify-center gap-2 bg-white border border-stone-200 rounded-full px-4 py-2.5 cursor-pointer"
             >
-              <HugeiconsIcon icon={FilterIcon} size={20} className="md:hidden text-stone-500" />
-              <HugeiconsIcon icon={FilterIcon} size={16} className="hidden md:block text-stone-500" />
-              <span className="hidden md:inline text-sm font-medium text-stone-900">{selectedFilter}</span>
-              <HugeiconsIcon icon={ChevronDownIcon} size={16} className="hidden md:block text-stone-400" />
+              <HugeiconsIcon icon={FilterIcon} size={16} className="text-stone-500" />
+              <span className="text-sm font-medium text-stone-900">{selectedFilter}</span>
+              <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400" />
             </button>
 
             {isFilterOpen && (
@@ -113,14 +125,38 @@ export function ActiveDashboard({ campaigns, onCreateCampaign, userName }: Activ
             )}
           </div>
 
+          {/* Create campaign button */}
           <button
             onClick={onCreateCampaign}
-            className="flex items-center justify-center gap-2 p-3 md:px-6 md:py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-semibold text-sm rounded-full border border-stone-100"
+            className="flex items-center justify-center p-3 md:px-6 md:py-2.5 bg-[#FEB604] text-[#1C1917] font-rethink font-semibold text-sm rounded-full border border-stone-100"
           >
             <HugeiconsIcon icon={Add01Icon} size={20} className="md:hidden" />
             <span className="hidden md:inline">Create Campaign</span>
           </button>
         </div>
+      </div>
+
+      {/* Mobile filter bottom sheet */}
+      <div className="md:hidden">
+        <MobileDrawer open={isMobileFilterOpen} onOpenChange={setIsMobileFilterOpen}>
+          {FILTER_OPTIONS.map((option) => (
+            <button
+              key={option}
+              onClick={() => {
+                setSelectedFilter(option);
+                setIsMobileFilterOpen(false);
+              }}
+              className={cn(
+                "flex items-center w-full px-4 py-3 text-sm text-left rounded-lg",
+                selectedFilter === option
+                  ? "bg-stone-100 font-semibold text-stone-900"
+                  : "font-medium text-stone-700"
+              )}
+            >
+              {option}
+            </button>
+          ))}
+        </MobileDrawer>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -6,6 +6,7 @@ export interface User {
   emailVerified?: boolean;
   industry?: string;
   phone?: string;
+  avatarUrl?: string;
 }
 
 const TOKEN_KEY = "token";

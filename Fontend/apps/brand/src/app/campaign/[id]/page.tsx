@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { NavBar } from "@ep/ui/components/nav-bar";
 import { useIsMobile } from "@ep/ui/hooks/use-is-mobile";
 import { Drawer, DrawerContent } from "../../../components/ui/drawer";
 import { CampaignDetails } from "../../../components/campaign-details";
-import { getUser, isAuthenticated } from "../../../lib/api";
+import { isAuthenticated } from "../../../lib/api";
 
 export default function CampaignDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const isMobile = useIsMobile();
-  const [userName, setUserName] = useState("User");
 
   const campaignId = params.id as string;
 
@@ -21,8 +19,6 @@ export default function CampaignDetailsPage() {
       router.push("/login");
       return;
     }
-    const user = getUser();
-    if (user?.name) setUserName(user.name);
   }, [router]);
 
   useEffect(() => {
@@ -52,9 +48,6 @@ export default function CampaignDetailsPage() {
 
   return (
     <div className="min-h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
-      <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
-
-      {/* Campaign Details Drawer Modal (Right-sliding, w-1221px, 24px border-radius) */}
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <DrawerContent className="overflow-hidden">
           <CampaignDetails campaignId={campaignId} onClose={handleClose} />

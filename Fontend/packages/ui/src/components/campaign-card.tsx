@@ -44,6 +44,7 @@ export function CampaignCard({
           </span>
         );
       case "draft":
+      case "pending_payment":
         return (
           <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-stone-500" /> Draft
@@ -110,7 +111,7 @@ export function CampaignCard({
         )}
       </div>
 
-      {status === "draft" ? (
+      {status === "draft" || status === "pending_payment" ? (
         /* Center Resume Button for Drafts */
         <button
           onClick={(e) => {

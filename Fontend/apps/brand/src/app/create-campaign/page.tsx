@@ -5,10 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { CampaignWizard } from "../../components/campaign-wizard";
 import { CampaignSuccess } from "../../components/campaign-success";
-import { NavBar } from "@ep/ui/components/nav-bar";
 import { useIsMobile } from "@ep/ui/hooks/use-is-mobile";
 import { Drawer, DrawerContent } from "../../components/ui/drawer";
-import { getUser, isAuthenticated } from "../../lib/api";
+import { isAuthenticated, apiRequest, getToken } from "../../lib/api";
 
 function CreateCampaignContent() {
   const router = useRouter();
@@ -21,24 +20,54 @@ function CreateCampaignContent() {
 
   const draftId = paymentCampaignId || searchParams.get("id") || undefined;
 
-  const [userName, setUserName] = useState("User");
+  const [verifying, setVerifying] = useState(true);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push("/login");
       return;
     }
-    const user = getUser();
-    if (user?.name) setUserName(user.name);
   }, []);
+
+  useEffect(() => {
+    if (!paymentSuccess || !paymentCampaignId) {
+      setVerifying(false);
+      return;
+    }
+
+    apiRequest<{ status: string; isPaid: boolean }>(`/campaigns/${paymentCampaignId}/payment-status`, {
+      token: getToken() || undefined,
+    }).then((data) => {
+      if (data.isPaid) {
+        setPaymentConfirmed(true);
+      }
+      setVerifying(false);
+    }).catch(() => {
+      setVerifying(false);
+    });
+  }, [paymentSuccess, paymentCampaignId]);
 
   const handleClose = () => router.push("/");
   const handleSuccess = () => router.push("/");
 
-  // Payment success — show standalone success screen (not part of the wizard)
-  if (paymentSuccess) {
+  // Verifying payment status after Paystack return
+  if (verifying) {
+    return (
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center font-rethink text-stone-500">
+        Verifying payment...
+      </div>
+    );
+  }
+
+  // Payment confirmed — show success screen
+  if (paymentConfirmed) {
     return <CampaignSuccess onClose={handleSuccess} isMobile={isMobile} />;
   }
+
+  // Paystack returned but payment not confirmed (card declined etc.) —
+  // show the wizard so user can retry
+  const effectiveDraftId = paymentCampaignId || draftId;
 
   // Wizard page — popstate navigates to home
 
@@ -46,7 +75,7 @@ function CreateCampaignContent() {
     return (
       <div className="h-screen bg-stone-100 text-stone-900 flex flex-col font-rethink">
         <div className="flex-1 overflow-y-auto">
-          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} isMobile />
+          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={effectiveDraftId} isMobile />
         </div>
       </div>
     );
@@ -54,10 +83,9 @@ function CreateCampaignContent() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-rethink">
-      <NavBar activeTab="home" onTabChange={() => router.push("/")} userName={userName} />
       <Drawer open={true} onOpenChange={(open) => { if (!open) handleClose(); }}>
         <DrawerContent className="overflow-hidden bg-stone-100">
-          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={draftId} />
+          <CampaignWizard onClose={handleClose} onSuccess={handleSuccess} draftId={effectiveDraftId} />
         </DrawerContent>
       </Drawer>
     </div>
