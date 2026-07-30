@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { Rethink_Sans, Inter, Raleway, Alex_Brush } from "next/font/google";
+import { Rethink_Sans, Inter, Raleway } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
 const rethinkSans = Rethink_Sans({
   subsets: ["latin"],
-  weight: ["500", "600"],
+  weight: ["500", "600", "700"],
   variable: "--font-rethink",
 });
 
@@ -20,9 +21,8 @@ const raleway = Raleway({
   variable: "--font-raleway",
 });
 
-const motterdam = Alex_Brush({
-  subsets: ["latin"],
-  weight: ["400"],
+const motterdam = localFont({
+  src: "../../public/font/Motterdam-K74zp.ttf",
   variable: "--font-motterdam",
 });
 
@@ -32,10 +32,16 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg", apple: "/favicon.svg" },
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className={`${rethinkSans.variable} ${inter.variable} ${raleway.variable} ${motterdam.variable} min-h-screen antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${rethinkSans.variable} ${inter.variable} ${raleway.variable} ${motterdam.variable} min-h-screen antialiased bg-stone-50 text-stone-900 font-rethink`}>
         {children}
       </body>
     </html>

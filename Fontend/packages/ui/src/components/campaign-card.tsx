@@ -33,32 +33,32 @@ export function CampaignCard({
     switch (status) {
       case "review_needed":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-[-0.01em] text-[10px] font-rethink flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-[#176448]" /> Live Campaigns
           </span>
         );
       case "live":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-[-0.01em] text-[10px] font-rethink flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-[#176448]" /> Live Campaigns
           </span>
         );
       case "draft":
       case "pending_payment":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 font-medium tracking-[-0.01em] text-[10px] font-rethink flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-stone-500" /> Draft
           </span>
         );
       case "under_review":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-[#FBDFB1] text-[#693D11] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-[#FBDFB1] text-[#693D11] font-medium tracking-[-0.01em] text-[10px] font-rethink flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-[#693D11]" /> Under Review
           </span>
         );
       case "completed":
         return (
-          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-[#CBF5E5] text-[#176448] font-medium tracking-[-0.01em] text-[10px] font-rethink flex items-center gap-1">
             <span className="w-1 h-1 rounded-full bg-[#176448]" /> Completed
           </span>
         );
@@ -94,7 +94,7 @@ export function CampaignCard({
           )}
           <div className="flex items-center gap-1.5">
             {status !== "draft" && category && (
-              <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px]">
+              <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-[-0.01em] text-[10px] font-rethink">
                 {category}
               </span>
             )}
@@ -103,7 +103,7 @@ export function CampaignCard({
         </div>
 
         {/* Campaign Title */}
-        <h3 className="font-rethink font-medium tracking-tight text-[16px] text-stone-900 line-clamp-2">
+        <h3 className="font-rethink font-medium tracking-tighter text-[16px] text-stone-900 line-clamp-2">
           {title}
         </h3>
         {description && (
@@ -118,7 +118,7 @@ export function CampaignCard({
             e.stopPropagation();
             if (onResume) onResume();
           }}
-          className="w-full mt-auto h-12 bg-white border border-stone-100 text-stone-900 rounded-full font-rethink font-semibold tracking-tight text-sm"
+          className="w-full mt-auto h-12 bg-white border border-stone-100 text-stone-900 rounded-full font-rethink font-semibold tracking-[-0.01em] text-sm"
         >
           Resume
         </button>
@@ -135,9 +135,9 @@ export function CampaignCard({
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <span className="text-xs text-stone-500 font-medium tracking-tight font-rethink">{progress}%</span>
+            <span className="text-xs text-stone-500 font-medium tracking-[-0.01em] font-rethink">{progress}%</span>
             <span className="w-1 h-1 rounded-full bg-stone-300" />
-            <span className="text-xs text-stone-500 font-medium tracking-tight font-rethink">{currentViews} / {targetViews} views</span>
+            <span className="text-xs text-stone-500 font-medium tracking-[-0.01em] font-rethink">{currentViews} / {targetViews} views</span>
           </div>
         </div>
       )}

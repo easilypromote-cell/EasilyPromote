@@ -81,7 +81,7 @@ export function NavBar({
               unoptimized
             />
             <div className="hidden sm:flex items-center gap-1.5">
-              <span className="text-sm font-medium text-stone-900">{userName}</span>
+              <span className="text-sm font-medium text-stone-900 font-rethink">{userName}</span>
               <HugeiconsIcon icon={ChevronDownIcon} size={16} className="text-stone-400" />
             </div>
           </button>
@@ -129,9 +129,9 @@ export function NavBar({
                   unoptimized
                 />
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{userName}</p>
+                  <p className="text-sm font-medium text-stone-900 font-rethink">{userName}</p>
                   {userEmail && (
-                    <p className="text-xs text-stone-500">{userEmail}</p>
+                    <p className="text-xs text-stone-500 font-rethink">{userEmail}</p>
                   )}
                 </div>
               </button>

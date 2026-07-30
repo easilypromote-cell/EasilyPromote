@@ -4,6 +4,9 @@ export type UserRole = "business" | "creator";
 export interface AuthFormState {
   businessName: string;
   industry: string;
+  firstName: string;
+  lastName: string;
+  nickname: string;
   email: string;
   phone: string;
   password: string;

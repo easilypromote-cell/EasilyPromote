@@ -1,6 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { CheckmarkCircle01Icon } from "@hugeicons/core-free-icons";
 import type { CreatorProfile } from "./types";
+import { useReveal } from "../hooks/use-reveal";
 
 interface OnboardingViewProps {
   profile: CreatorProfile;
@@ -15,13 +18,14 @@ export function OnboardingView({
   onChooseNiches,
   onCompleteProfile,
 }: OnboardingViewProps) {
+  useReveal();
+
   const isSocialConnected = profile.socialAccounts.length > 0;
   const isNichesChosen = profile.niches.length > 0;
   const isProfileCompleted = profile.bio !== "" && profile.country !== "";
 
   return (
     <div className="w-full flex flex-col items-center max-w-xl text-center">
-      {/* Illustration */}
       <div className="mb-6 h-[200px] w-auto flex items-center justify-center">
         <svg className="w-[180px] h-[180px] text-stone-800" viewBox="0 0 200 200" fill="none">
           <path d="M50 40h90v120H50z" fill="#FAFAF9" stroke="#1C1917" strokeWidth="3" strokeDasharray="3 3" />
@@ -44,19 +48,15 @@ export function OnboardingView({
         </svg>
       </div>
 
-      {/* Signature Greeting */}
-      <h2 className="font-motterdam text-[42px] leading-tight text-stone-900 mb-2">
+      <h2 data-reveal className="font-motterdam font-normal text-[33px] leading-[42.67px] text-stone-900 mb-2">
         Welcome, {profile.displayName.split(" ")[0]}
       </h2>
 
-      {/* Instruction */}
-      <p className="text-sm font-medium text-stone-500 mb-8 max-w-sm">
+      <p data-reveal className="text-sm font-medium text-stone-500 mb-8 max-w-sm">
         You&apos;re almost ready to start earning. Complete these to unlock your first campaign.
       </p>
 
-      {/* Checklist Container */}
-      <div className="w-full bg-[#F5F5F4]/60 border border-stone-200 border-dashed rounded-3xl p-8 space-y-8 text-left shadow-sm">
-        {/* Step 1: Connect a social account */}
+      <div data-reveal className="w-full bg-[#F5F5F4]/60 border border-stone-200 border-dashed rounded-3xl p-8 space-y-8 text-left">
         <ChecklistStep
           completed={isSocialConnected}
           title="Connect a social account"
@@ -65,7 +65,6 @@ export function OnboardingView({
           onAction={onConnectSocial}
         />
 
-        {/* Step 2: Choose niches */}
         <ChecklistStep
           completed={isNichesChosen}
           title="Choose your niches"
@@ -74,7 +73,6 @@ export function OnboardingView({
           onAction={onChooseNiches}
         />
 
-        {/* Step 3: Complete profile */}
         <ChecklistStep
           completed={isProfileCompleted}
           title="Complete your profile"
@@ -120,12 +118,12 @@ function ChecklistStep({
         )}
       </div>
       <div className="flex-1 space-y-1.5">
-        <h4 className="font-rethink font-semibold text-[15px] text-stone-900 leading-none">{title}</h4>
-        <p className="text-xs text-stone-500 leading-normal max-w-sm">{description}</p>
+        <h4 className="font-rethink font-medium text-sm text-stone-900 leading-none">{title}</h4>
+        <p className="text-xs text-stone-500 font-medium leading-normal max-w-sm">{description}</p>
         {!completed && (
           <button
             onClick={onAction}
-            className="mt-2 px-6 py-2 bg-white hover:bg-stone-50 text-stone-900 font-semibold text-xs border border-stone-200 rounded-full transition-colors shadow-sm"
+            className="mt-2 px-6 py-2 bg-white text-stone-900 font-semibold text-xs border border-stone-200 rounded-full font-rethink"
           >
             {actionLabel}
           </button>

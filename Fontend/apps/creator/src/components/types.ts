@@ -44,6 +44,9 @@ export interface CampaignItem {
     | "delivered";
   reward: number;
   viewTarget?: number;
+  minViews?: number;
+  maxViews?: number;
+  costPerView?: number;
   submittedAgo?: string;
   comment?: string;
   progress?: number;
@@ -71,6 +74,10 @@ export interface MarketplaceCampaign {
   targetViews: number;
   costPerView: number;
   contentBrief?: string;
+  brandName: string;
+  brandAvatar?: string;
+  minViews: number;
+  description: string;
 }
 
 export interface WalletData {

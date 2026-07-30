@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
-import { apiRequest, getToken, getUser } from "../lib/api";
+import { apiRequest, getToken, getUser, DEMO_MODE, saveAuth } from "../lib/api";
 import type { CreatorProfile, ActiveTab, CampaignItem, MarketplaceCampaign, WalletData } from "../components/types";
 import { CreatorHeader } from "../components/creator-header";
 import { OnboardingView } from "../components/onboarding-view";
@@ -14,9 +14,12 @@ import { SocialConnectModal } from "../components/modals/social-connect-modal";
 import { NicheModal } from "../components/modals/niche-modal";
 import { ProfileModal } from "../components/modals/profile-modal";
 import { CampaignDetailsDrawer } from "../components/campaign-details-drawer";
+import { Skeleton } from "../components/ui/skeleton";
+import { useReveal } from "../hooks/use-reveal";
 
-export default function CreatorDashboard() {
+function CreatorDashboardContent() {
   const router = useRouter();
+  useReveal();
 
   const [profile, setProfile] = useState<CreatorProfile>({
     name: "",
@@ -43,12 +46,10 @@ export default function CreatorDashboard() {
   const [selectedCampaign, setSelectedCampaign] = useState<CampaignItem | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Modal visibility
   const [showSocialModal, setShowSocialModal] = useState(false);
   const [showNicheModal, setShowNicheModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  // Form states
   const [socialPlatform, setSocialPlatform] = useState("TikTok");
   const [socialHandle, setSocialHandle] = useState("");
   const [selectedNiches, setSelectedNiches] = useState<string[]>([]);
@@ -59,11 +60,23 @@ export default function CreatorDashboard() {
     avatarUrl: "",
   });
 
-  // Post URL inputs
   const [readyPostUrl, setReadyPostUrl] = useState<Record<string, string>>({});
 
-  // Auth guard + initial data fetch
   useEffect(() => {
+    if (DEMO_MODE) {
+      if (!getToken()) {
+        saveAuth("demo-token", {
+          id: "demo-user",
+          name: "Alex Creative",
+          email: "alex@demo.com",
+          role: "creator",
+          emailVerified: true,
+        });
+      }
+      fetchAllData();
+      return;
+    }
+
     const token = getToken();
     if (!token) {
       router.push("/login");
@@ -151,6 +164,9 @@ export default function CreatorDashboard() {
         status: c.status as CampaignItem["status"],
         reward: c.reward as number,
         viewTarget: c.viewTarget as number,
+        minViews: c.minViews as number | undefined,
+        maxViews: c.maxViews as number | undefined,
+        costPerView: c.costPerView as number | undefined,
         comment: c.comment as string,
         progress: c.progress as number,
         currentViews: c.currentViews as number,
@@ -189,6 +205,10 @@ export default function CreatorDashboard() {
         targetViews: c.targetViews as number,
         costPerView: c.costPerView as number,
         contentBrief: c.contentBrief as string,
+        brandName: (c.brandName as string) || "Brand",
+        brandAvatar: c.brandAvatar as string | undefined,
+        minViews: (c.minViews as number) || 1000,
+        description: (c.description as string) || "",
       }));
 
       setMarketplaceCampaigns(items);
@@ -213,7 +233,6 @@ export default function CreatorDashboard() {
     }
   };
 
-  // Connect Social Account
   const handleConnectSocial = async () => {
     if (!socialHandle) return;
     const newSocial = {
@@ -241,7 +260,6 @@ export default function CreatorDashboard() {
     }
   };
 
-  // Save Niches
   const handleSaveNiches = async () => {
     if (selectedNiches.length === 0) return;
 
@@ -259,7 +277,6 @@ export default function CreatorDashboard() {
     }
   };
 
-  // Complete Profile
   const handleSaveProfile = async () => {
     setProfile((prev) => ({
       ...prev,
@@ -288,7 +305,6 @@ export default function CreatorDashboard() {
     setOnboardingComplete(true);
   };
 
-  // Campaign actions — real API calls
   const handleSubmitContent = async (campaignId: string) => {
     const url = readyPostUrl[campaignId];
     if (!url) return;
@@ -424,12 +440,12 @@ export default function CreatorDashboard() {
     }
   };
 
-  const handleClaimSlot = async (campaignId: string) => {
+  const handleClaimSlot = async (campaignId: string, views: number) => {
     try {
       await apiRequest("/slots/claim", {
         method: "POST",
         token: getToken() || undefined,
-        body: JSON.stringify({ campaignId }),
+        body: JSON.stringify({ campaignId, committedViews: views }),
       });
 
       await Promise.allSettled([fetchCampaigns(), fetchMarketplace()]);
@@ -438,7 +454,6 @@ export default function CreatorDashboard() {
     }
   };
 
-  // Sync selected campaign status reactively when campaigns change
   useEffect(() => {
     if (selectedCampaign) {
       const updated = campaigns.find((c) => c.id === selectedCampaign.id);
@@ -446,13 +461,11 @@ export default function CreatorDashboard() {
     }
   }, [campaigns]);
 
-  // Filter campaigns
   const filteredCampaigns = campaigns.filter((c) => {
     if (campaignsFilter === "all") return true;
     return c.status === campaignsFilter;
   });
 
-  // Sync niche selection when opening modal
   useEffect(() => {
     setSelectedNiches(profile.niches);
   }, [profile.niches]);
@@ -465,8 +478,28 @@ export default function CreatorDashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex items-center justify-center">
-        <span className="text-sm font-semibold text-stone-500">Loading...</span>
+      <div className="min-h-screen bg-[#F5F5F4] flex items-center justify-center">
+        <div className="space-y-4 w-full max-w-7xl mx-auto px-6">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white border border-stone-200 rounded-2xl p-4 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-12 h-12 rounded-xl flex-shrink-0" />
+                  <div className="space-y-2 flex-1">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                </div>
+                <Skeleton className="h-3 w-full" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
@@ -474,7 +507,7 @@ export default function CreatorDashboard() {
   const isOnboarding = !onboardingComplete && (!profile.socialAccounts.length || !profile.niches.length || !profile.country);
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] text-[#1C1917] flex flex-col font-rethink">
+    <div className="min-h-dvh bg-[#F5F5F4] text-[#1C1917] flex flex-col font-rethink">
       <CreatorHeader
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -482,7 +515,7 @@ export default function CreatorDashboard() {
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 flex flex-col items-center">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-6 md:py-10 flex flex-col items-center">
         {activeTab === "home" && (
           <>
             {isOnboarding && !onboardingComplete && (
@@ -507,11 +540,6 @@ export default function CreatorDashboard() {
                 campaigns={filteredCampaigns}
                 filter={campaignsFilter}
                 onFilterChange={setCampaignsFilter}
-                onSubmitContent={handleSubmitContent}
-                onUpdateContent={handleUpdateContent}
-                onSubmitPostUrl={handleSubmitPostUrl}
-                postUrls={readyPostUrl}
-                onPostUrlChange={(id, url) => setReadyPostUrl({ ...readyPostUrl, [id]: url })}
                 onSelectCampaign={setSelectedCampaign}
                 onBrowseCampaign={() => setActiveTab("campaign")}
               />
@@ -534,13 +562,13 @@ export default function CreatorDashboard() {
             campaigns={marketplaceCampaigns}
             meta={marketplaceMeta}
             onClaimSlot={handleClaimSlot}
+            niches={profile.niches}
           />
         )}
 
         {activeTab === "wallet" && <WalletView profile={profile} walletData={walletData} />}
       </main>
 
-      {/* Modals */}
       <SocialConnectModal
         isOpen={showSocialModal}
         onClose={() => setShowSocialModal(false)}
@@ -567,5 +595,13 @@ export default function CreatorDashboard() {
         onProfileFormChange={setProfileForm}
       />
     </div>
+  );
+}
+
+export default function CreatorDashboard() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F5F5F4] flex items-center justify-center"><Skeleton className="h-6 w-40" /></div>}>
+      <CreatorDashboardContent />
+    </Suspense>
   );
 }
