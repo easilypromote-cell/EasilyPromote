@@ -67,8 +67,14 @@ export default function CreatorDashboard() {
     }
 
     const user = getUser();
-    if (user?.role !== "creator") {
+    if (user?.role === "business") {
       router.push("/dashboard/brand");
+      return;
+    }
+    if (user?.role !== "creator") {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      router.push("/login");
       return;
     }
 

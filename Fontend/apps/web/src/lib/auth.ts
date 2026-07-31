@@ -32,7 +32,13 @@ export function getToken(): string | null {
 export function getUser(): User | null {
   if (typeof window === "undefined") return null;
   const stored = localStorage.getItem(USER_KEY);
-  return stored ? JSON.parse(stored) : null;
+  if (!stored) return null;
+  try {
+    return JSON.parse(stored) as User;
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
+  }
 }
 
 export function isAuthenticated(): boolean {

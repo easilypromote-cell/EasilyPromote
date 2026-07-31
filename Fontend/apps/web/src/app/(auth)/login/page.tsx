@@ -10,18 +10,23 @@ import { LoginStep } from "@ep/ui/components/auth/login-step";
 import { ForgotStep } from "@ep/ui/components/auth/forgot-step";
 import { ResetPasswordStep } from "@ep/ui/components/auth/reset-password-step";
 import type { OnboardingStep, UserRole, AuthFormState } from "@ep/ui/components/auth/types";
+import { useReveal } from "../../../hooks/use-reveal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [step, setStep] = useState<OnboardingStep>("role-select");
+  const [step, setStep] = useState<OnboardingStep>("login");
+  useReveal(step);
   const [role, setRole] = useState<UserRole>("creator");
   const [postOtpTarget, setPostOtpTarget] = useState<"dashboard" | "reset-password">("dashboard");
 
   const [form, setForm] = useState<AuthFormState>({
     businessName: "",
     industry: "Technology",
+    firstName: "",
+    lastName: "",
+    nickname: "",
     email: "",
     phone: "",
     password: "",
@@ -34,6 +39,19 @@ export default function LoginPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const routeAfterAuth = (user: { role?: string }) => {
+    const role = user?.role;
+    if (role === "creator") {
+      router.push("/dashboard/creator");
+    } else if (role === "business") {
+      router.push("/dashboard/brand");
+    } else if (role === "admin" || role === "super_admin" || role === "finance_admin" || role === "support") {
+      window.location.href = "http://localhost:3003";
+    } else {
+      router.push("/");
+    }
+  };
 
   const setField = <K extends keyof AuthFormState>(key: K, value: AuthFormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -119,7 +137,7 @@ export default function LoginPage() {
       } else {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/");
+        routeAfterAuth(data.user);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -157,7 +175,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push("/");
+      routeAfterAuth(data.user);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {

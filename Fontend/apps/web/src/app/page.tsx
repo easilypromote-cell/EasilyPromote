@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getUser, isAuthenticated } from "../lib/auth";
+import { getUser, isAuthenticated, clearAuth } from "../lib/auth";
 
 export default function HomePage() {
   const router = useRouter();
@@ -20,8 +20,11 @@ export default function HomePage() {
       router.replace("/dashboard/creator");
     } else if (role === "admin" || role === "super_admin" || role === "finance_admin" || role === "support") {
       window.location.href = "http://localhost:3003";
-    } else {
+    } else if (role === "business") {
       router.replace("/dashboard/brand");
+    } else {
+      clearAuth();
+      router.replace("/login");
     }
   }, [router]);
 

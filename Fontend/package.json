@@ -1,6 +1,7 @@
 {
   "name": "easily-promote-frontend",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "scripts": {
     "dev": "turbo run dev --filter=@ep/web",
     "build": "turbo run build --filter=@ep/web",

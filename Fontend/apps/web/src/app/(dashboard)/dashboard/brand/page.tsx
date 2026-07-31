@@ -78,8 +78,13 @@ function BrandDashboardContent() {
     }
 
     const user = getUser();
-    if (user?.role !== "business") {
+    if (user?.role === "creator") {
       router.push("/dashboard/creator");
+      return;
+    }
+    if (user?.role !== "business") {
+      clearAuth();
+      router.push("/login");
       return;
     }
 
