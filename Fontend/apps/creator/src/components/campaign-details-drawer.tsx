@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { TiktokIcon, Message01Icon } from "@hugeicons/core-free-icons";
 import type { CampaignItem } from "./types";
 
 interface CampaignDetailsDrawerProps {
@@ -18,7 +20,6 @@ export function CampaignDetailsDrawer({
   onUpdateContent,
   onSubmitPostUrl,
 }: CampaignDetailsDrawerProps) {
-  const [briefExpanded, setBriefExpanded] = useState(false);
   const [tiktokUrl, setTiktokUrl] = useState("");
   const [instagramUrl, setInstagramUrl] = useState("");
   const [xUrl, setXUrl] = useState("");
@@ -59,8 +60,8 @@ export function CampaignDetailsDrawer({
     }) => (
       <div className="space-y-3">
         <div className="flex gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-stone-200 border border-stone-300 relative flex items-center justify-center shrink-0 overflow-hidden shadow-sm">
-            <div className="w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-stone-900 shadow-sm z-10">
+          <div className="w-14 h-14 rounded-2xl bg-stone-200 border border-stone-300 relative flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center text-stone-900 z-10">
               <svg className="w-2.5 h-2.5 translate-x-[1px]" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M8 5v14l11-7z" />
               </svg>
@@ -71,7 +72,7 @@ export function CampaignDetailsDrawer({
           <div className="flex-1 space-y-1.5 text-left">
             <div className="flex items-center gap-2 text-[10px] text-stone-500 font-medium">
               <span>{timeText}</span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold flex items-center gap-1 ${badgeColorClass}`}>
+              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-medium flex items-center gap-1 ${badgeColorClass}`}>
                 <span className={`w-1 h-1 rounded-full ${badgeDotColorClass}`} />
                 {badgeLabel}
               </span>
@@ -81,9 +82,7 @@ export function CampaignDetailsDrawer({
 
         {commentText && (
           <div className="bg-[#FAF5FF] border border-[#F3E8FF] rounded-2xl p-4 ml-18 flex gap-3 text-left">
-            <svg className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 0 1-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+            <HugeiconsIcon icon={Message01Icon} size={16} className="text-purple-600 shrink-0 mt-0.5" />
             <p className="text-[11px] leading-relaxed text-stone-600 font-medium">
               &quot;{commentText}&quot;
             </p>
@@ -168,18 +167,18 @@ export function CampaignDetailsDrawer({
         className="w-1/5 bg-stone-900/10 backdrop-blur-md p-6 flex flex-col justify-between cursor-pointer"
       >
         <div className="flex items-center gap-2 opacity-80">
-          <div className="w-5 h-5 rounded-full bg-[#FEB604] flex items-center justify-center shadow-sm">
-            <span className="text-[8px] font-bold text-stone-950">E</span>
+          <div className="w-5 h-5 rounded-full bg-[#FEB604] flex items-center justify-center">
+            <span className="text-[8px] font-semibold text-stone-950">E</span>
           </div>
           <span className="font-raleway font-semibold text-xs leading-[20px] text-[#0A0D14] tracking-wide">EasilyPromote</span>
         </div>
       </div>
 
-      <div className="w-4/5 h-full bg-[#FAFAF9] rounded-l-[32px] border-l border-stone-250 overflow-y-auto p-10 flex flex-col shadow-2xl relative animate-in slide-in-from-right duration-300">
+      <div className="w-4/5 h-full bg-[#FAFAF9] rounded-l-[32px] border-l border-stone-250 overflow-y-auto p-10 flex flex-col relative animate-in slide-in-from-right duration-300">
         <div className="flex justify-between items-center w-full mb-10 pb-4 border-b border-stone-200/60">
           <button 
             onClick={onClose}
-            className="text-stone-500 hover:text-stone-900 text-xs font-semibold transition-colors flex items-center gap-1.5"
+            className="text-stone-500 text-xs font-medium transition-colors flex items-center gap-1.5"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -187,7 +186,7 @@ export function CampaignDetailsDrawer({
             Save and Close
           </button>
           
-          <h2 className="font-rethink font-bold text-sm text-stone-900 tracking-wide">
+          <h2 className="font-rethink font-medium text-sm text-stone-900 tracking-wide">
             {campaign.title}
           </h2>
           
@@ -196,20 +195,17 @@ export function CampaignDetailsDrawer({
 
         <div className="max-w-xl w-full mx-auto space-y-8 pb-12">
           
-          <div className="bg-white border border-stone-200 rounded-3xl p-6 flex flex-col items-center text-center shadow-sm relative overflow-hidden">
-            <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200 mb-4">
-              <svg className="w-7 h-7 text-purple-600" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
-              </svg>
+          <div className="bg-stone-50 rounded-3xl border border-stone-100 p-4 flex flex-col items-center text-center relative overflow-hidden">
+            <div className="w-[50px] h-[50px] rounded-2xl bg-purple-100 flex items-center justify-center border border-purple-200 mb-4">
+              <HugeiconsIcon icon={TiktokIcon} size={24} className="text-purple-600" />
             </div>
 
-            <h3 className="font-rethink font-bold text-[18px] text-stone-900 leading-snug mb-3">
+            <h3 className="font-rethink font-medium tracking-tight text-[16px] text-stone-900 line-clamp-2 mb-3">
               {campaign.title}
             </h3>
 
             <div className="flex items-center gap-2 mb-6">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EBF3FF] text-[#2563EB] font-bold text-[10px] tracking-wider uppercase font-rethink">
-                <span className="w-1.5 h-1.5 bg-[#2563EB] rounded-full"></span>
+              <span className="px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 font-medium tracking-tight text-[10px] font-rethink">
                 {campaign.category}
               </span>
               <StatusDetailsBadge status={campaign.status} />
@@ -221,12 +217,9 @@ export function CampaignDetailsDrawer({
                 <div className="flex gap-2 w-full">
                   <button
                     onClick={() => onSubmitContent(campaign.id)}
-                    className="flex-1 py-3 bg-stone-950 hover:bg-stone-850 text-white rounded-full font-bold text-xs transition-colors shadow-sm"
+                    className="flex-1 py-4 bg-[#FEB604] text-stone-900 rounded-full font-semibold text-xs font-rethink"
                   >
                     Upload content
-                  </button>
-                  <button className="w-12 h-12 rounded-full border border-stone-200 hover:bg-stone-50 flex items-center justify-center shrink-0">
-                    <span className="text-stone-500 font-bold text-lg leading-none -translate-y-1">...</span>
                   </button>
                 </div>
               )}
@@ -234,11 +227,11 @@ export function CampaignDetailsDrawer({
               {campaign.status === "under_review" && (
                 <div className="space-y-5 w-full">
                   <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
-                    <div className="w-10 h-10 rounded-full bg-white/90 border border-amber-250 flex items-center justify-center shrink-0 shadow-sm">
-                      <span className="text-[#FEB604] text-lg font-bold">⌛</span>
+                    <div className="w-10 h-10 rounded-full bg-white/90 border border-amber-250 flex items-center justify-center shrink-0">
+                      <span className="text-[#FEB604] text-lg font-medium">⌛</span>
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-stone-900">Waiting on brand review</h4>
+                      <h4 className="text-xs font-medium text-stone-900">Waiting on brand review</h4>
                       <p className="text-[11px] leading-relaxed text-stone-500 font-medium">
                         Submitted recently. Most reviews are completed within 24 hours.
                       </p>
@@ -248,12 +241,9 @@ export function CampaignDetailsDrawer({
                   <div className="flex gap-2">
                     <button
                       disabled
-                      className="flex-1 py-3 bg-stone-100 text-stone-400 rounded-full font-bold text-xs border border-stone-200 cursor-not-allowed"
+                      className="flex-1 py-4 bg-stone-100 text-stone-400 rounded-full font-medium text-xs border border-stone-200 cursor-not-allowed font-rethink"
                     >
                       Upload content
-                    </button>
-                    <button className="w-12 h-12 rounded-full border border-stone-200 hover:bg-stone-50 flex items-center justify-center shrink-0">
-                      <span className="text-stone-500 font-bold text-lg leading-none -translate-y-1">...</span>
                     </button>
                   </div>
                 </div>
@@ -262,11 +252,11 @@ export function CampaignDetailsDrawer({
               {campaign.status === "changes_requested" && (
                 <div className="space-y-5 w-full">
                   <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
-                    <div className="w-10 h-10 rounded-full bg-white/90 border border-red-200 flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-white/90 border border-red-200 flex items-center justify-center shrink-0">
                       <span className="text-red-500 text-base">⚠️</span>
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-stone-900">
+                      <h4 className="text-xs font-medium text-stone-900">
                         {campaign.comment || "Please revise the content"}
                       </h4>
                     </div>
@@ -275,12 +265,9 @@ export function CampaignDetailsDrawer({
                   <div className="flex gap-2">
                     <button
                       onClick={() => onUpdateContent(campaign.id)}
-                      className="flex-1 py-3 bg-stone-950 hover:bg-stone-850 text-white rounded-full font-bold text-xs transition-colors shadow-sm"
+                      className="flex-1 py-4 bg-[#FEB604] text-stone-900 rounded-full font-semibold text-xs font-rethink"
                     >
                       Upload new content
-                    </button>
-                    <button className="w-12 h-12 rounded-full border border-stone-200 hover:bg-stone-50 flex items-center justify-center shrink-0">
-                      <span className="text-stone-500 font-bold text-lg leading-none -translate-y-1">...</span>
                     </button>
                   </div>
                 </div>
@@ -289,11 +276,11 @@ export function CampaignDetailsDrawer({
               {campaign.status === "approved_post" && (
                 <div className="space-y-5 w-full">
                   <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
-                    <div className="w-10 h-10 rounded-full bg-white/90 border border-green-200 flex items-center justify-center shrink-0 shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-white/90 border border-green-200 flex items-center justify-center shrink-0">
                       <span className="text-green-500 text-base">📢</span>
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-stone-900 leading-snug">
+                      <h4 className="text-xs font-medium text-stone-900 leading-snug">
                         Post this on {displayPlatforms.join(", ")}, then paste the link below so we can start tracking your views.
                       </h4>
                     </div>
@@ -305,33 +292,30 @@ export function CampaignDetailsDrawer({
                       placeholder="TikTok Post Link"
                       value={tiktokUrl}
                       onChange={(e) => setTiktokUrl(e.target.value)}
-                      className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full text-xs font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-300"
+                      className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full text-xs font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-300 font-rethink"
                     />
                     <input
                       type="text"
                       placeholder="Instagram post link"
                       value={instagramUrl}
                       onChange={(e) => setInstagramUrl(e.target.value)}
-                      className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full text-xs font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-300"
+                      className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full text-xs font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-300 font-rethink"
                     />
                     <input
                       type="text"
                       placeholder="X post link"
                       value={xUrl}
                       onChange={(e) => setXUrl(e.target.value)}
-                      className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full text-xs font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-300"
+                      className="px-4 py-2.5 bg-stone-50 border border-stone-200 rounded-full text-xs font-medium text-stone-900 placeholder-stone-400 focus:outline-none focus:border-stone-300 font-rethink"
                     />
                   </div>
 
                   <div className="flex gap-2">
                     <button
                       onClick={handleLinkSubmit}
-                      className="flex-1 py-3 bg-stone-950 hover:bg-stone-850 text-white rounded-full font-bold text-xs transition-colors shadow-sm"
+                      className="flex-1 py-4 bg-[#FEB604] text-stone-900 rounded-full font-semibold text-xs font-rethink"
                     >
                       Submit link
-                    </button>
-                    <button className="w-12 h-12 rounded-full border border-stone-200 hover:bg-stone-50 flex items-center justify-center shrink-0">
-                      <span className="text-stone-500 font-bold text-lg leading-none -translate-y-1">...</span>
                     </button>
                   </div>
                 </div>
@@ -341,11 +325,11 @@ export function CampaignDetailsDrawer({
                 <div className="space-y-4 w-full">
                   {campaign.status === "delivered" && (
                     <div className="bg-[#EBF3FF]/40 border border-[#BFDBFE] border-dashed rounded-2xl p-4 flex gap-4 text-left">
-                      <div className="w-10 h-10 rounded-full bg-white/90 border border-green-200 flex items-center justify-center shrink-0 shadow-sm">
+                      <div className="w-10 h-10 rounded-full bg-white/90 border border-green-200 flex items-center justify-center shrink-0">
                         <span className="text-green-500 text-sm">✓</span>
                       </div>
                       <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-stone-900">Delivered</h4>
+                        <h4 className="text-xs font-medium text-stone-900">Delivered</h4>
                         <p className="text-[11px] leading-relaxed text-stone-500 font-medium">
                           Target reached and verified. ₦{campaign.reward.toLocaleString()} was paid to your wallet
                         </p>
@@ -356,11 +340,11 @@ export function CampaignDetailsDrawer({
                   {campaign.videoUrl && (
                     <div className="flex gap-4 items-start text-left bg-stone-50 border border-stone-200/60 rounded-2xl p-4">
                       <div className="w-12 h-12 rounded-xl bg-stone-200 relative flex items-center justify-center overflow-hidden shrink-0">
-                        <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center text-[8px] z-10 font-bold">▶</div>
+                        <div className="w-5 h-5 rounded-full bg-white/80 flex items-center justify-center text-[8px] z-10 font-medium">▶</div>
                         <div className="absolute inset-0 bg-gradient-to-tr from-purple-200 to-indigo-100 opacity-60"></div>
                       </div>
                       <div className="flex-1 space-y-1.5">
-                        <p className="text-xs font-semibold text-stone-900 leading-normal truncate">
+                        <p className="text-xs font-medium text-stone-900 leading-normal truncate">
                           {campaign.videoUrl}
                         </p>
                       </div>
@@ -370,7 +354,7 @@ export function CampaignDetailsDrawer({
                   {campaign.postedPlatforms && campaign.postedPlatforms.length > 0 && (
                     <div className="flex flex-wrap gap-2 justify-center">
                       {campaign.postedPlatforms.map((p) => (
-                        <span key={p} className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 font-bold text-[10px] rounded-full">
+                        <span key={p} className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-100 border border-stone-200 text-stone-700 font-medium text-[10px] rounded-full">
                           {platformLabels[p] || p}
                         </span>
                       ))}
@@ -379,8 +363,8 @@ export function CampaignDetailsDrawer({
 
                   {(campaign.currentViews !== undefined || campaign.progress !== undefined) && (
                     <div className="space-y-2 border-t border-stone-100 pt-4">
-                      <div className="flex justify-between text-xs font-semibold font-rethink">
-                        <span className={campaign.status === "delivered" ? "text-teal-600 font-bold" : "text-stone-500"}>
+                      <div className="flex justify-between text-xs font-medium font-rethink">
+                        <span className={campaign.status === "delivered" ? "text-teal-600 font-medium" : "text-stone-500"}>
                           {campaign.status === "delivered" ? "100% Complete" : `${campaign.progress || 0}%`}
                         </span>
                         <span className="text-stone-500">
@@ -406,32 +390,32 @@ export function CampaignDetailsDrawer({
           </div>
 
           <div className="space-y-4">
-            <h4 className="font-rethink font-bold text-[15px] text-stone-900 text-left">Slot details</h4>
-            <div className="border border-stone-200/80 rounded-2xl bg-white p-5 space-y-3.5 text-xs text-left shadow-sm">
+            <h4 className="font-rethink font-medium text-sm text-stone-900 text-left">Slot details</h4>
+            <div className="border border-stone-200/80 rounded-2xl bg-white p-5 space-y-3.5 text-xs text-left">
               <div className="flex justify-between">
                 <span className="font-medium text-stone-500">Target</span>
-                <span className="font-bold text-stone-900">{(campaign.targetViews || 0).toLocaleString()} views</span>
+                <span className="font-medium text-stone-900">{(campaign.targetViews || 0).toLocaleString()} views</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-stone-500">Reward</span>
-                <span className="font-bold text-stone-900">₦{campaign.reward.toLocaleString()}</span>
+                <span className="font-medium text-stone-900">₦{campaign.reward.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium text-stone-500">Platforms</span>
-                <span className="font-bold text-stone-900">{displayPlatforms.join(", ")}</span>
+                <span className="font-medium text-stone-900">{displayPlatforms.join(", ")}</span>
               </div>
               {campaign.viewTarget && (
                 <div className="flex justify-between">
                   <span className="font-medium text-stone-500">View Target</span>
-                  <span className="font-bold text-stone-900">{campaign.viewTarget.toLocaleString()} views</span>
+                  <span className="font-medium text-stone-900">{campaign.viewTarget.toLocaleString()} views</span>
                 </div>
               )}
             </div>
           </div>
 
           {(campaign.contentBrief || campaign.keyMessageCta || campaign.whatToAvoid) && (
-            <div className="bg-stone-50 border border-stone-200 rounded-3xl p-6 text-left shadow-sm space-y-4">
-              <h4 className="font-rethink font-bold text-[15px] text-stone-900">The brief</h4>
+            <div className="bg-stone-50 border border-stone-200 rounded-3xl p-6 text-left space-y-4">
+              <h4 className="font-rethink font-medium text-sm text-stone-900">The brief</h4>
               
               {campaign.contentBrief && (
                 <p className="text-xs leading-relaxed text-stone-600 font-medium">
@@ -460,8 +444,8 @@ export function CampaignDetailsDrawer({
           )}
 
           <div className="space-y-5">
-            <h4 className="font-rethink font-bold text-[15px] text-stone-900 text-left">Activity</h4>
-            <div className="space-y-5 border border-stone-200/80 rounded-2xl bg-white p-5 shadow-sm">
+            <h4 className="font-rethink font-medium text-sm text-stone-900 text-left">Activity</h4>
+            <div className="space-y-5 border border-stone-200/80 rounded-2xl bg-white p-5">
               {renderActivity().length > 0 ? (
                 <div className="space-y-5">
                   {renderActivity()}
@@ -519,7 +503,7 @@ function StatusDetailsBadge({ status }: { status: CampaignItem["status"] }) {
 
   return (
     <span
-      className={`px-2.5 py-0.5 rounded-full font-semibold text-[10px] leading-[12px] font-inter flex items-center gap-1 ${badge.classes}`}
+      className={`px-2 py-0.5 rounded-full font-medium tracking-tight text-[10px] font-rethink flex items-center gap-1 ${badge.classes}`}
     >
       <span className={`w-1 h-1 rounded-full ${badge.dotClasses}`} /> {badge.label}
     </span>

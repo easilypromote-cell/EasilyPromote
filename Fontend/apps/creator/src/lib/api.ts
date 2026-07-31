@@ -1,10 +1,32 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
+import { MOCK_PROFILE, MOCK_CAMPAIGNS, MOCK_MARKETPLACE, MOCK_WALLET } from "./mock-data";
+
+const endpointMap: Record<string, () => unknown> = {
+  "/creators/profile/me": () => MOCK_PROFILE,
+  "/creators/slots/mine": () => ({ campaigns: MOCK_CAMPAIGNS }),
+  "/creators/marketplace": () => MOCK_MARKETPLACE,
+  "/creators/wallet": () => MOCK_WALLET,
+};
 
 interface RequestOptions extends RequestInit {
   token?: string;
 }
 
 export async function apiRequest<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  if (DEMO_MODE) {
+    const { method = "GET" } = options;
+
+    if (method === "GET" && endpoint in endpointMap) {
+      await sleep(400);
+      return endpointMap[endpoint]() as T;
+    }
+
+    await sleep(200);
+    return {} as T;
+  }
+
   const { token, ...fetchOptions } = options;
 
   const headers: Record<string, string> = {
@@ -26,13 +48,9 @@ export async function apiRequest<T>(endpoint: string, options: RequestOptions = 
   return res.json();
 }
 
-export function getToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("token");
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export function getUser(): { id: string; name: string; email: string; role: string } | null {
-  if (typeof window === "undefined") return null;
-  const stored = localStorage.getItem("user");
-  return stored ? JSON.parse(stored) : null;
-}
+export { getToken, getUser, isAuthenticated, clearAuth, saveAuth } from "./auth";
+export type { User } from "./auth";
