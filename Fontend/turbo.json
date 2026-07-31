@@ -1,5 +1,11 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
+  "globalPassThroughEnv": [
+    "BACKEND_URL",
+    "NEXT_PUBLIC_API_URL",
+    "NEXT_PUBLIC_SOCKET_URL",
+    "NEXT_PUBLIC_ADMIN_URL"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   outputFileTracingRoot: path.join(__dirname, "../../"),
   transpilePackages: ["@ep/ui"],
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
