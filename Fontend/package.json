@@ -2,8 +2,8 @@
   "name": "easily-promote-frontend",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
+    "dev": "turbo run dev --filter=@ep/web",
+    "build": "turbo run build --filter=@ep/web",
     "lint": "turbo run lint"
   },
   "workspaces": [
