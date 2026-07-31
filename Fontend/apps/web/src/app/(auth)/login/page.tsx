@@ -47,7 +47,7 @@ export default function LoginPage() {
     } else if (role === "business") {
       router.push("/dashboard/brand");
     } else if (role === "admin" || role === "super_admin" || role === "finance_admin" || role === "support") {
-      window.location.href = "http://localhost:3003";
+      window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3003";
     } else {
       router.push("/");
     }

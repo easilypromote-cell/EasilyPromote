@@ -19,7 +19,7 @@ export default function HomePage() {
     if (role === "creator") {
       router.replace("/dashboard/creator");
     } else if (role === "admin" || role === "super_admin" || role === "finance_admin" || role === "support") {
-      window.location.href = "http://localhost:3003";
+      window.location.href = process.env.NEXT_PUBLIC_ADMIN_URL || "http://localhost:3003";
     } else if (role === "business") {
       router.replace("/dashboard/brand");
     } else {
