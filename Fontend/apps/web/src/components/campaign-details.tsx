@@ -268,7 +268,7 @@ export function CampaignDetails({ campaignId, onClose, isMobile }: CampaignDetai
         }).then(() => {
           setTopupSuccess(true);
           fetchCampaign();
-          window.history.replaceState({}, "", `/campaign/${campaignId}`);
+          window.history.replaceState({}, "", `/dashboard/brand/campaign/${campaignId}`);
         }).catch((err: unknown) => {
           setTopupError(err instanceof Error ? err.message : "Failed to verify payment. Please contact support.");
         });

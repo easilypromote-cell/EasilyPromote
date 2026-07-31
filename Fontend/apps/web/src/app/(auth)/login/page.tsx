@@ -65,12 +65,7 @@ export default function LoginPage() {
   };
 
   const handleRoleContinue = () => {
-    if (role === "creator") {
-      setStep("register");
-    } else {
-      alert("Brand flows are on the brand dashboard. Redirecting...");
-      window.location.href = `${window.location.protocol}//${window.location.hostname}:3002/login`;
-    }
+    setStep("register");
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -87,7 +82,7 @@ export default function LoginPage() {
           name: form.businessName || form.email.split("@")[0],
           email: form.email,
           password: form.password,
-          role: "creator",
+          role,
           username: form.email.split("@")[0],
         }),
       });

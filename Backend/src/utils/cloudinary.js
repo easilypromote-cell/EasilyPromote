@@ -19,7 +19,7 @@ const uploadToCloudinary = (file, folder = "easily-promote") => {
       options.allowed_formats = ["mp4", "mov", "avi", "webm"];
       options.transformation = [{ quality: "auto", fetch_format: "auto" }];
     } else if (isDocument) {
-      options.allowed_formats = ["pdf", "doc", "doc"];
+      options.allowed_formats = ["pdf", "doc", "docx"];
     } else {
       options.allowed_formats = ["jpg", "jpeg", "png", "gif", "webp"];
       options.transformation = [{ quality: "auto", width: 1920, crop: "limit" }];

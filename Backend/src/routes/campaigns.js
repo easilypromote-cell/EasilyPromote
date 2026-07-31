@@ -118,8 +118,8 @@ router.post("/:id/pay", protect, authorizeRoles("business"), async (req, res, ne
 
     const reference = `ep_${campaign._id}_${Date.now()}`;
 
-    const origin = req.headers.origin || process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3002";
-    const callback_url = `${origin.replace(/\/$/, "")}/create-campaign?payment=success&campaignId=${campaign._id}&reference=${reference}`;
+    const origin = req.headers.origin || process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3000";
+    const callback_url = `${origin.replace(/\/$/, "")}/dashboard/brand?payment=success&campaignId=${campaign._id}&reference=${reference}`;
 
     const paymentData = await initializeTransaction({
       email: req.user.email,
@@ -164,13 +164,13 @@ router.get("/:id/payment-status", protect, async (req, res, next) => {
       });
 
       if (transaction) {
-        campaign.status = "under_review";
+        campaign.status = "live";
         await campaign.save();
       } else if (campaign.paymentReference) {
         try {
           const paystackData = await verifyTransaction(campaign.paymentReference);
           if (paystackData.status === "success") {
-            campaign.status = "under_review";
+            campaign.status = "live";
             await campaign.save();
 
             await Transaction.create({
@@ -185,9 +185,9 @@ router.get("/:id/payment-status", protect, async (req, res, next) => {
             await Notification.create({
               businessId: campaign.businessId,
               campaignId: campaign._id,
-              type: "under_review",
-              title: "Under review",
-              body: "We're reviewing your campaign. It'll go live within 2 hours.",
+              type: "campaign_live",
+              title: "Campaign is live",
+              body: "Your campaign is now live. Creators can start claiming slots.",
             });
           }
         } catch {
@@ -346,7 +346,7 @@ router.post("/:id/launch", protect, async (req, res, next) => {
       }
     }
 
-    campaign.status = "under_review";
+    campaign.status = "live";
     await campaign.save();
 
     await Transaction.create({
@@ -360,15 +360,15 @@ router.post("/:id/launch", protect, async (req, res, next) => {
     await Notification.create({
       businessId: req.user._id,
       campaignId: campaign._id,
-      type: "under_review",
-      title: "Under review",
-      body: "We're reviewing your campaign. It'll go live within 2 hours.",
+      type: "campaign_live",
+      title: "Campaign is live",
+      body: "Your campaign is now live. Creators can start claiming slots.",
     });
 
     res.json({
       id: campaign._id,
       status: campaign.status,
-      message: "We're reviewing your campaign. It'll go live within 2 hours.",
+      message: "Your campaign is now live.",
       escrow: {
         totalEscrowed: campaign.budget,
         platformFee: campaign.platformFee,
@@ -400,8 +400,8 @@ router.post("/:id/topup-init", protect, authorizeRoles("business"), async (req, 
 
     const reference = `ep_topup_${campaign._id}_${Date.now()}`;
 
-    const origin = req.headers.origin || process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3002";
-    const callback_url = `${origin.replace(/\/$/, "")}/campaign/${campaign._id}?topup=success&reference=${reference}&amount=${amount}`;
+    const origin = req.headers.origin || process.env.PAYSTACK_CALLBACK_URL || "http://localhost:3000";
+    const callback_url = `${origin.replace(/\/$/, "")}/dashboard/brand/campaign/${campaign._id}?topup=success&reference=${reference}&amount=${amount}`;
 
     const paymentData = await initializeTransaction({
       email: req.user.email,

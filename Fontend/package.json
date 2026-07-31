@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "npm@10.9.2",
   "scripts": {
-    "dev": "turbo run dev --filter=@ep/web",
+    "dev": "turbo run dev --filter=@ep/web --filter=@ep/admin",
     "build": "turbo run build --filter=@ep/web",
     "lint": "turbo run lint"
   },
